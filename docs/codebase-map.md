@@ -4,7 +4,7 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-04 (phase P0) · **Trạng thái:** chưa có code ứng dụng
+**Cập nhật lần cuối:** 2026-09-04 (phase P1) · **Trạng thái:** đăng nhập và phân quyền chạy được
 
 ---
 
@@ -47,23 +47,54 @@
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
 | `testing/reports/README.md` | Mẫu báo cáo kiểm thử cuối phase |
 
+### Ứng dụng (`app/`) — từ P1
+
+| File | Vai trò |
+|---|---|
+| `main.py` | Khởi tạo FastAPI, session middleware, đăng ký router, 2 trình xử lý lỗi (403/404 ra trang có bố cục, chưa đăng nhập thì chuyển về `/login`) |
+| `config.py` | Đọc `.env` qua pydantic-settings: `DATABASE_URL`, `SECRET_KEY`, `AI_PROVIDER`, `GEMINI_API_KEY` |
+| `db.py` | `Base`, `engine`, `SessionLocal`, `get_db()`. Bật `PRAGMA foreign_keys` cho từng kết nối SQLite |
+| `security.py` | `hash_password()`, `verify_password()` — bcrypt trực tiếp, không qua passlib |
+| `auth.py` | Session cookie, `nguoi_dung_hien_tai`, `yeu_cau_vai_tro()`, ngoại lệ `ChuaDangNhap` |
+| `templates.py` | Cấu hình Jinja2 dùng chung |
+| `seed.py` | Tạo 4 tài khoản mẫu. Chạy `python -m app.seed` |
+| `models/user.py` | Bảng `users` + hằng `VAI_TRO`, `TEN_VAI_TRO` |
+| `services/clock.py` | `now()` và `freeze()` — điểm lấy thời gian duy nhất của hệ thống |
+| `routers/auth.py` | `/login`, `/logout`, `/` |
+| `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager` |
+| `templates/base.html` | Bố cục chung, menu hiện theo vai trò |
+| `templates/login.html` · `home.html` · `users.html` · `error.html` | Các trang |
+| `static/style.css` | Toàn bộ CSS, một file, không build tool |
+
+### Kiểm thử (`tests/`) — từ P1
+
+| File | Vai trò |
+|---|---|
+| `conftest.py` | 5 fixture: `db`, `client`, `frozen_clock`, `fake_ai` (khung, dùng từ P7), `seed_basic` |
+| `unit/test_security.py` | Băm mật khẩu (TC-005) |
+| `unit/test_clock.py` | Cố định thời gian |
+| `unit/test_models_user.py` | Ràng buộc bảng `users`: UNIQUE username, CHECK role |
+| `integration/test_auth.py` | Đăng nhập (TC-001→004) |
+| `integration/test_users.py` | Phân quyền và quản lý tài khoản (TC-007, 008, 010→012) |
+
+### Cấu hình
+
+| File | Vai trò |
+|---|---|
+| `requirements.txt` | Phụ thuộc, đã pin phiên bản |
+| `pytest.ini` | `pythonpath`, `testpaths`, `filterwarnings = error` |
+
 ---
 
 ## Chưa có — sẽ thêm theo phase
 
-Cấu trúc dưới đây theo [`architecture.md`](architecture.md). Khi một file được tạo, chuyển dòng
-tương ứng lên mục "Hiện có" và ghi rõ vai trò thật.
+Cấu trúc dưới đây theo [`architecture.md`](architecture.md). Khi một file được tạo, chuyển nó lên
+mục "Hiện có" và ghi rõ vai trò thật, rồi xóa dòng ở đây.
 
 | Đường dẫn | Vai trò dự kiến | Phase |
 |---|---|---|
-| `requirements.txt` | Danh sách package | P1 |
-| `app/main.py` | Khởi tạo FastAPI, đăng ký router | P1 |
-| `app/config.py` | Đọc `.env` | P1 |
-| `app/db.py` | Engine, `SessionLocal`, `get_db()` | P1 |
-| `app/security.py` | Băm mật khẩu, session cookie, dependency kiểm tra vai trò | P1 |
-| `app/models/` | 13 model SQLAlchemy | P1–P5 |
-| `app/schemas/` | Pydantic request/response | P1–P6 |
-| `app/services/clock.py` | Hàm lấy thời gian hiện tại — điểm mock duy nhất cho thời gian | P1 |
+| `app/models/` — 12 model còn lại | owner, pet, service, package, package_item, appointment, care_record, vaccination, invoice, invoice_item, payment, ai_log | P2–P7 |
+| `app/schemas/` | Pydantic request/response. Chưa cần ở P1 vì form đơn giản đọc thẳng qua `Form()` | P2+ |
 | `app/services/scheduling.py` | Đặt/đổi/hủy lịch, kiểm tra trùng lịch | P3 |
 | `app/services/billing.py` | Lập hóa đơn, ghi nhận thanh toán | P5 |
 | `app/services/stats.py` | Lượt dịch vụ, doanh thu, khách quay lại | P6 |
@@ -72,10 +103,5 @@ tương ứng lên mục "Hiện có" và ghi rõ vai trò thật.
 | `app/ai/fake.py` | `FakeProvider` — ghi lại prompt nhận được | P7 |
 | `app/ai/prompts.py` | System prompt + `DISCLAIMER` | P7 |
 | `app/ai/service.py` | 3 use case AI, lọc dữ liệu cá nhân, ghi `ai_logs` | P7 |
-| `app/routers/` | auth, owners, pets, services, appointments, care_records, vaccinations, invoices, stats, ai | P1–P7 |
-| `app/templates/` | Jinja2 | P1–P7 |
-| `app/static/` | CSS, JS | P1 |
-| `tests/conftest.py` | Fixture: `db`, `client`, `fake_ai`, `frozen_clock`, `seed_basic` | P1 |
-| `tests/unit/` | Test `services/` và `ai/prompts.py` | P1–P7 |
-| `tests/integration/` | Test qua `TestClient` | P1–P7 |
+| `app/routers/` — còn lại | owners, pets, services, appointments, care_records, vaccinations, invoices, stats, ai | P2–P7 |
 | `tests/e2e/test_full_flow.py` | Kịch bản xuyên suốt 11 bước | P5 |

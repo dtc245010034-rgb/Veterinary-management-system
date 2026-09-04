@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block tieu_de %}Lỗi {{ ma_loi }}{% endblock %}
+{% block lop_main %}giua-man-hinh{% endblock %}
+
+{% block noi_dung %}
+<div class="the the-loi">
+  <p class="ma-loi">{{ ma_loi }}</p>
+  <h1>{% if ma_loi == 403 %}Không có quyền truy cập{% else %}Không tìm thấy trang{% endif %}</h1>
+  <p class="phu">{{ thong_diep }}</p>
+  <a class="chinh" href="/">Về trang chủ</a>
+</div>
+{% endblock %}

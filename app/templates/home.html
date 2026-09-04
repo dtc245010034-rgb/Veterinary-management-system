@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block tieu_de %}Trang chủ{% endblock %}
+
+{% block noi_dung %}
+<h1>Xin chào, {{ user.full_name }}</h1>
+<p class="phu">Bạn đang đăng nhập với vai trò <strong>{{ user.ten_vai_tro }}</strong>.</p>
+
+<div class="luoi-the">
+  {% if user.role in ('manager', 'receptionist') %}
+    <a class="the the-lien-ket" href="/owners"><h2>Chủ nuôi và thú cưng</h2><p>Thêm, sửa, tra cứu khách hàng</p></a>
+    <a class="the the-lien-ket" href="/appointments"><h2>Lịch hẹn</h2><p>Đặt lịch, đổi lịch, hủy lịch</p></a>
+  {% endif %}
+  {% if user.role == 'caretaker' %}
+    <a class="the the-lien-ket" href="/appointments/cua-toi"><h2>Lịch của tôi</h2><p>Công việc được phân hôm nay</p></a>
+  {% endif %}
+  {% if user.role == 'manager' %}
+    <a class="the the-lien-ket" href="/services"><h2>Dịch vụ</h2><p>Bảng giá và gói dịch vụ</p></a>
+    <a class="the the-lien-ket" href="/stats"><h2>Thống kê</h2><p>Lượt dịch vụ, doanh thu</p></a>
+    <a class="the the-lien-ket" href="/users"><h2>Tài khoản</h2><p>Quản lý nhân viên</p></a>
+  {% endif %}
+</div>
+{% endblock %}

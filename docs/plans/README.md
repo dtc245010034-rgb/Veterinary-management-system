@@ -30,4 +30,5 @@ Chép vào đây thì kế hoạch trở thành một phần của lịch sử d
 
 | Ngày | Kế hoạch | Phase | Trạng thái |
 |---|---|---|---|
-| 2026-09-04 | [KT1 — Dựng bộ context, đặc tả và chiến lược kiểm thử](2026-09-04-kt1-bo-context-va-dac-ta.md) | P0 | Đang thực hiện |
+| 2026-09-04 | [KT1 — Dựng bộ context, đặc tả và chiến lược kiểm thử](2026-09-04-kt1-bo-context-va-dac-ta.md) | P0 | Hoàn thành |
+| 2026-09-04 | [Nền tảng, đăng nhập và phân quyền](2026-09-04-p1-nen-tang-va-xac-thuc.md) | P1 | Hoàn thành |

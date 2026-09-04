@@ -6,7 +6,7 @@ chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham 
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P0 — đang dựng đặc tả**, chưa có code ứng dụng.
+Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P1 xong** — đăng nhập và phân quyền 3 vai trò chạy được.
 Lộ trình đầy đủ: [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Công nghệ
@@ -21,32 +21,45 @@ Lộ trình đầy đủ: [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Cách chạy
 
-> Phần này hoàn thiện ở phase P1. Hiện repo chưa có code ứng dụng.
+Cần Python 3.11 trở lên (đã kiểm trên 3.14.6).
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate          # Windows
+.venv\Scripts\activate            # Windows
+# source .venv/bin/activate       # macOS / Linux
 pip install -r requirements.txt
 
-copy .env.example .env          # rồi điền GEMINI_API_KEY
+copy .env.example .env            # tùy chọn; mặc định đã chạy được
+python -m app.seed                # tạo 4 tài khoản mẫu
 uvicorn app.main:app --reload
 ```
 
 Mở `http://127.0.0.1:8000`.
 
-Không có khóa Gemini vẫn chạy được toàn bộ phần quản lý: đặt `AI_PROVIDER=fake` trong `.env`, các
+### Tài khoản mẫu
+
+Mật khẩu chung: `matkhau123`
+
+| Tên đăng nhập | Vai trò | Thấy được gì |
+|---|---|---|
+| `quanly` | Quản lý | Toàn bộ hệ thống |
+| `letan` | Lễ tân | Chủ nuôi, thú cưng, lịch hẹn, hóa đơn |
+| `chamsoc1`, `chamsoc2` | Nhân viên chăm sóc | Lịch của mình, hồ sơ chăm sóc |
+
+Không có khóa Gemini vẫn chạy được toàn bộ phần quản lý: để `AI_PROVIDER=fake` trong `.env`, các
 tính năng AI sẽ trả lời cố định thay vì gọi API thật.
 
 ## Cách chạy test
 
 ```bash
-pytest tests/unit            # < 5s   — chạy mỗi lần sửa code
-pytest tests/integration     # < 30s  — chạy cuối mỗi phiên làm việc
-pytest                       # < 1p   — chạy trước mỗi commit (hồi quy)
-pytest tests/e2e             # vài phút — chạy cuối mỗi phase
+pytest tests/unit            # ~6s   — chạy mỗi lần sửa code
+pytest tests/integration     # ~28s  — chạy cuối mỗi phiên làm việc
+pytest                       # ~32s  — chạy trước mỗi commit (hồi quy)
+pytest tests/e2e             # có từ P5 — chạy cuối mỗi phase
 ```
 
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).
+Kết quả từng phase: [`docs/testing/reports/`](docs/testing/reports/).
 
 ## Tài liệu
 

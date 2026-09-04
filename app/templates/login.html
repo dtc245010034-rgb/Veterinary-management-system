@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block tieu_de %}Đăng nhập{% endblock %}
+{% block lop_main %}giua-man-hinh{% endblock %}
+
+{% block noi_dung %}
+<form class="the the-dang-nhap" method="post" action="/login">
+  <h1>🐾 Quản lý thú cưng</h1>
+  <p class="phu">Đăng nhập để tiếp tục</p>
+
+  {% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+  <label>
+    Tên đăng nhập
+    <input name="username" required autofocus autocomplete="username">
+  </label>
+
+  <label>
+    Mật khẩu
+    <input name="password" type="password" required autocomplete="current-password">
+  </label>
+
+  <button type="submit" class="chinh">Đăng nhập</button>
+</form>
+{% endblock %}

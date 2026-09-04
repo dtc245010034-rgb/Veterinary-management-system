@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block tieu_de %}Quản lý thú cưng{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+{% if user %}
+<header class="thanh-dieu-huong">
+  <a class="thuong-hieu" href="/">🐾 Quản lý thú cưng</a>
+
+  <nav>
+    {# Menu hiện theo vai trò — bảng phân quyền trong docs/user-stories.md US-02 #}
+    {% if user.role in ('manager', 'receptionist') %}
+      <a href="/owners">Chủ nuôi</a>
+      <a href="/appointments">Lịch hẹn</a>
+    {% endif %}
+    {% if user.role == 'caretaker' %}
+      <a href="/appointments/cua-toi">Lịch của tôi</a>
+    {% endif %}
+    {% if user.role == 'manager' %}
+      <a href="/services">Dịch vụ</a>
+      <a href="/stats">Thống kê</a>
+      <a href="/users">Tài khoản</a>
+    {% endif %}
+  </nav>
+
+  <div class="nguoi-dung">
+    <span class="ten">{{ user.full_name }}</span>
+    <span class="vai-tro">{{ user.ten_vai_tro }}</span>
+    <form method="post" action="/logout"><button class="lien-ket">Đăng xuất</button></form>
+  </div>
+</header>
+{% endif %}
+
+<main class="{% block lop_main %}{% endblock %}">
+  {% block noi_dung %}{% endblock %}
+</main>
+</body>
+</html>

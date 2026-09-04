@@ -1,6 +1,6 @@
 # KT1 — Dựng bộ context cho AI Agent + đặc tả + chiến lược kiểm thử
 
-> **Phase:** P0 · **Mốc:** KT1 · **Duyệt ngày:** 2026-09-04
+> **Phase:** P0 · **Mốc:** KT1 · **Duyệt ngày:** 2026-09-04 · **Trạng thái:** Hoàn thành
 > Bản chép của kế hoạch đã được duyệt, theo quy ước ở [`README.md`](README.md).
 
 ## Checklist thực hiện

@@ -17,18 +17,18 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-001 | US-01 | Đăng nhập đúng mật khẩu → vào được hệ thống | I | | ⬜ |
-| TC-002 | US-01 | Sai mật khẩu → báo lỗi chung, không lộ tài khoản có tồn tại | I | | ⬜ |
-| TC-003 | US-01 | Tài khoản `is_active = false` → bị từ chối | I | | ⬜ |
-| TC-004 | US-01 | Chưa đăng nhập mở trang nội bộ → chuyển về trang đăng nhập | I | | ⬜ |
-| TC-005 | US-01 | Mật khẩu lưu dạng băm, không lưu bản gốc | U | | ⬜ |
-| TC-006 | US-02 | `caretaker` mở trang thống kê → 403 | I | | ⬜ |
-| TC-007 | US-02 | `receptionist` mở trang quản lý tài khoản → 403 | I | | ⬜ |
-| TC-008 | US-02 | `manager` truy cập được mọi trang | I | | ⬜ |
-| TC-009 | US-02 | `caretaker` xem lịch → chỉ thấy lịch của mình | I | | ⬜ |
-| TC-010 | US-03 | Tạo tài khoản mới → đăng nhập được ngay | I | | ⬜ |
-| TC-011 | US-03 | Tên đăng nhập trùng → bị từ chối | I | | ⬜ |
-| TC-012 | US-03 | Khóa tài khoản → không đăng nhập được, dữ liệu cũ còn nguyên | I | | ⬜ |
+| TC-001 | US-01 | Đăng nhập đúng mật khẩu → vào được hệ thống | I | `tests/integration/test_auth.py` | ✅ |
+| TC-002 | US-01 | Sai mật khẩu → báo lỗi chung, không lộ tài khoản có tồn tại | I | `tests/integration/test_auth.py` | ✅ |
+| TC-003 | US-01 | Tài khoản `is_active = false` → bị từ chối | I | `tests/integration/test_auth.py` | ✅ |
+| TC-004 | US-01 | Chưa đăng nhập mở trang nội bộ → chuyển về trang đăng nhập | I | `tests/integration/test_auth.py` | ✅ |
+| TC-005 | US-01 | Mật khẩu lưu dạng băm, không lưu bản gốc | U | `tests/unit/test_security.py` | ✅ |
+| TC-006 | US-02 | `caretaker` mở trang thống kê → 403 | I | — hoãn tới P6 (trang thống kê chưa có) | ⬜ |
+| TC-007 | US-02 | `receptionist` mở trang quản lý tài khoản → 403 | I | `tests/integration/test_users.py` | ✅ |
+| TC-008 | US-02 | `manager` truy cập được mọi trang | I | `tests/integration/test_users.py` | ✅ |
+| TC-009 | US-02 | `caretaker` xem lịch → chỉ thấy lịch của mình | I | — hoãn tới P3 (lịch hẹn chưa có) | ⬜ |
+| TC-010 | US-03 | Tạo tài khoản mới → đăng nhập được ngay | I | `tests/integration/test_users.py` | ✅ |
+| TC-011 | US-03 | Tên đăng nhập trùng → bị từ chối | I | `tests/integration/test_users.py`, `tests/unit/test_models_user.py` | ✅ |
+| TC-012 | US-03 | Khóa tài khoản → không đăng nhập được, dữ liệu cũ còn nguyên | I | `tests/integration/test_users.py` | ✅ |
 
 ## B. Chủ nuôi và thú cưng — phase P2
 

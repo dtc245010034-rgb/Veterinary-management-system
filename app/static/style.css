@@ -1,0 +1,153 @@
+/* Giao diện dùng chung. Một file, không build tool. */
+
+:root {
+  --nen: #f6f7f9;
+  --the: #ffffff;
+  --vien: #e3e6ea;
+  --chu: #1c2024;
+  --chu-phu: #6b7280;
+  --chinh: #2f7d5d;
+  --chinh-dam: #24634a;
+  --loi: #b42318;
+  --loi-nen: #fef3f2;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--nen);
+  color: var(--chu);
+  font: 15px/1.55 system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+/* --- Thanh điều hướng --- */
+.thanh-dieu-huong {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 24px;
+  height: 56px;
+  background: var(--the);
+  border-bottom: 1px solid var(--vien);
+}
+
+.thuong-hieu { font-weight: 600; text-decoration: none; color: var(--chu); }
+
+.thanh-dieu-huong nav { display: flex; gap: 18px; flex: 1; }
+.thanh-dieu-huong nav a {
+  color: var(--chu-phu);
+  text-decoration: none;
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+}
+.thanh-dieu-huong nav a:hover { color: var(--chu); border-bottom-color: var(--chinh); }
+
+.nguoi-dung { display: flex; align-items: center; gap: 10px; }
+.nguoi-dung .ten { font-weight: 500; }
+.nguoi-dung .vai-tro {
+  font-size: 12px;
+  color: var(--chinh-dam);
+  background: #e8f3ee;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* --- Bố cục --- */
+main { max-width: 1040px; margin: 32px auto; padding: 0 24px; }
+main.giua-man-hinh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 16px; margin: 0 0 4px; }
+.phu { color: var(--chu-phu); margin: 0 0 24px; }
+
+/* --- Thẻ --- */
+.the {
+  background: var(--the);
+  border: 1px solid var(--vien);
+  border-radius: 10px;
+  padding: 24px;
+}
+
+.the-dang-nhap { width: 340px; }
+.the-dang-nhap h1 { text-align: center; }
+.the-dang-nhap .phu { text-align: center; }
+
+.luoi-the { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.the-lien-ket { text-decoration: none; color: inherit; display: block; }
+.the-lien-ket:hover { border-color: var(--chinh); }
+.the-lien-ket p { color: var(--chu-phu); margin: 0; font-size: 14px; }
+
+.the-loi { text-align: center; width: 420px; }
+.ma-loi { font-size: 40px; font-weight: 700; color: var(--chu-phu); margin: 0; }
+
+/* --- Biểu mẫu --- */
+label { display: block; margin-bottom: 14px; font-size: 14px; font-weight: 500; }
+input, select {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  padding: 9px 11px;
+  border: 1px solid var(--vien);
+  border-radius: 7px;
+  font: inherit;
+  font-weight: 400;
+  background: #fff;
+}
+input:focus, select:focus { outline: 2px solid var(--chinh); outline-offset: -1px; border-color: var(--chinh); }
+
+button.chinh, a.chinh {
+  display: inline-block;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--chinh);
+  color: #fff;
+  font: inherit;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+button.chinh:hover, a.chinh:hover { background: var(--chinh-dam); }
+
+button.lien-ket {
+  border: 0;
+  background: none;
+  color: var(--chu-phu);
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+.nguoi-dung form { display: inline; }
+
+/* --- Thông báo lỗi --- */
+.loi {
+  background: var(--loi-nen);
+  border: 1px solid #fecdca;
+  color: var(--loi);
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+/* --- Bảng --- */
+table { width: 100%; border-collapse: collapse; background: var(--the); border: 1px solid var(--vien); border-radius: 10px; overflow: hidden; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--vien); }
+th { background: #fafbfc; font-size: 13px; color: var(--chu-phu); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+
+.trang-thai-khoa { color: var(--chu-phu); }
+.rong { text-align: center; color: var(--chu-phu); padding: 40px 0; }
+
+.hai-cot { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+@media (max-width: 820px) { .hai-cot { grid-template-columns: 1fr; } }

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block tieu_de %}Tài khoản nhân viên{% endblock %}
+
+{% block noi_dung %}
+<h1>Tài khoản nhân viên</h1>
+<p class="phu">Khóa tài khoản thay vì xóa, để hồ sơ và lịch hẹn cũ giữ nguyên.</p>
+
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+<div class="hai-cot">
+  <table>
+    <thead>
+      <tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Trạng thái</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for nv in danh_sach %}
+      <tr>
+        <td>{{ nv.username }}</td>
+        <td>{{ nv.full_name }}</td>
+        <td>{{ nv.ten_vai_tro }}</td>
+        <td>
+          {% if nv.is_active %}Đang hoạt động
+          {% else %}<span class="trang-thai-khoa">Đã khóa</span>{% endif %}
+        </td>
+        <td>
+          {% if nv.id != user.id %}
+            {% if nv.is_active %}
+              <form method="post" action="/users/{{ nv.id }}/khoa"><button class="lien-ket">Khóa</button></form>
+            {% else %}
+              <form method="post" action="/users/{{ nv.id }}/mo-khoa"><button class="lien-ket">Mở khóa</button></form>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <form class="the" method="post" action="/users">
+    <h2>Thêm nhân viên</h2>
+    <label>Tên đăng nhập <input name="username" required></label>
+    <label>Họ tên <input name="full_name" required></label>
+    <label>Vai trò
+      <select name="role" required>
+        <option value="manager">Quản lý</option>
+        <option value="receptionist">Lễ tân</option>
+        <option value="caretaker">Nhân viên chăm sóc</option>
+      </select>
+    </label>
+    <label>Mật khẩu <input name="password" type="password" required></label>
+    <button type="submit" class="chinh">Tạo tài khoản</button>
+  </form>
+</div>
+{% endblock %}
