@@ -1,0 +1,212 @@
+"""Test cho app/services/owners.py — nghiệp vụ chủ nuôi và thú cưng.
+
+Phục vụ US-04, US-05, US-06. Đây là tầng chứa mọi kiểm tra dữ liệu và quy tắc; router chỉ
+gọi xuống đây. Nhờ vậy test gọi hàm trực tiếp, không cần dựng HTTP.
+"""
+
+from datetime import date, timedelta
+
+import pytest
+
+from app.models.pet import Pet
+from app.services import owners as nv
+from app.services.errors import LoiNghiepVu
+
+# fixture frozen_clock cố định "bây giờ" ở 2026-03-12 08:00
+HOM_NAY = date(2026, 3, 12)
+
+
+# --- Tạo chủ nuôi ---------------------------------------------------------------
+
+
+def test_tao_chu_nuoi_thanh_cong(db):
+    """TC-013."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+
+    assert o.id is not None
+    assert o.search_name == "tran thi le"
+
+
+@pytest.mark.parametrize("ho_ten, sdt", [("", "0912345678"), ("   ", "0912345678"), ("Tên", "")])
+def test_thieu_ho_ten_hoac_so_dien_thoai_bi_tu_choi(db, ho_ten, sdt):
+    """TC-014: báo lỗi nghiệp vụ có thông báo tiếng Việt, không phải IntegrityError.
+
+    IntegrityError sẽ đi thẳng ra người dùng thành lỗi 500. Chặn ở đây để router trả
+    được thông báo đọc hiểu được.
+    """
+    with pytest.raises(LoiNghiepVu):
+        nv.tao_chu_nuoi(db, ho_ten=ho_ten, so_dien_thoai=sdt)
+
+
+def test_ho_ten_duoc_cat_khoang_trang_thua(db):
+    o = nv.tao_chu_nuoi(db, ho_ten="  Trần Thị Lễ  ", so_dien_thoai="0912345678")
+
+    assert o.full_name == "Trần Thị Lễ"
+
+
+# --- Cảnh báo trùng số điện thoại -----------------------------------------------
+
+
+def test_so_dien_thoai_trung_tra_ve_danh_sach_de_canh_bao(db):
+    """TC-015: cảnh báo chứ không cấm — người dùng tự quyết có phải khách cũ không."""
+    nv.tao_chu_nuoi(db, ho_ten="Người Một", so_dien_thoai="0912345678")
+
+    trung = nv.tim_theo_so_dien_thoai(db, "0912345678")
+
+    assert len(trung) == 1
+    assert trung[0].full_name == "Người Một"
+
+
+def test_so_dien_thoai_chua_ai_dung_tra_ve_rong(db):
+    assert nv.tim_theo_so_dien_thoai(db, "0900000000") == []
+
+
+# --- Xóa chủ nuôi ---------------------------------------------------------------
+
+
+def test_xoa_chu_nuoi_khong_co_thu_cung_thanh_cong(db):
+    o = nv.tao_chu_nuoi(db, ho_ten="Không Thú", so_dien_thoai="0912345678")
+
+    nv.xoa_chu_nuoi(db, o.id)
+
+    assert nv.tim_theo_so_dien_thoai(db, "0912345678") == []
+
+
+def test_xoa_chu_nuoi_con_thu_cung_bi_chan_kem_thong_bao(db, frozen_clock):
+    """TC-016: chặn ở tầng nghiệp vụ để có thông báo tiếng Việt.
+
+    Khóa ngoại của SQLite cũng chặn, nhưng nó ném IntegrityError và người dùng nhận
+    về lỗi 500 — đúng về dữ liệu, vô dụng với người đang đứng ở quầy.
+    """
+    o = nv.tao_chu_nuoi(db, ho_ten="Có Thú", so_dien_thoai="0912345678")
+    nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó")
+
+    with pytest.raises(LoiNghiepVu) as loi:
+        nv.xoa_chu_nuoi(db, o.id)
+
+    assert "thú cưng" in str(loi.value).lower()
+
+
+# --- Tạo thú cưng ---------------------------------------------------------------
+
+
+def test_tao_thu_cung_thanh_cong(db, frozen_clock):
+    """TC-017."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Chủ", so_dien_thoai="0912345678")
+
+    p = nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", giong="Poodle")
+
+    assert p.owner_id == o.id
+    assert p.search_name == "muc"
+
+
+def test_ngay_sinh_tuong_lai_bi_tu_choi(db, frozen_clock):
+    """TC-018. Dùng clock cố định nên kết quả không đổi theo ngày chạy test."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Chủ", so_dien_thoai="0912345678")
+
+    with pytest.raises(LoiNghiepVu):
+        nv.tao_thu_cung(
+            db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", ngay_sinh=HOM_NAY + timedelta(days=1)
+        )
+
+
+def test_ngay_sinh_hom_nay_duoc_chap_nhan(db, frozen_clock):
+    """Thú cưng mới sinh hôm nay là hợp lệ — ranh giới phải là "sau hôm nay" mới bị chặn."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Chủ", so_dien_thoai="0912345678")
+
+    p = nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", ngay_sinh=HOM_NAY)
+
+    assert p.birth_date == HOM_NAY
+
+
+@pytest.mark.parametrize("can_nang", [-1.0, 0.0])
+def test_can_nang_khong_duong_bi_tu_choi(db, frozen_clock, can_nang):
+    """TC-019."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Chủ", so_dien_thoai="0912345678")
+
+    with pytest.raises(LoiNghiepVu):
+        nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", can_nang=can_nang)
+
+
+def test_thieu_ten_hoac_loai_bi_tu_choi(db, frozen_clock):
+    o = nv.tao_chu_nuoi(db, ho_ten="Chủ", so_dien_thoai="0912345678")
+
+    with pytest.raises(LoiNghiepVu):
+        nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="", loai="Chó")
+
+
+def test_gan_thu_cung_cho_chu_nuoi_khong_ton_tai_bi_tu_choi(db, frozen_clock):
+    with pytest.raises(LoiNghiepVu):
+        nv.tao_thu_cung(db, chu_nuoi_id=9999, ten="Mồ Côi", loai="Chó")
+
+
+# --- Tra cứu --------------------------------------------------------------------
+
+
+@pytest.fixture
+def du_lieu_tra_cuu(db, frozen_clock):
+    o1 = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+    o2 = nv.tao_chu_nuoi(db, ho_ten="Nguyễn Văn Quản", so_dien_thoai="0987654321")
+    nv.tao_thu_cung(db, chu_nuoi_id=o1.id, ten="Mực", loai="Chó")
+    nv.tao_thu_cung(db, chu_nuoi_id=o1.id, ten="Mun", loai="Mèo")
+    nv.tao_thu_cung(db, chu_nuoi_id=o2.id, ten="Đậu Đỏ", loai="Mèo")
+    return {"o1": o1, "o2": o2}
+
+
+def test_tim_theo_so_dien_thoai(db, du_lieu_tra_cuu):
+    """TC-021."""
+    kq = nv.tra_cuu(db, "0912345678")
+
+    assert [o.full_name for o in kq.chu_nuoi] == ["Trần Thị Lễ"]
+
+
+def test_tim_theo_mot_phan_so_dien_thoai(db, du_lieu_tra_cuu):
+    """Khách đọc bốn số cuối là chuyện thường ở quầy."""
+    kq = nv.tra_cuu(db, "5678")
+
+    assert len(kq.chu_nuoi) == 1
+
+
+@pytest.mark.parametrize("tu_khoa", ["mun", "MUN", "Mun"])
+def test_tim_ten_thu_cung_khong_phan_biet_hoa_thuong(db, du_lieu_tra_cuu, tu_khoa):
+    """TC-022."""
+    kq = nv.tra_cuu(db, tu_khoa)
+
+    assert [p.name for p in kq.thu_cung] == ["Mun"]
+
+
+@pytest.mark.parametrize("tu_khoa", ["muc", "Mực", "MỰC"])
+def test_tim_ten_thu_cung_khong_dau(db, du_lieu_tra_cuu, tu_khoa):
+    """TC-022: gõ "muc" phải ra "Mực"."""
+    kq = nv.tra_cuu(db, tu_khoa)
+
+    assert [p.name for p in kq.thu_cung] == ["Mực"]
+
+
+def test_tim_ten_co_chu_d_gach_ngang(db, du_lieu_tra_cuu):
+    """Gõ "dau do" phải ra "Đậu Đỏ" — chỗ dễ sót nhất của tiếng Việt."""
+    kq = nv.tra_cuu(db, "dau do")
+
+    assert [p.name for p in kq.thu_cung] == ["Đậu Đỏ"]
+
+
+def test_tim_ten_chu_nuoi_khong_dau(db, du_lieu_tra_cuu):
+    kq = nv.tra_cuu(db, "tran thi le")
+
+    assert [o.full_name for o in kq.chu_nuoi] == ["Trần Thị Lễ"]
+
+
+def test_tim_khong_khop_tra_ve_rong(db, du_lieu_tra_cuu):
+    """TC-023."""
+    kq = nv.tra_cuu(db, "khong-co-gi-khop")
+
+    assert kq.chu_nuoi == []
+    assert kq.thu_cung == []
+
+
+def test_tu_khoa_rong_tra_ve_rong(db, du_lieu_tra_cuu):
+    """Bấm tìm với ô trống không được trả về toàn bộ CSDL."""
+    kq = nv.tra_cuu(db, "   ")
+
+    assert kq.chu_nuoi == []
+    assert kq.thu_cung == []

@@ -9,9 +9,15 @@ Import ở đầu file sẽ làm pytest lỗi ngay khi thu thập test, và mọ
 một lý do không liên quan.
 """
 
+import os
 from datetime import datetime
 
 import pytest
+
+# Đặt TRƯỚC khi bất kỳ module app nào được import, vì app.config đọc biến môi trường
+# ngay lúc import. Hạ số vòng bcrypt để bộ test không mất hàng chục giây chỉ để băm
+# mật khẩu — thuật toán và cách kiểm tra vẫn y nguyên.
+os.environ.setdefault("BCRYPT_ROUNDS", "4")
 
 # Mốc thời gian cố định dùng cho mọi test phụ thuộc ngày giờ.
 # Chọn một ngày thứ Năm, giờ hành chính, để các ca đặt lịch trong ngày làm việc tự nhiên.
@@ -29,6 +35,7 @@ def db():
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.pool import StaticPool
 
+    import app.models  # noqa: F401 — đăng ký mọi bảng vào metadata trước create_all
     from app.db import Base
 
     engine = create_engine(
@@ -38,7 +45,7 @@ def db():
     )
     Base.metadata.create_all(engine)
 
-    Session = sessionmaker(bind=engine, expire_on_commit=False)
+    Session = sessionmaker(bind=engine)
     session = Session()
     try:
         yield session

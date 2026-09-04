@@ -151,3 +151,28 @@ tr:last-child td { border-bottom: 0; }
 
 .hai-cot { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
 @media (max-width: 820px) { .hai-cot { grid-template-columns: 1fr; } }
+
+/* --- Thanh tìm kiếm --- */
+.thanh-tim { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+.thanh-tim input { margin-top: 0; }
+.thanh-tim button.chinh { width: auto; padding: 9px 20px; }
+.lien-ket-nho { color: var(--chu-phu); font-size: 14px; white-space: nowrap; }
+
+/* --- Cảnh báo (khác lỗi: không chặn, chỉ nhắc) --- */
+.canh-bao {
+  background: #fffaeb; border: 1px solid #fedf89; color: #93370d;
+  padding: 9px 12px; border-radius: 7px; font-size: 14px; margin: 0 0 16px;
+}
+.canh-bao a { color: inherit; }
+
+/* --- Trang chi tiết --- */
+.duong-dan { color: var(--chu-phu); font-size: 14px; margin: 0 0 6px; }
+.duong-dan a { color: var(--chu-phu); }
+
+.thong-tin { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; margin: 0 0 16px; }
+.thong-tin dt { color: var(--chu-phu); font-size: 14px; }
+.thong-tin dd { margin: 0; }
+
+.ghi-chu-phase { font-size: 13px; font-style: italic; margin-top: 20px; }
+main h2 { margin-top: 24px; }
+.the.rong p { margin: 4px 0; }

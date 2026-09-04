@@ -4,7 +4,7 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-04 (phase P1) · **Trạng thái:** đăng nhập và phân quyền chạy được
+**Cập nhật lần cuối:** 2026-09-04 (phase P2a) · **Trạng thái:** đăng nhập, phân quyền, chủ nuôi và thú cưng chạy được
 
 ---
 
@@ -57,13 +57,22 @@
 | `security.py` | `hash_password()`, `verify_password()` — bcrypt trực tiếp, không qua passlib |
 | `auth.py` | Session cookie, `nguoi_dung_hien_tai`, `yeu_cau_vai_tro()`, ngoại lệ `ChuaDangNhap` |
 | `templates.py` | Cấu hình Jinja2 dùng chung |
-| `seed.py` | Tạo 4 tài khoản mẫu. Chạy `python -m app.seed` |
+| `seed.py` | 4 tài khoản, 3 chủ nuôi, 5 thú cưng mẫu. Chạy `python -m app.seed`, không sinh trùng |
+| `models/__init__.py` | Gom mọi model — `create_all` chỉ tạo bảng đã được import |
 | `models/user.py` | Bảng `users` + hằng `VAI_TRO`, `TEN_VAI_TRO` |
+| `models/owner.py` | Bảng `owners`. `search_name` tự đồng bộ qua `@validates` |
+| `models/pet.py` | Bảng `pets`. CHECK `weight_kg > 0`; ngày sinh kiểm ở tầng services |
 | `services/clock.py` | `now()` và `freeze()` — điểm lấy thời gian duy nhất của hệ thống |
+| `services/text.py` | `chuan_hoa()` — bỏ dấu tiếng Việt cho tìm kiếm, xử lý riêng chữ `đ` |
+| `services/errors.py` | `LoiNghiepVu` — lỗi nghiệp vụ, thông điệp hiển thị thẳng cho người dùng |
+| `services/owners.py` | Nghiệp vụ chủ nuôi và thú cưng: tạo, sửa, xóa, tra cứu |
 | `routers/auth.py` | `/login`, `/logout`, `/` |
 | `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager` |
+| `routers/owners.py` | `/owners`, `/owners/{id}`, `/owners/{id}/pets`, `/pets/{id}/xoa` |
 | `templates/base.html` | Bố cục chung, menu hiện theo vai trò |
-| `templates/login.html` · `home.html` · `users.html` · `error.html` | Các trang |
+| `templates/login.html` · `home.html` · `users.html` · `error.html` | Các trang từ P1 |
+| `templates/owners.html` | Danh sách, tra cứu, form thêm chủ nuôi |
+| `templates/owner_detail.html` | Chi tiết chủ nuôi, danh sách thú cưng, form thêm thú cưng |
 | `static/style.css` | Toàn bộ CSS, một file, không build tool |
 
 ### Kiểm thử (`tests/`) — từ P1
@@ -74,8 +83,12 @@
 | `unit/test_security.py` | Băm mật khẩu (TC-005) |
 | `unit/test_clock.py` | Cố định thời gian |
 | `unit/test_models_user.py` | Ràng buộc bảng `users`: UNIQUE username, CHECK role |
+| `unit/test_text.py` | Chuẩn hóa chuỗi tiếng Việt, gồm bẫy chữ `đ` |
+| `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
+| `unit/test_owners_service.py` | Nghiệp vụ chủ nuôi, thú cưng, tra cứu |
 | `integration/test_auth.py` | Đăng nhập (TC-001→004) |
 | `integration/test_users.py` | Phân quyền và quản lý tài khoản (TC-007, 008, 010→012) |
+| `integration/test_owners.py` | Chủ nuôi, thú cưng, tra cứu qua HTTP (TC-013→023) |
 
 ### Cấu hình
 
@@ -93,7 +106,7 @@ mục "Hiện có" và ghi rõ vai trò thật, rồi xóa dòng ở đây.
 
 | Đường dẫn | Vai trò dự kiến | Phase |
 |---|---|---|
-| `app/models/` — 12 model còn lại | owner, pet, service, package, package_item, appointment, care_record, vaccination, invoice, invoice_item, payment, ai_log | P2–P7 |
+| `app/models/` — 10 model còn lại | owner, pet, service, package, package_item, appointment, care_record, vaccination, invoice, invoice_item, payment, ai_log | P2–P7 |
 | `app/schemas/` | Pydantic request/response. Chưa cần ở P1 vì form đơn giản đọc thẳng qua `Form()` | P2+ |
 | `app/services/scheduling.py` | Đặt/đổi/hủy lịch, kiểm tra trùng lịch | P3 |
 | `app/services/billing.py` | Lập hóa đơn, ghi nhận thanh toán | P5 |

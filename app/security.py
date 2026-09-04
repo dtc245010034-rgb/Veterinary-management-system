@@ -7,6 +7,8 @@ là đủ và ít phụ thuộc hơn.
 
 import bcrypt
 
+from app.config import settings
+
 
 def hash_password(mat_khau: str) -> str:
     """Băm mật khẩu kèm salt ngẫu nhiên.
@@ -16,7 +18,8 @@ def hash_password(mat_khau: str) -> str:
     if not mat_khau:
         raise ValueError("Mật khẩu không được để trống")
 
-    return bcrypt.hashpw(mat_khau.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    salt = bcrypt.gensalt(rounds=settings.bcrypt_rounds)
+    return bcrypt.hashpw(mat_khau.encode("utf-8"), salt).decode("utf-8")
 
 
 def verify_password(mat_khau: str, chuoi_bam: str) -> bool:

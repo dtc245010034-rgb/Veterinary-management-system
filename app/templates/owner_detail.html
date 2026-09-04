@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block tieu_de %}{{ chu_nuoi.full_name }}{% endblock %}
+
+{% block noi_dung %}
+<p class="duong-dan"><a href="/owners">Chủ nuôi</a> › {{ chu_nuoi.full_name }}</p>
+<h1>{{ chu_nuoi.full_name }}</h1>
+
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+<div class="hai-cot">
+  <div>
+    <div class="the">
+      <h2>Thông tin liên hệ</h2>
+      <dl class="thong-tin">
+        <dt>Số điện thoại</dt><dd>{{ chu_nuoi.phone }}</dd>
+        <dt>Email</dt><dd>{{ chu_nuoi.email or "—" }}</dd>
+        <dt>Địa chỉ</dt><dd>{{ chu_nuoi.address or "—" }}</dd>
+        <dt>Ghi chú</dt><dd>{{ chu_nuoi.note or "—" }}</dd>
+      </dl>
+      {% if user.role in ('manager', 'receptionist') %}
+        <form method="post" action="/owners/{{ chu_nuoi.id }}/xoa">
+          <button class="lien-ket">Xóa chủ nuôi</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <h2>Thú cưng ({{ chu_nuoi.pets|length }})</h2>
+    {% if chu_nuoi.pets %}
+      <table>
+        <thead><tr><th>Tên</th><th>Loài</th><th>Giống</th><th>Ngày sinh</th><th>Cân nặng</th><th></th></tr></thead>
+        <tbody>
+        {% for p in chu_nuoi.pets %}
+          <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.species }}</td>
+            <td>{{ p.breed or "—" }}</td>
+            <td>{{ p.birth_date.strftime("%d/%m/%Y") if p.birth_date else "—" }}</td>
+            <td>{{ "%.1f kg"|format(p.weight_kg) if p.weight_kg else "—" }}</td>
+            <td>
+              {% if user.role in ('manager', 'receptionist') %}
+                <form method="post" action="/pets/{{ p.id }}/xoa"><button class="lien-ket">Xóa</button></form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="the rong"><p>Chủ nuôi này chưa có thú cưng nào.</p></div>
+    {% endif %}
+
+    <p class="phu ghi-chu-phase">Lịch sử chăm sóc và lịch tiêm sẽ hiển thị ở đây từ phase P4.</p>
+  </div>
+
+  {% if user.role in ('manager', 'receptionist') %}
+  <form class="the" method="post" action="/owners/{{ chu_nuoi.id }}/pets">
+    <h2>Thêm thú cưng</h2>
+    <label>Tên <input name="ten" required></label>
+    <label>Loài <input name="loai" placeholder="Chó, Mèo…" required></label>
+    <label>Giống <input name="giong"></label>
+    <label>Giới tính
+      <select name="gioi_tinh"><option value="">—</option><option>Đực</option><option>Cái</option></select>
+    </label>
+    <label>Ngày sinh <input name="ngay_sinh" type="date"></label>
+    <label>Cân nặng (kg) <input name="can_nang" type="number" step="0.1" min="0"></label>
+    <label>Ghi chú <input name="ghi_chu"></label>
+    <button type="submit" class="chinh">Thêm thú cưng</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

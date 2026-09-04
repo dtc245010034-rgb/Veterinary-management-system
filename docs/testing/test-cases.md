@@ -34,17 +34,17 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-013 | US-04 | Thêm chủ nuôi hợp lệ → lưu và hiện trong danh sách | I | | ⬜ |
-| TC-014 | US-04 | Thiếu họ tên hoặc số điện thoại → bị từ chối | I | | ⬜ |
-| TC-015 | US-04 | Số điện thoại trùng → cảnh báo khách cũ | I | | ⬜ |
-| TC-016 | US-04 | Xóa chủ nuôi còn thú cưng → bị chặn | U | | ⬜ |
-| TC-017 | US-05 | Thêm thú cưng gắn chủ nuôi → hiện trong danh sách của chủ | I | | ⬜ |
-| TC-018 | US-05 | Ngày sinh ở tương lai → bị từ chối | U | | ⬜ |
-| TC-019 | US-05 | Cân nặng âm hoặc bằng 0 → bị từ chối | U | | ⬜ |
-| TC-020 | US-05 | Trang chi tiết thú cưng hiện chủ nuôi, lịch sử, lịch tiêm | I | | ⬜ |
-| TC-021 | US-06 | Tìm theo số điện thoại → ra chủ nuôi kèm thú cưng | I | | ⬜ |
-| TC-022 | US-06 | Tìm một phần tên, không phân biệt hoa thường và dấu | U | | ⬜ |
-| TC-023 | US-06 | Không khớp gì → trạng thái rỗng, không lỗi | I | | ⬜ |
+| TC-013 | US-04 | Thêm chủ nuôi hợp lệ → lưu và hiện trong danh sách | I | `tests/integration/test_owners.py` | ✅ |
+| TC-014 | US-04 | Thiếu họ tên hoặc số điện thoại → bị từ chối | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
+| TC-015 | US-04 | Số điện thoại trùng → cảnh báo khách cũ | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
+| TC-016 | US-04 | Xóa chủ nuôi còn thú cưng → bị chặn | U | `tests/unit/test_owners_service.py`, `tests/unit/test_models_owner_pet.py` | ✅ |
+| TC-017 | US-05 | Thêm thú cưng gắn chủ nuôi → hiện trong danh sách của chủ | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
+| TC-018 | US-05 | Ngày sinh ở tương lai → bị từ chối | U | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
+| TC-019 | US-05 | Cân nặng âm hoặc bằng 0 → bị từ chối | U | `tests/unit/test_models_owner_pet.py`, `tests/unit/test_owners_service.py` | ✅ |
+| TC-020 | US-05 | Trang chi tiết thú cưng hiện chủ nuôi, lịch sử, lịch tiêm | I | `tests/integration/test_owners.py` — phần chủ nuôi; lịch sử chăm sóc và lịch tiêm chờ P4 | 🟡 |
+| TC-021 | US-06 | Tìm theo số điện thoại → ra chủ nuôi kèm thú cưng | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
+| TC-022 | US-06 | Tìm một phần tên, không phân biệt hoa thường và dấu | U | `tests/unit/test_text.py`, `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
+| TC-023 | US-06 | Không khớp gì → trạng thái rỗng, không lỗi | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
 
 ## C. Dịch vụ, bảng giá, gói — phase P2
 

@@ -48,6 +48,7 @@ erDiagram
     owners {
         int id PK
         string full_name
+        string search_name
         string phone
         string email
         string address
@@ -58,6 +59,7 @@ erDiagram
         int id PK
         int owner_id FK
         string name
+        string search_name
         string species
         string breed
         string sex
@@ -186,6 +188,7 @@ Phục vụ US-04, US-06, US-23.
 | `address` | varchar(255) | NULL | |
 | `note` | text | NULL | |
 | `created_at` | datetime | NOT NULL | |
+| `search_name` | varchar(100) | NOT NULL, INDEX | Bản bỏ dấu và thường hóa của `full_name`, cho tìm không dấu (TC-022). Thêm ở P2a |
 
 > `phone`, `email`, `address` là **dữ liệu cá nhân**: không được đưa vào prompt gửi API AI (US-28).
 
@@ -200,10 +203,11 @@ Phục vụ US-05, US-06.
 | `species` | varchar(30) | NOT NULL | Chó, mèo, … |
 | `breed` | varchar(50) | NULL | |
 | `sex` | varchar(10) | NULL | |
-| `birth_date` | date | NULL, CHECK ≤ hôm nay | Không nhận ngày sinh tương lai (US-05) |
+| `birth_date` | date | NULL | Không nhận ngày sinh tương lai (US-05). Kiểm ở tầng services, **không** dùng CHECK — CHECK phải gọi `date('now')` là ngày thật của hệ thống, bỏ qua `app/services/clock.py` và làm test không cố định được thời gian |
 | `weight_kg` | float | NULL, CHECK > 0 | |
 | `note` | text | NULL | |
 | `created_at` | datetime | NOT NULL | |
+| `search_name` | varchar(50) | NOT NULL, INDEX | Bản bỏ dấu và thường hóa của `name` (TC-022). Thêm ở P2a |
 
 ### `services` — dịch vụ và bảng giá
 Phục vụ US-07, US-09, US-10, US-22.

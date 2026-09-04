@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block tieu_de %}Chủ nuôi và thú cưng{% endblock %}
+
+{% block noi_dung %}
+<h1>Chủ nuôi và thú cưng</h1>
+
+<form class="thanh-tim" method="get" action="/owners">
+  <input name="q" value="{{ tu_khoa }}" placeholder="Tìm theo tên hoặc số điện thoại — gõ không dấu cũng được">
+  <button type="submit" class="chinh">Tìm</button>
+  {% if tu_khoa %}<a class="lien-ket-nho" href="/owners">Xóa bộ lọc</a>{% endif %}
+</form>
+
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+{% if trung_so %}
+<p class="canh-bao" role="alert">
+  Đã có {{ trung_so|length }} chủ nuôi đã dùng số này:
+  {% for o in trung_so %}<a href="/owners/{{ o.id }}">{{ o.full_name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.
+  Nếu đúng là khách cũ, hãy mở hồ sơ đó thay vì tạo mới.
+</p>
+{% endif %}
+
+<div class="hai-cot">
+  <div>
+    {% if ket_qua %}
+      {# --- Kết quả tra cứu --- #}
+      {% if ket_qua.rong %}
+        <div class="the rong">
+          <p>Không tìm thấy chủ nuôi hay thú cưng nào khớp “{{ tu_khoa }}”.</p>
+          <p class="phu">Thử tìm bằng số điện thoại, hoặc chỉ một phần của tên.</p>
+        </div>
+      {% else %}
+        {% if ket_qua.chu_nuoi %}
+          <h2>Chủ nuôi ({{ ket_qua.chu_nuoi|length }})</h2>
+          <table>
+            <thead><tr><th>Họ tên</th><th>Số điện thoại</th><th>Thú cưng</th></tr></thead>
+            <tbody>
+            {% for o in ket_qua.chu_nuoi %}
+              <tr>
+                <td><a href="/owners/{{ o.id }}">{{ o.full_name }}</a></td>
+                <td>{{ o.phone }}</td>
+                <td>{% for p in o.pets %}{{ p.name }}{% if not loop.last %}, {% endif %}{% else %}—{% endfor %}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+        {% if ket_qua.thu_cung %}
+          <h2>Thú cưng ({{ ket_qua.thu_cung|length }})</h2>
+          <table>
+            <thead><tr><th>Tên</th><th>Loài</th><th>Giống</th><th>Chủ nuôi</th></tr></thead>
+            <tbody>
+            {% for p in ket_qua.thu_cung %}
+              <tr>
+                <td><a href="/owners/{{ p.owner_id }}">{{ p.name }}</a></td>
+                <td>{{ p.species }}</td>
+                <td>{{ p.breed or "—" }}</td>
+                <td><a href="/owners/{{ p.owner_id }}">{{ p.owner.full_name }}</a></td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      {% endif %}
+    {% else %}
+      {# --- Toàn bộ danh sách --- #}
+      {% if tat_ca %}
+        <table>
+          <thead><tr><th>Họ tên</th><th>Số điện thoại</th><th>Thú cưng</th></tr></thead>
+          <tbody>
+          {% for o in tat_ca %}
+            <tr>
+              <td><a href="/owners/{{ o.id }}">{{ o.full_name }}</a></td>
+              <td>{{ o.phone }}</td>
+              <td>
+                {% for p in o.pets %}{{ p.name }}{% if not loop.last %}, {% endif %}{% else %}—{% endfor %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="the rong">
+          <p>Chưa có chủ nuôi nào.</p>
+          {% if user.role in ('manager', 'receptionist') %}<p class="phu">Thêm chủ nuôi đầu tiên ở khung bên cạnh.</p>{% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {% if user.role in ('manager', 'receptionist') %}
+  <form class="the" method="post" action="/owners">
+    <h2>Thêm chủ nuôi</h2>
+    <label>Họ tên <input name="ho_ten" required></label>
+    <label>Số điện thoại <input name="so_dien_thoai" required></label>
+    <label>Email <input name="email" type="email"></label>
+    <label>Địa chỉ <input name="dia_chi"></label>
+    <label>Ghi chú <input name="ghi_chu"></label>
+    <button type="submit" class="chinh">Thêm chủ nuôi</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
