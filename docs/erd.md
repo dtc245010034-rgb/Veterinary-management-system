@@ -7,9 +7,13 @@ Mọi bảng đều có `id` khóa chính tự tăng.
 
 ## Sơ đồ
 
+Ký hiệu lực lượng quan hệ: `||` đúng một · `|o` không hoặc một · `o{` không hoặc nhiều.
+Cột khóa ngoài cho phép NULL thì phía thực thể cha là `|o`, không phải `||`.
+
 ```mermaid
 erDiagram
-    users ||--o{ appointments : "phu trach"
+    users ||--o{ appointments : "phu trach (staff_id)"
+    users ||--o{ appointments : "tao lich (created_by)"
     users ||--o{ care_records : "thuc hien"
     users ||--o{ ai_logs : "goi AI"
 
@@ -21,13 +25,13 @@ erDiagram
     pets ||--o{ vaccinations : "co lich tiem"
 
     services ||--o{ appointments : "duoc chon"
-    services ||--o{ invoice_items : "duoc tinh tien"
+    services |o--o{ invoice_items : "duoc tinh tien"
     services ||--o{ package_items : "thuoc goi"
 
     service_packages ||--o{ package_items : "gom"
 
     appointments ||--o| care_records : "sinh ra"
-    appointments ||--o| invoices : "phat sinh"
+    appointments |o--o| invoices : "phat sinh"
 
     invoices ||--o{ invoice_items : "gom dong"
     invoices ||--o{ payments : "duoc tra"
@@ -99,7 +103,7 @@ erDiagram
     }
     care_records {
         int id PK
-        int appointment_id FK_UK
+        int appointment_id FK, UK
         int pet_id FK
         int staff_id FK
         datetime performed_at
@@ -120,7 +124,7 @@ erDiagram
     invoices {
         int id PK
         int owner_id FK
-        int appointment_id FK_UK
+        int appointment_id FK, UK
         datetime issued_at
         decimal total_amount
         string status
