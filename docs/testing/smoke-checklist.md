@@ -17,14 +17,15 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 
 ## P1 — Đăng nhập và phân quyền
 
-- [ ] Mở trang bất kỳ khi chưa đăng nhập → bị đưa về trang đăng nhập
-- [ ] Đăng nhập sai mật khẩu → thông báo lỗi hiện rõ, **không** nói tài khoản có tồn tại hay không
-- [ ] Đăng nhập `manager` → vào được, thấy tên mình trên thanh điều hướng
-- [ ] `manager` thấy đủ menu: tài khoản, dịch vụ, thống kê
-- [ ] Đăng xuất rồi đăng nhập `receptionist` → **không** thấy menu tài khoản và thống kê
-- [ ] `receptionist` gõ thẳng URL trang thống kê → hiện trang báo 403, không phải trang lỗi trắng
-- [ ] Đăng nhập `caretaker` → chỉ thấy menu lịch của mình và hồ sơ chăm sóc
-- [ ] Tài khoản bị khóa → đăng nhập báo tài khoản ngưng hoạt động
+- [x] Mở trang bất kỳ khi chưa đăng nhập → bị đưa về trang đăng nhập
+- [x] Đăng nhập sai mật khẩu → thông báo lỗi hiện rõ, **không** nói tài khoản có tồn tại hay không
+- [x] Đăng nhập `manager` → vào được, thấy tên mình trên thanh điều hướng
+- [x] `manager` thấy đủ menu: tài khoản, dịch vụ, thống kê
+  <br>_(P1: chỉ `/users` mở được; `/owners`, `/services`, `/stats` còn trả 404, đủ dần từ P2)_
+- [x] Đăng xuất rồi đăng nhập `receptionist` → **không** thấy menu tài khoản và thống kê
+- [x] `receptionist` gõ thẳng `/users` → hiện trang báo 403, không phải trang lỗi trắng
+- [x] Đăng nhập `caretaker` → chỉ thấy menu lịch của mình và hồ sơ chăm sóc
+- [x] Tài khoản bị khóa → đăng nhập báo tài khoản ngưng hoạt động
 
 ## P2 — Chủ nuôi, thú cưng, dịch vụ
 
@@ -78,6 +79,8 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 
 ## P6 — Thống kê
 
+- [ ] `receptionist` gõ thẳng `/stats` → 403 (TC-006, hoãn từ P1 vì lúc đó chưa có trang này)
+- [ ] `caretaker` gõ thẳng `/stats` → 403
 - [ ] `manager` mở thống kê với khoảng thời gian có dữ liệu → số lượt và doanh thu hiện ra
 - [ ] Bảng chia theo dịch vụ khớp với dữ liệu đã tạo
 - [ ] Có hóa đơn chưa thanh toán → doanh thu **không** tính khoản đó, số chưa thu hiện riêng

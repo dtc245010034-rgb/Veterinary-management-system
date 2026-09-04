@@ -88,8 +88,8 @@ trong OpenAPI schema.
 
 - [x] TC-001→005, TC-007, TC-008, TC-010→012 chuyển ✅ (10/12; TC-006 và TC-009 hoãn) trong [`../testing/test-cases.md`](../testing/test-cases.md)
 - [x] `pytest tests/unit` và `pytest tests/integration` xanh, output sạch
-- [ ] Đăng nhập được bằng cả 3 vai trò trên trình duyệt thật
-- [ ] Khối smoke P1 trong [`../testing/smoke-checklist.md`](../testing/smoke-checklist.md) tick đủ
+- [x] Đăng nhập được bằng cả 3 vai trò trên trình duyệt thật
+- [x] Khối smoke P1 trong [`../testing/smoke-checklist.md`](../testing/smoke-checklist.md) tick đủ 8/8
 - [x] `codebase-map.md` cập nhật đúng file thực tế
 - [x] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật
 
@@ -111,5 +111,6 @@ cưng có nhiều trường cần kiểm tra hơn.
 **Thêm `app/seed.py` và `app/templates.py`** — không có trong kế hoạch gốc. `seed.py` cần để chạy
 thử được ứng dụng; `templates.py` để cấu hình Jinja2 ở một chỗ thay vì lặp trong từng router.
 
-**Smoke test bằng mắt chưa làm được** — Chrome extension chưa kết nối. Đã thay bằng kiểm chứng HTTP
-trên server thật; phần hiển thị trực quan còn lại người dùng phải tick tay.
+**Smoke test bằng mắt do người dùng chạy tay**, vì Chrome extension chưa kết nối. Đã tick đủ 8/8.
+Một ô phải sửa mô tả cho khớp thực tế: `/stats` chưa có ở P1 nên ô đó chuyển sang `/users`, và ô
+`/stats` dời xuống khối P6 cùng TC-006.
