@@ -176,3 +176,26 @@ tr:last-child td { border-bottom: 0; }
 .ghi-chu-phase { font-size: 13px; font-style: italic; margin-top: 20px; }
 main h2 { margin-top: 24px; }
 .the.rong p { margin: 4px 0; }
+
+/* --- Dịch vụ và gói --- */
+.phai { text-align: right; }
+td.phai { font-variant-numeric: tabular-nums; }
+code { background: #f1f3f5; padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+
+tr.dong-mo td { opacity: .55; }
+.the.dong-mo { opacity: .6; }
+
+.the-goi { margin-bottom: 14px; }
+.dau-goi { display: flex; justify-content: space-between; align-items: start; }
+.the-goi h3 { margin: 0 0 2px; font-size: 15px; }
+
+.thanh-phan { margin: 10px 0; padding-left: 18px; }
+.thanh-phan li { margin-bottom: 2px; }
+
+.gia-goi { grid-template-columns: 110px 1fr; margin: 12px 0 0; font-variant-numeric: tabular-nums; }
+.tiet-kiem { color: var(--chinh-dam); font-weight: 500; }
+.dat-hon { color: var(--loi); }
+
+.dong-thanh-phan { display: grid; grid-template-columns: 1fr 80px; gap: 8px; align-items: center; font-weight: 400; }
+.dong-thanh-phan input { margin-top: 0; }
+.nhan-nho { font-size: 13px; margin: 0 0 10px; }

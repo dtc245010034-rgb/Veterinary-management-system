@@ -7,6 +7,7 @@ thú cưng và dịch vụ mẫu sẽ thêm vào đây.
 """
 
 import sys
+from decimal import Decimal
 
 from sqlalchemy import select
 
@@ -14,6 +15,8 @@ import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
 from app.db import Base, SessionLocal, engine
 from app.models.owner import Owner
 from app.models.pet import Pet
+from app.models.service import Service
+from app.models.service_package import PackageItem, ServicePackage
 from app.models.user import User
 from app.security import hash_password
 
@@ -32,6 +35,21 @@ CHU_NUOI_MAU = [
     ("Đỗ Thị Hằng", "0912345678", [("Mực", "Chó", "Poodle"), ("Mun", "Mèo", "Mèo ta")]),
     ("Trần Quốc Đạt", "0987654321", [("Đậu Đỏ", "Mèo", "Anh lông ngắn")]),
     ("Lý Thu Hà", "0905112233", [("Bông", "Chó", "Corgi"), ("Sữa", "Mèo", None)]),
+]
+
+# (mã, tên, thời lượng phút, giá)
+DICH_VU_MAU = [
+    ("TAM", "Tắm và sấy", 45, "150000"),
+    ("CATMONG", "Cắt móng", 15, "50000"),
+    ("CATTIA", "Cắt tỉa lông", 60, "250000"),
+    ("VESINHTAI", "Vệ sinh tai", 15, "60000"),
+    ("SPA", "Spa toàn diện", 90, "450000"),
+]
+
+# (tên gói, giá gói, {mã dịch vụ: số lượt})
+GOI_MAU = [
+    ("Combo vệ sinh cơ bản", "220000", {"TAM": 1, "CATMONG": 1, "VESINHTAI": 1}),
+    ("Combo làm đẹp", "400000", {"TAM": 1, "CATTIA": 1, "CATMONG": 1}),
 ]
 
 
@@ -76,9 +94,31 @@ def main() -> None:
                     db.add(Pet(owner_id=chu_nuoi.id, name=ten, species=loai, breed=giong))
                     thu_cung_moi += 1
 
+        dich_vu_moi = 0
+        for ma, ten, phut, gia in DICH_VU_MAU:
+            if db.scalar(select(Service).where(Service.code == ma)):
+                continue
+            db.add(
+                Service(code=ma, name=ten, duration_min=phut, price=Decimal(gia))
+            )
+            dich_vu_moi += 1
+        db.flush()
+
+        goi_moi = 0
+        for ten_goi, gia_goi, thanh_phan in GOI_MAU:
+            if db.scalar(select(ServicePackage).where(ServicePackage.name == ten_goi)):
+                continue
+            goi = ServicePackage(name=ten_goi, price=Decimal(gia_goi))
+            for ma, so_luot in thanh_phan.items():
+                dv = db.scalar(select(Service).where(Service.code == ma))
+                goi.items.append(PackageItem(service_id=dv.id, quantity=so_luot))
+            db.add(goi)
+            goi_moi += 1
+
         db.commit()
 
-    print(f"Đã thêm {them_moi} tài khoản, {chu_nuoi_moi} chủ nuôi, {thu_cung_moi} thú cưng.")
+    print(f"Đã thêm {them_moi} tài khoản, {chu_nuoi_moi} chủ nuôi, {thu_cung_moi} thú cưng, "
+          f"{dich_vu_moi} dịch vụ, {goi_moi} gói.")
     print(f"Mật khẩu chung của mọi tài khoản: {MAT_KHAU_MAC_DINH}\n")
     for username, full_name, role in TAI_KHOAN_MAU:
         print(f"  {username:10} {role:14} {full_name}")

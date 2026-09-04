@@ -33,3 +33,4 @@ Chép vào đây thì kế hoạch trở thành một phần của lịch sử d
 | 2026-09-04 | [KT1 — Dựng bộ context, đặc tả và chiến lược kiểm thử](2026-09-04-kt1-bo-context-va-dac-ta.md) | P0 | Hoàn thành |
 | 2026-09-04 | [Nền tảng, đăng nhập và phân quyền](2026-09-04-p1-nen-tang-va-xac-thuc.md) | P1 | Hoàn thành |
 | 2026-09-04 | [Chủ nuôi và thú cưng](2026-09-04-p2a-chu-nuoi-va-thu-cung.md) | P2a | Hoàn thành |
+| 2026-09-05 | [Dịch vụ, bảng giá và gói](2026-09-05-p2b-dich-vu-va-goi.md) | P2b | Hoàn thành |

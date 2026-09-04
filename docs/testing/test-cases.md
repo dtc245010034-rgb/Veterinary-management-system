@@ -50,14 +50,14 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-024 | US-07 | Thêm dịch vụ hợp lệ → xuất hiện khi đặt lịch | I | | ⬜ |
-| TC-025 | US-07 | Giá âm hoặc thời lượng ≤ 0 → bị từ chối | U | | ⬜ |
-| TC-026 | US-07 | Đổi giá dịch vụ → hóa đơn cũ giữ nguyên giá | U | | ⬜ |
-| TC-027 | US-08 | Tạo gói 3 dịch vụ → hiện khi lập hóa đơn | I | | ⬜ |
-| TC-028 | US-08 | Chi tiết gói hiện thành phần và tổng giá lẻ để so sánh | I | | ⬜ |
-| TC-029 | US-08 | Gói không có thành phần → không lưu được | U | | ⬜ |
-| TC-030 | US-09 | Ngưng bán dịch vụ → biến mất khỏi danh sách đặt lịch mới | I | | ⬜ |
-| TC-031 | US-09 | Hóa đơn cũ chứa dịch vụ đã ngưng bán vẫn hiển thị đủ | I | | ⬜ |
+| TC-024 | US-07 | Thêm dịch vụ hợp lệ → xuất hiện khi đặt lịch | I | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — phần `danh_sach_dang_ban()`; hiện trong form đặt lịch chờ P3 | ✅ |
+| TC-025 | US-07 | Giá âm hoặc thời lượng ≤ 0 → bị từ chối | U | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` | ✅ |
+| TC-026 | US-07 | Đổi giá dịch vụ → hóa đơn cũ giữ nguyên giá | U | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — đổi giá xong; hóa đơn cũ giữ giá chờ **P5** | 🟡 |
+| TC-027 | US-08 | Tạo gói 3 dịch vụ → hiện khi lập hóa đơn | I | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — tạo gói xong; hiện khi lập hóa đơn chờ **P5** | 🟡 |
+| TC-028 | US-08 | Chi tiết gói hiện thành phần và tổng giá lẻ để so sánh | I | `tests/unit/test_models_service.py`, `tests/integration/test_services.py` | ✅ |
+| TC-029 | US-08 | Gói không có thành phần → không lưu được | U | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` | ✅ |
+| TC-030 | US-09 | Ngưng bán dịch vụ → biến mất khỏi danh sách đặt lịch mới | I | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — biến khỏi `danh_sach_dang_ban()`; form đặt lịch chờ P3 | ✅ |
+| TC-031 | US-09 | Hóa đơn cũ chứa dịch vụ đã ngưng bán vẫn hiển thị đủ | I | — chờ **P5**, cần hóa đơn để kiểm | 🟡 |
 
 ## D. Lịch hẹn — phase P3 · **đề bài yêu cầu đích danh có test**
 

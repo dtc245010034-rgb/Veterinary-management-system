@@ -17,6 +17,7 @@ import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
 from app.db import Base, engine
 from app.routers import auth as auth_router
 from app.routers import owners as owners_router
+from app.routers import services as services_router
 from app.routers import users as users_router
 from app.templates import templates
 
@@ -36,6 +37,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(auth_router.router)
 app.include_router(users_router.router)
 app.include_router(owners_router.router)
+app.include_router(services_router.router)
 
 
 @app.exception_handler(ChuaDangNhap)

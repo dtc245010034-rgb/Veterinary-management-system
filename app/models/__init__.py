@@ -10,6 +10,8 @@ Import ở đây một lần để mọi nơi chỉ cần `import app.models`.
 
 from app.models.owner import Owner
 from app.models.pet import Pet
+from app.models.service import Service
+from app.models.service_package import PackageItem, ServicePackage
 from app.models.user import User
 
-__all__ = ["Owner", "Pet", "User"]
+__all__ = ["Owner", "PackageItem", "Pet", "Service", "ServicePackage", "User"]

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block tieu_de %}Dịch vụ và bảng giá{% endblock %}
+
+{% macro tien(so) %}{{ "{:,.0f}".format(so).replace(",", ".") }}đ{% endmacro %}
+
+{% block noi_dung %}
+<h1>Dịch vụ và bảng giá</h1>
+<p class="phu">Ngưng bán thay vì xóa, để lịch hẹn và hóa đơn cũ giữ nguyên dữ liệu.</p>
+
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+<div class="hai-cot">
+  <div>
+    <h2>Dịch vụ ({{ dich_vu|length }})</h2>
+    {% if dich_vu %}
+      <table>
+        <thead>
+          <tr><th>Mã</th><th>Tên</th><th>Thời lượng</th><th class="phai">Giá</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for s in dich_vu %}
+          <tr class="{{ 'dong-mo' if not s.is_active }}">
+            <td><code>{{ s.code }}</code></td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.duration_min }} phút</td>
+            <td class="phai">{{ tien(s.price) }}</td>
+            <td>{% if s.is_active %}Đang bán{% else %}<span class="trang-thai-khoa">Đã ngưng bán</span>{% endif %}</td>
+            <td>
+              {% if user.role == 'manager' %}
+                {% if s.is_active %}
+                  <form method="post" action="/services/{{ s.id }}/ngung-ban"><button class="lien-ket">Ngưng bán</button></form>
+                {% else %}
+                  <form method="post" action="/services/{{ s.id }}/ban-lai"><button class="lien-ket">Bán lại</button></form>
+                {% endif %}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="the rong">
+        <p>Chưa có dịch vụ nào.</p>
+        {% if user.role == 'manager' %}<p class="phu">Khai báo dịch vụ đầu tiên ở khung bên cạnh.</p>{% endif %}
+      </div>
+    {% endif %}
+
+    <h2>Gói dịch vụ ({{ goi|length }})</h2>
+    {% if goi %}
+      {% for g in goi %}
+        <div class="the the-goi {{ 'dong-mo' if not g.is_active }}">
+          <div class="dau-goi">
+            <div>
+              <h3>{{ g.name }}</h3>
+              {% if not g.is_active %}<span class="trang-thai-khoa">Đã ngưng bán</span>{% endif %}
+            </div>
+            {% if user.role == 'manager' %}
+              <form method="post" action="/services/goi/{{ g.id }}/{{ 'ban-lai' if not g.is_active else 'ngung-ban' }}">
+                <button class="lien-ket">{{ 'Bán lại' if not g.is_active else 'Ngưng bán' }}</button>
+              </form>
+            {% endif %}
+          </div>
+
+          <ul class="thanh-phan">
+            {% for it in g.items %}
+              <li>{{ it.service.name }} <span class="phu">× {{ it.quantity }}</span> <span class="phu">{{ tien(it.service.price * it.quantity) }}</span></li>
+            {% endfor %}
+          </ul>
+
+          <dl class="thong-tin gia-goi">
+            <dt>Tổng giá lẻ</dt><dd>{{ tien(g.tong_gia_le) }}</dd>
+            <dt>Giá gói</dt><dd><strong>{{ tien(g.price) }}</strong></dd>
+            <dt>Tiết kiệm</dt>
+            <dd class="{{ 'tiet-kiem' if g.tiet_kiem > 0 else 'dat-hon' }}">{{ tien(g.tiet_kiem) }}</dd>
+          </dl>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="the rong"><p>Chưa có gói dịch vụ nào.</p></div>
+    {% endif %}
+  </div>
+
+  {% if user.role == 'manager' %}
+  <div>
+    <form class="the" method="post" action="/services">
+      <h2>Thêm dịch vụ</h2>
+      <label>Mã <input name="ma" placeholder="TAM, CATMONG…" required></label>
+      <label>Tên <input name="ten" required></label>
+      <label>Thời lượng (phút) <input name="thoi_luong_phut" type="number" min="1" value="30" required></label>
+      <label>Giá (đ) <input name="gia" type="number" min="0" step="1000" required></label>
+      <label>Mô tả <input name="mo_ta"></label>
+      <button type="submit" class="chinh">Thêm dịch vụ</button>
+    </form>
+
+    <form class="the" method="post" action="/services/goi">
+      <h2>Tạo gói dịch vụ</h2>
+      <label>Tên gói <input name="ten" required></label>
+      <label>Giá gói (đ) <input name="gia" type="number" min="0" step="1000" required></label>
+
+      {% if dang_ban %}
+        <p class="phu nhan-nho">Nhập số lượt cho dịch vụ muốn đưa vào gói, để trống nếu không dùng.</p>
+        {% for s in dang_ban %}
+          <label class="dong-thanh-phan">
+            <span>{{ s.name }} <span class="phu">{{ tien(s.price) }}</span></span>
+            <input type="hidden" name="dich_vu_id" value="{{ s.id }}">
+            <input name="so_luong" type="number" min="0" placeholder="0">
+          </label>
+        {% endfor %}
+        <button type="submit" class="chinh">Tạo gói</button>
+      {% else %}
+        <p class="phu">Cần có ít nhất một dịch vụ đang bán trước khi tạo gói.</p>
+      {% endif %}
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
