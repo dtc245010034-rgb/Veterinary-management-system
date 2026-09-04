@@ -1,0 +1,212 @@
+# Ma trận truy vết test case
+
+Nguồn: [`../user-stories.md`](../user-stories.md) · Guardrail: [`../ai-safety.md`](../ai-safety.md) · Chiến lược: [`test-strategy.md`](test-strategy.md)
+
+**Cách dùng file này.** Mỗi tiêu chí chấp nhận Given/When/Then trong `user-stories.md` sinh ra một
+test case ở đây. Khi cài đặt một phase, điền cột **File test** và đổi **Trạng thái** thành ✅. Cuối
+kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có test — đặc biệt yêu cầu ở mục 4:
+*"có test cho lịch hẹn, hóa đơn, hồ sơ và AI"*.
+
+**Trạng thái:** ⬜ chưa làm · 🟡 đang làm · ✅ xanh · ❌ đỏ (ghi lý do ở log phiên)
+
+**Mức test:** `U` unit · `I` integration · `E` e2e — theo định nghĩa ở [`test-strategy.md`](test-strategy.md)
+
+---
+
+## A. Đăng nhập và phân quyền — phase P1
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-001 | US-01 | Đăng nhập đúng mật khẩu → vào được hệ thống | I | | ⬜ |
+| TC-002 | US-01 | Sai mật khẩu → báo lỗi chung, không lộ tài khoản có tồn tại | I | | ⬜ |
+| TC-003 | US-01 | Tài khoản `is_active = false` → bị từ chối | I | | ⬜ |
+| TC-004 | US-01 | Chưa đăng nhập mở trang nội bộ → chuyển về trang đăng nhập | I | | ⬜ |
+| TC-005 | US-01 | Mật khẩu lưu dạng băm, không lưu bản gốc | U | | ⬜ |
+| TC-006 | US-02 | `caretaker` mở trang thống kê → 403 | I | | ⬜ |
+| TC-007 | US-02 | `receptionist` mở trang quản lý tài khoản → 403 | I | | ⬜ |
+| TC-008 | US-02 | `manager` truy cập được mọi trang | I | | ⬜ |
+| TC-009 | US-02 | `caretaker` xem lịch → chỉ thấy lịch của mình | I | | ⬜ |
+| TC-010 | US-03 | Tạo tài khoản mới → đăng nhập được ngay | I | | ⬜ |
+| TC-011 | US-03 | Tên đăng nhập trùng → bị từ chối | I | | ⬜ |
+| TC-012 | US-03 | Khóa tài khoản → không đăng nhập được, dữ liệu cũ còn nguyên | I | | ⬜ |
+
+## B. Chủ nuôi và thú cưng — phase P2
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-013 | US-04 | Thêm chủ nuôi hợp lệ → lưu và hiện trong danh sách | I | | ⬜ |
+| TC-014 | US-04 | Thiếu họ tên hoặc số điện thoại → bị từ chối | I | | ⬜ |
+| TC-015 | US-04 | Số điện thoại trùng → cảnh báo khách cũ | I | | ⬜ |
+| TC-016 | US-04 | Xóa chủ nuôi còn thú cưng → bị chặn | U | | ⬜ |
+| TC-017 | US-05 | Thêm thú cưng gắn chủ nuôi → hiện trong danh sách của chủ | I | | ⬜ |
+| TC-018 | US-05 | Ngày sinh ở tương lai → bị từ chối | U | | ⬜ |
+| TC-019 | US-05 | Cân nặng âm hoặc bằng 0 → bị từ chối | U | | ⬜ |
+| TC-020 | US-05 | Trang chi tiết thú cưng hiện chủ nuôi, lịch sử, lịch tiêm | I | | ⬜ |
+| TC-021 | US-06 | Tìm theo số điện thoại → ra chủ nuôi kèm thú cưng | I | | ⬜ |
+| TC-022 | US-06 | Tìm một phần tên, không phân biệt hoa thường và dấu | U | | ⬜ |
+| TC-023 | US-06 | Không khớp gì → trạng thái rỗng, không lỗi | I | | ⬜ |
+
+## C. Dịch vụ, bảng giá, gói — phase P2
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-024 | US-07 | Thêm dịch vụ hợp lệ → xuất hiện khi đặt lịch | I | | ⬜ |
+| TC-025 | US-07 | Giá âm hoặc thời lượng ≤ 0 → bị từ chối | U | | ⬜ |
+| TC-026 | US-07 | Đổi giá dịch vụ → hóa đơn cũ giữ nguyên giá | U | | ⬜ |
+| TC-027 | US-08 | Tạo gói 3 dịch vụ → hiện khi lập hóa đơn | I | | ⬜ |
+| TC-028 | US-08 | Chi tiết gói hiện thành phần và tổng giá lẻ để so sánh | I | | ⬜ |
+| TC-029 | US-08 | Gói không có thành phần → không lưu được | U | | ⬜ |
+| TC-030 | US-09 | Ngưng bán dịch vụ → biến mất khỏi danh sách đặt lịch mới | I | | ⬜ |
+| TC-031 | US-09 | Hóa đơn cũ chứa dịch vụ đã ngưng bán vẫn hiển thị đủ | I | | ⬜ |
+
+## D. Lịch hẹn — phase P3 · **đề bài yêu cầu đích danh có test**
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-032 | US-10 | Đặt lịch hợp lệ → `booked`, `end_at` tính từ thời lượng dịch vụ | U | | ⬜ |
+| TC-033 | US-10 | Giờ bắt đầu trong quá khứ → bị từ chối | U | | ⬜ |
+| TC-034 | US-10 | Nhân viên không phải `caretaker` → bị từ chối | U | | ⬜ |
+| TC-035 | US-10 | Lịch vừa tạo hiện đúng khung giờ, đúng nhân viên | I | | ⬜ |
+| TC-036 | US-11 | **Trùng nhân viên, giao nhau một phần** (09:30 vs 09:00–10:00) → từ chối | U | | ⬜ |
+| TC-037 | US-11 | Từ chối kèm gợi ý khung trống trong ngày | U | | ⬜ |
+| TC-038 | US-11 | **Liền kề** (10:00–11:00 sau 09:00–10:00) → chấp nhận | U | | ⬜ |
+| TC-039 | US-11 | **Trùng thú cưng**, khác nhân viên → từ chối | U | | ⬜ |
+| TC-040 | US-11 | Lịch cũ đã `cancelled` → khung giờ đó đặt lại được | U | | ⬜ |
+| TC-041 | US-11 | **Bao trọn** (08:00–11:00 phủ 09:00–10:00) → từ chối | U | | ⬜ |
+| TC-042 | US-11 | **Nằm gọn bên trong** (09:15–09:45) → từ chối | U | | ⬜ |
+| TC-043 | US-11 | Chặn trùng lịch qua API, không chỉ ở tầng service | I | | ⬜ |
+| TC-044 | US-12 | Đổi sang khung trống → cập nhật giờ, trạng thái `rescheduled` | U | | ⬜ |
+| TC-045 | US-12 | Đổi sang khung đã bận → từ chối, **lịch giữ nguyên giờ cũ** | U | | ⬜ |
+| TC-046 | US-12 | Đổi lịch **không tự so sánh với chính nó** | U | | ⬜ |
+| TC-047 | US-12 | Đổi lịch đã `cancelled` hoặc `done` → từ chối | U | | ⬜ |
+| TC-048 | US-13 | Hủy kèm lý do → `cancelled`, lý do được lưu | U | | ⬜ |
+| TC-049 | US-13 | Hủy lịch đã `done` → từ chối | U | | ⬜ |
+| TC-050 | US-14 | `caretaker` chỉ thấy lịch của mình, sắp theo giờ tăng dần | I | | ⬜ |
+| TC-051 | US-14 | `receptionist` thấy toàn bộ, lọc được theo ngày và nhân viên | I | | ⬜ |
+| TC-052 | US-14 | Ngày không có lịch → trạng thái rỗng | I | | ⬜ |
+
+## E. Hồ sơ chăm sóc — phase P4 · **đề bài yêu cầu đích danh có test**
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-053 | US-15 | Ghi hồ sơ cho lịch của mình → lưu và lịch chuyển `done` | I | | ⬜ |
+| TC-054 | US-15 | Ghi hồ sơ cho lịch của nhân viên khác → từ chối | I | | ⬜ |
+| TC-055 | US-15 | Ghi hồ sơ lần hai cho cùng lịch → từ chối | U | | ⬜ |
+| TC-056 | US-15 | Bỏ trống ghi chú tình trạng → từ chối | U | | ⬜ |
+| TC-057 | US-16 | Lịch sử chăm sóc theo thời gian giảm dần, đủ thông tin mỗi dòng | I | | ⬜ |
+| TC-058 | US-16 | Thú cưng chưa dùng dịch vụ → trạng thái rỗng | I | | ⬜ |
+
+## F. Tiêm phòng — phase P4
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-059 | US-17 | Ghi mũi tiêm hợp lệ → hiện trong hồ sơ tiêm | I | | ⬜ |
+| TC-060 | US-17 | `next_due_at` sớm hơn `given_at` → từ chối | U | | ⬜ |
+| TC-061 | US-17 | Ngày tiêm ở tương lai → từ chối | U | | ⬜ |
+| TC-062 | US-18 | Danh sách đến hạn 30 ngày, lọc đúng, sắp theo hạn tăng dần | U | | ⬜ |
+| TC-063 | US-18 | Bản ghi quá hạn được đánh dấu rõ | I | | ⬜ |
+| TC-064 | US-18 | Không ai đến hạn → trạng thái rỗng | I | | ⬜ |
+
+## G. Hóa đơn và thanh toán — phase P5 · **đề bài yêu cầu đích danh có test**
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-065 | US-19 | Lập hóa đơn từ lịch `done` → `unpaid`, đơn giá chốt tại thời điểm lập | U | | ⬜ |
+| TC-066 | US-19 | Tổng tiền bằng tổng `qty * unit_price` các dòng | U | | ⬜ |
+| TC-067 | US-19 | Lập hóa đơn từ lịch chưa `done` → từ chối | U | | ⬜ |
+| TC-068 | US-19 | Lập hóa đơn lần hai cho cùng lịch → từ chối | U | | ⬜ |
+| TC-069 | US-20 | Trả đủ → trạng thái `paid` | U | | ⬜ |
+| TC-070 | US-20 | Trả một phần → `partial`, còn nợ đúng số | U | | ⬜ |
+| TC-071 | US-20 | Trả nốt phần còn lại → `paid`, nợ bằng 0 | U | | ⬜ |
+| TC-072 | US-20 | Trả vượt số phải trả → từ chối | U | | ⬜ |
+| TC-073 | US-20 | Số tiền ≤ 0 → từ chối | U | | ⬜ |
+| TC-074 | US-21 | Hủy lịch đã có hóa đơn → chặn, nêu mã hóa đơn | U | | ⬜ |
+| TC-075 | US-21 | Hóa đơn đã `cancelled` → hủy lịch được chấp nhận | U | | ⬜ |
+
+## H. Thống kê — phase P6
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-076 | US-22 | Tổng lượt, tổng doanh thu, bảng chia theo dịch vụ | U | | ⬜ |
+| TC-077 | US-22 | Doanh thu chỉ tính **tiền đã thực nhận**; số chưa thu hiển thị riêng | U | | ⬜ |
+| TC-078 | US-22 | Kỳ không có dữ liệu → số 0, không lỗi | U | | ⬜ |
+| TC-079 | US-22 | Ngày bắt đầu sau ngày kết thúc → từ chối | U | | ⬜ |
+| TC-080 | US-23 | Có khách dùng ≥ 2 lần → số lượng và tỉ lệ khách quay lại đúng | U | | ⬜ |
+| TC-081 | US-23 | Mọi khách chỉ đến một lần → tỉ lệ bằng 0% | U | | ⬜ |
+
+## I. Chức năng AI — phase P7 · **đề bài yêu cầu đích danh có test**
+
+Toàn bộ chạy với `FakeProvider`. Mã `G-xx` tham chiếu bộ ca trong [`../ai-safety.md`](../ai-safety.md) mục 5.
+
+### I.1 Nhắc lịch và tóm tắt
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-082 | US-24 | Tin nhắn nhắc lịch nêu đúng tên thú cưng, dịch vụ, ngày giờ | U | | ⬜ |
+| TC-083 | US-24 | Nhắc lịch tiêm nêu vắc-xin, hạn, kèm khuyến cáo bác sĩ thú y | U | | ⬜ |
+| TC-084 | US-24 | Lễ tân sửa nội dung trước khi gửi → bản sửa được dùng | I | | ⬜ |
+| TC-085 | US-24 | Lời gọi AI lỗi → thông báo rõ ràng, trang không vỡ, lịch còn nguyên (G-17) | I | | ⬜ |
+| TC-086 | US-25 | Tóm tắt hồ sơ nhiều bản ghi → có nội dung, nêu mốc chính | I | | ⬜ |
+| TC-087 | US-25 | Thú cưng chưa có hồ sơ → báo chưa đủ dữ liệu, **không gọi API** (G-20) | U | | ⬜ |
+| TC-088 | US-25 | Tóm tắt luôn kèm `DISCLAIMER` | U | | ⬜ |
+
+### I.2 Guardrail hỏi đáp
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-089 | US-26 | Câu hỏi trong phạm vi → có trả lời, kết thúc bằng `DISCLAIMER` (G-01→G-03) | I | | ⬜ |
+| TC-090 | US-26 | `DISCLAIMER` hiện trên giao diện **kể cả khi lời gọi AI lỗi** (G-19) | I | | ⬜ |
+| TC-091 | US-26 | Mỗi lượt hỏi đáp sinh một bản ghi `ai_logs` | I | | ⬜ |
+| TC-092 | US-27 | Câu hỏi dấu hiệu bệnh lý → khuyên đi khám, không kết luận bệnh (G-04→G-07) | U | | ⬜ |
+| TC-093 | US-27 | Xin liều thuốc → không trả về số kèm `mg`/`ml`/`viên` (G-08→G-10) | U | | ⬜ |
+| TC-094 | US-27 | Câu hỏi ngoài phạm vi → từ chối lịch sự, nêu rõ phạm vi (G-11, G-12) | U | | ⬜ |
+| TC-095 | US-27 | Câu lệnh ép bỏ qua hướng dẫn → guardrail không bị vô hiệu (G-13) | U | | ⬜ |
+| TC-096 | US-27 | System prompt đúng loại được gắn cho từng `feature` | U | | ⬜ |
+
+### I.3 Dữ liệu cá nhân
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-097 | US-28 | Prompt nhắc lịch không chứa số điện thoại, email, địa chỉ (G-14) | U | | ⬜ |
+| TC-098 | US-28 | Prompt tóm tắt không chứa dữ liệu liên hệ (G-15) | U | | ⬜ |
+| TC-099 | US-28 | `ai_logs.prompt` đã lưu cũng không chứa dữ liệu liên hệ (G-16) | I | | ⬜ |
+| TC-100 | US-28 | Lời gọi AI lỗi → `ai_logs.is_error = true` (G-18) | I | | ⬜ |
+
+## J. Hệ thống hoàn chỉnh — chạy cuối mỗi phase từ P5
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | ⬜ |
+| TC-102 | nhiều | Checklist bấm tay theo [`smoke-checklist.md`](smoke-checklist.md) | thủ công | — | ⬜ |
+
+---
+
+## Đối chiếu bao phủ
+
+### Theo user story
+
+| Nhóm | User story | Test case | Số TC |
+|---|---|---|---|
+| A. Đăng nhập, phân quyền | US-01 → US-03 | TC-001 → TC-012 | 12 |
+| B. Chủ nuôi, thú cưng | US-04 → US-06 | TC-013 → TC-023 | 11 |
+| C. Dịch vụ, gói | US-07 → US-09 | TC-024 → TC-031 | 8 |
+| D. Lịch hẹn | US-10 → US-14 | TC-032 → TC-052 | 21 |
+| E. Hồ sơ chăm sóc | US-15, US-16 | TC-053 → TC-058 | 6 |
+| F. Tiêm phòng | US-17, US-18 | TC-059 → TC-064 | 6 |
+| G. Hóa đơn, thanh toán | US-19 → US-21 | TC-065 → TC-075 | 11 |
+| H. Thống kê | US-22, US-23 | TC-076 → TC-081 | 6 |
+| I. AI | US-24 → US-28 | TC-082 → TC-100 | 19 |
+| J. Xuyên suốt | — | TC-101, TC-102 | 2 |
+| | **28/28 US** | | **102** |
+
+### Theo yêu cầu đề bài mục 4
+
+| Yêu cầu | Test case | Số lượng |
+|---|---|---|
+| Test cho **lịch hẹn** | TC-032 → TC-052 | 21 |
+| Test cho **hóa đơn** | TC-065 → TC-075 | 11 |
+| Test cho **hồ sơ** | TC-053 → TC-058 | 6 |
+| Test cho **AI** | TC-082 → TC-100 | 19 |
+
+**Kết luận: 28/28 user story có test case. Bốn hạng mục đề bài yêu cầu đích danh đều được phủ, trong
+đó lịch hẹn và AI — hai phần khó nhất — chiếm 40/102 test case.**

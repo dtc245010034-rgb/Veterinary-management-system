@@ -1,0 +1,20 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Cơ sở dữ liệu và bí mật
+*.db
+*.sqlite3
+.env
+
+# Tuỳ chọn cá nhân của từng máy — KHÔNG ignore .claude/settings.json
+# và .claude/hooks/ vì đó là ngữ cảnh dự án, phải theo repo.
+.claude/settings.local.json
+
+# IDE / OS
+.idea/
+.vscode/
+Thumbs.db
