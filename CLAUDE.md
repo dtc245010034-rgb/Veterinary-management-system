@@ -171,3 +171,33 @@ Xem [`docs/ai-safety.md`](docs/ai-safety.md). Hai điều tuyệt đối:
 - AI **không chẩn đoán bệnh, không kê thuốc hay liều lượng**; mọi phản hồi liên quan sức khỏe phải
   kèm khuyến cáo liên hệ bác sĩ thú y.
 - **Không gửi số điện thoại, email, địa chỉ chủ nuôi sang API AI.** Chỉ gửi dữ liệu chăm sóc thú cưng.
+
+---
+
+# 9. Bài học — luật phân loại
+
+**Khi phát hiện một lỗi do chính mình gây ra lần thứ hai, phải phân loại trước khi đóng phiên:**
+
+- **Tự động hóa được** → thêm test vào [`tests/unit/test_architecture.py`](tests/unit/test_architecture.py).
+- **Không tự động hóa được** → thêm **một dòng** vào danh sách dưới đây.
+- Danh sách này có **trần cứng 5 dòng**. Muốn thêm dòng thứ 6 thì phải xóa một dòng hoặc tự động hóa
+  một dòng cũ. Chính cái trần giữ nó còn được đọc; không trần thì sau vài phase nó thành nghĩa địa.
+
+Chỉ ghi vào log phiên là **chưa đủ**: luật mục 6 chỉ bắt đọc log *gần nhất*, nên bài học viết ở log
+phiên này sẽ khuất tầm nhìn ngay khi có hai phiên nữa.
+
+## Danh sách (3/5 dòng)
+
+1. **Test đỏ thì nghi test trước khi nghi code.** Ba lần lỗi nằm ở test hoặc script kiểm chứng chứ
+   không ở code. Gốc chung: viết cứng giả định về dữ liệu thay vì đọc từ fixture. — *không tự động
+   hóa được*
+2. **Chỉ khẳng định thứ kiểm được thật.** Bốn lần tài liệu mô tả chức năng chưa tồn tại. Khi chia một
+   phase thành nhiều chặng, tách khối checklist theo chặng **trước khi** đưa người dùng tick —
+   trách nhiệm của agent, không phải người tick. — *canh một phần bởi
+   `test_moi_link_tuong_doi_trong_tai_lieu_deu_ton_tai` và `test_moi_file_app_va_tests_deu_co_trong_codebase_map`*
+3. **Test viết sau code xanh ngay không chứng minh gì.** Phải làm hỏng code có chủ đích và xác nhận
+   đúng test tương ứng đỏ, rồi hoàn nguyên. — *không tự động hóa được*
+
+Ranh giới kiến trúc và bao phủ hàm public **đã rời khỏi danh sách này** vì tự động hóa được — xem
+`test_architecture.py`. Đó là kết quả mong muốn: danh sách càng ngắn nghĩa là càng nhiều bài học đã
+thành máy canh.

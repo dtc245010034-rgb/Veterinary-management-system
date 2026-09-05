@@ -32,6 +32,7 @@ tests/
 ├── conftest.py                fixture dùng chung: db in-memory, client,
 │                              seed dữ liệu mẫu, FakeProvider, clock cố định
 ├── unit/
+│   ├── test_architecture.py   canh ranh giới dự án — xem mục 3b
 │   ├── test_scheduling.py     quy tắc trùng lịch, tính end_at
 │   ├── test_billing.py        tổng tiền, trạng thái thanh toán
 │   ├── test_stats.py          doanh thu, khách quay lại
@@ -114,6 +115,30 @@ def test_qa_xin_lieu_thuoc_khong_tra_ve_lieu_luong():
     assert DISCLAIMER in body
     assert not re.search(r"\d+\s*(mg|ml|viên)", body, re.IGNORECASE)
 ```
+
+---
+
+## 3b. Test canh ranh giới — `tests/unit/test_architecture.py`
+
+Một nhóm test đặc biệt: chúng **không kiểm chức năng nào cho người dùng**, chúng kiểm chính kỷ luật
+của dự án. Router không ghi thẳng xuống CSDL; `services/` không import fastapi; router không gọi
+thẳng `app/ai`; link tài liệu không hỏng; `codebase-map.md` không thiếu file; hàm public trong
+`services/` không thiếu test gọi thẳng.
+
+Mỗi test sinh ra từ một lỗi **đã thật sự xảy ra**, không phải từ lo xa.
+
+Lý do dùng test thay vì một dòng luật: luật phải được đọc và nhớ mới có tác dụng. Luật "chỉ tick ô
+kiểm được thật" được viết ra từ P1 và vẫn bị phạm lại ở P2 rồi P3. Test thì đỏ — một agent hoàn toàn
+không biết file này tồn tại, chạy `pytest`, vẫn nhận dòng đỏ.
+
+Đây cũng là chỗ duy nhất trong suite mà **test đỏ có thể vì tài liệu lệch chứ không vì code sai**.
+Đó là chủ ý: tiền đề của dự án là tài liệu, test và code đi song song, nên nó xứng đáng có ràng buộc
+cứng chứ không chỉ là lời hứa trong CLAUDE.md.
+
+Quy tắc giữ nhóm này còn giá trị: **phép kiểm phải hẹp và chính xác** để đỏ luôn có nghĩa là có gì đó
+sai thật. Một lần đỏ giả là cả nhóm mất uy tín và người ta bắt đầu tìm cách tắt nó. Cách phân loại
+bài học mới — cái nào thành test, cái nào thành luật — nằm ở [`../../CLAUDE.md`](../../CLAUDE.md)
+mục 9.
 
 ---
 
