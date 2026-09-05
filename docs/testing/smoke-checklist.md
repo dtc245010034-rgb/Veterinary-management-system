@@ -12,10 +12,14 @@ Cách dùng: chép nguyên khối checklist của các phase đã hoàn thành v
 lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước** — đó là phần hồi quy thủ công.
 
 > **Chỉ tick ô kiểm được thật.** File này viết ở P0 mô tả hệ thống hoàn chỉnh, nên nhiều ô nói về
-> chức năng của phase chưa tới. Đã ba lần có ô được tick cho thứ chưa tồn tại (`/stats` ở P1, lịch
-> sử chăm sóc ở P2, đổi/hủy lịch ở P3). Khi chia một phase thành nhiều chặng, **tách khối checklist
-> theo chặng trước khi đưa cho người dùng tick** — trách nhiệm này thuộc về agent, không phải người
-> tick.
+> chức năng của phase chưa tới. Đã **bốn lần** có ô được tick cho thứ chưa kiểm được (`/stats` ở P1,
+> lịch sử chăm sóc ở P2, đổi/hủy lịch ở P3, "hủy lịch đã hoàn thành" ở P3 chặng 2). Khi chia một
+> phase thành nhiều chặng, **tách khối checklist theo chặng trước khi đưa cho người dùng tick** —
+> trách nhiệm này thuộc về agent, không phải người tick.
+>
+> Lần thứ tư hé ra một dạng khó thấy hơn ba lần đầu: ô mô tả đúng chức năng **đã có**, nhưng
+> **trạng thái tiền đề** thì phase sau mới tạo ra được. Trước khi đưa một khối cho người dùng, hỏi
+> thêm: *dựng được trạng thái ban đầu của ô này bằng giao diện hiện tại không?*
 
 **Chuẩn bị:** `uvicorn app.main:app --reload`, mở `http://127.0.0.1:8000`, dùng CSDL có dữ liệu mẫu.
 
@@ -70,17 +74,17 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 > nhân viên kèm nút **Đổi**, và ô lý do kèm nút **Hủy**. Đăng nhập `chamsoc1` /
 > `matkhau123` để kiểm hai ô cuối.
 
-- [ ] Đổi lịch sang khung trống → cập nhật thành công, lưới lịch hiển thị giờ mới
-- [ ] Đổi lịch sang khung đã bận → bị từ chối, và **lịch cũ vẫn nguyên giờ ban đầu**
-- [ ] Hủy lịch kèm lý do → biến khỏi lưới lịch hoạt động, khung giờ đặt lại được
-- [ ] Hủy lịch đã hoàn thành → bị chặn
-- [ ] Đăng nhập `caretaker` → chỉ thấy lịch của chính mình, không thấy lịch người khác
-- [ ] `caretaker` gõ thẳng `/appointments` → chỉ thấy lịch của mình hoặc bị chặn
+- [x] Đổi lịch sang khung trống → cập nhật thành công, lưới lịch hiển thị giờ mới
+- [x] Đổi lịch sang khung đã bận → bị từ chối, và **lịch cũ vẫn nguyên giờ ban đầu**
+- [x] Hủy lịch kèm lý do → biến khỏi lưới lịch hoạt động, khung giờ đặt lại được
+- [x] Đăng nhập `caretaker` → chỉ thấy lịch của chính mình, không thấy lịch người khác
+- [x] `caretaker` gõ thẳng `/appointments` → chỉ thấy lịch của mình hoặc bị chặn
 
 ## P4 — Hồ sơ chăm sóc và tiêm phòng
 
 - [ ] Trang chi tiết chủ nuôi hiện lịch sử chăm sóc và lịch tiêm của từng thú cưng (hoãn từ P2)
 - [ ] `caretaker` ghi hồ sơ cho lịch của mình → lưu được, lịch chuyển trạng thái hoàn thành
+- [ ] Sau khi lịch chuyển hoàn thành → nút Đổi và Hủy biến mất, gọi thẳng `POST /appointments/{id}/huy` bị chặn _(chuyển từ khối P3: trước P4 không có đường nào đưa lịch về trạng thái hoàn thành để kiểm bằng tay; hành vi đã có test TC-049)_
 - [ ] `caretaker` mở lịch của người khác → không có nút ghi hồ sơ
 - [ ] Ghi hồ sơ lần hai cho cùng lịch → bị chặn
 - [ ] Bỏ trống ghi chú tình trạng → bị chặn
