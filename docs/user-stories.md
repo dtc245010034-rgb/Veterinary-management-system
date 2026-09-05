@@ -184,9 +184,16 @@ tham gia kiểm tra trùng.
 
 - Given nhiều thú cưng có `next_due_at` khác nhau, When mở danh sách đến hạn, Then thấy mọi thú cưng có hạn **từ quá khứ tới hôm nay + 30 ngày**, sắp xếp theo hạn tăng dần; thú cưng có hạn xa hơn 30 ngày không hiện.
 - Given một thú cưng đã quá hạn tiêm, When xem danh sách, Then bản ghi được đánh dấu quá hạn rõ ràng.
+- Given một thú cưng đã tiêm mũi tiếp theo của **cùng loại vắc-xin**, When xem danh sách, Then chỉ mũi mới nhất được tính; hạn của mũi cũ đã hoàn thành nên không hiện nữa.
 - Given không thú cưng nào đến hạn, When xem, Then hiện trạng thái rỗng.
 
-> **Sửa spec ngày 2026-09-05 (P4).** Bản gốc viết "chỉ thấy thú cưng có hạn nằm trong 30 ngày tới",
+> **Sửa spec lần hai, ngày 2026-09-05 (P4 chặng 2).** Thêm tiêu chí "chỉ tính mũi mới nhất của
+> mỗi loại vắc-xin". Bản gốc chỉ nói "mọi thú cưng có hạn trong khoảng", mà hiểu đúng từng chữ thì
+> mũi 1 tiêm năm ngoái với hạn nhắc đã qua sẽ nằm lì trong danh sách quá hạn **vĩnh viễn**, kể cả
+> khi mũi 2 đã tiêm đúng hạn. Lời nhắc đã hoàn thành mà không bao giờ tắt được thì cả danh sách
+> mất tác dụng. Phát hiện lúc thiết kế chặng 2, sửa trước khi viết code.
+>
+> **Sửa spec lần một, ngày 2026-09-05 (P4).** Bản gốc viết "chỉ thấy thú cưng có hạn nằm trong 30 ngày tới",
 > mâu thuẫn với chính tiêu chí ngay dưới nó: nếu chỉ lấy khoảng tương lai thì không bản ghi quá hạn
 > nào lọt vào để mà đánh dấu, và thú cưng quá hạn biến mất khỏi màn hình đúng lúc cần gọi nhắc nhất.
 > Khoảng lấy đổi thành mở về phía quá khứ. Sửa công khai ở đây thay vì lặng lẽ code khác spec.

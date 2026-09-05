@@ -103,17 +103,29 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 
 ## P4 chặng 2 — Tiêm phòng
 
-> Chưa kiểm được: chặng 2 chưa cài đặt. Chưa có bảng `vaccinations`, chưa có trang
-> `/vaccinations`, và khối tiêm phòng chưa xuất hiện trên `/pets/{id}`.
+> Đã cài đặt xong ngày 2026-09-05. Link **Tiêm phòng** nằm trên thanh điều hướng, mọi vai
+> trò đều vào được (US-02 cho cả ba toàn quyền ở mục này). Mũi tiêm được ghi ở trang từng
+> thú cưng.
+>
+> Dữ liệu mẫu đã dựng sẵn đủ bốn trạng thái cần nhìn: **Mun** quá hạn, **Đậu Đỏ** sắp tới,
+> **Bông** còn xa, **Mực** có hai mũi Dại nối tiếp nhau, **Sữa** chưa có mũi nào.
 
-- [ ] Ghi mũi tiêm với hạn nhắc lại → hiện trong hồ sơ tiêm trên trang thú cưng
-- [ ] Nhập hạn nhắc sớm hơn ngày tiêm → bị chặn
-- [ ] Nhập ngày tiêm ở tương lai → bị chặn
-- [ ] Mở danh sách đến hạn tiêm → sắp theo hạn tăng dần, bản ghi quá hạn có dấu hiệu nhận biết
-- [ ] Thú cưng có hạn xa hơn 30 ngày → **không** xuất hiện trong danh sách
-- [ ] Không ai đến hạn → trạng thái rỗng rõ ràng
+- [ ] Mở **Tiêm phòng** từ thanh điều hướng bằng cả `quanly`, `letan`, `chamsoc1` → đều vào được
+- [ ] Danh sách đến hạn sắp theo hạn tăng dần, dòng của **Mun** có nhãn **Quá hạn** nhìn thấy rõ
+- [ ] **Bông** có hạn xa hơn 30 ngày → **không** xuất hiện trong danh sách
+- [ ] **Mực** có mũi Dại 1 đã quá hạn nhưng đã tiêm mũi 2 → **không** xuất hiện trong danh sách,
+      mà mở trang của Mực thì hồ sơ tiêm vẫn thấy **đủ cả hai mũi**
+- [ ] Ghi mũi tiêm mới cho **Sữa** (đang chưa có mũi nào) → hiện ngay trong hồ sơ tiêm của Sữa
+- [ ] Nhập hạn nhắc sớm hơn ngày tiêm → thông báo lỗi đọc được, trang không vỡ, dữ liệu cũ còn nguyên
+- [ ] Chọn ngày tiêm ở tương lai → **trình duyệt chặn ngay**, không gửi đi được
+      <br>_Ô ngày tiêm có `max` là hôm nay. Phần chặn ở tầng máy chủ không bấm bằng trình duyệt
+      được nên không đưa thành ô riêng — đã có TC-061 chứng minh._
 - [ ] Màn hình tiêm phòng có ghi rõ **lịch tiêm cụ thể do bác sĩ thú y quyết định**
-- [ ] Trang `/pets/{id}` hiện đủ cả lịch sử chăm sóc lẫn hồ sơ tiêm _(TC-020 hoãn từ P2)_
+- [ ] Trang thú cưng hiện đủ **cả** lịch sử chăm sóc **lẫn** hồ sơ tiêm _(TC-020 hoãn từ P2)_
+- [ ] Trang của **Sữa** trước khi ghi mũi nào → khối hồ sơ tiêm có trạng thái rỗng rõ ràng
+
+_Trạng thái rỗng của **danh sách đến hạn** (TC-064) không dựng được bằng giao diện: không có
+chức năng xóa mũi tiêm, mà dữ liệu mẫu luôn có người đến hạn. Đã có TC-064 ở tầng integration._
 
 ## P5 — Hóa đơn và thanh toán
 

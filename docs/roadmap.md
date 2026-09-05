@@ -78,15 +78,21 @@ ghi rõ đây là thông tin, không phải chỉ định y tế.
 
 **DoD:** TC-053→064 xanh; regression xanh; smoke P1–P4 tick đủ.
 
+> **Ngày 05/09: code xong cả hai chặng, chờ smoke chặng 2.** US-18 phải sửa **hai lần** trong phase
+> này, cả hai đều trước khi viết code: gỡ mâu thuẫn nội tại ở bước 0, và thêm luật "chỉ tính mũi mới
+> nhất của mỗi loại vắc-xin" khi thiết kế `den_han()`. Xem
+> [`testing/reports/2026-09-05-P4-chang2.md`](testing/reports/2026-09-05-P4-chang2.md).
+
 ### P5 — Hóa đơn và thanh toán · KT3
 
 `services/billing.py`, `invoices`, `invoice_items`, `payments`. Hai điểm dễ sai: đơn giá phải **chép**
 vào dòng hóa đơn chứ không tham chiếu bảng giá, và tổng thanh toán không được vượt số phải trả.
 
-Phase này cũng viết `tests/e2e/test_full_flow.py` — tới đây hệ thống đã đủ mắt xích để chạy được kịch
-bản xuyên suốt 11 bước.
+`tests/e2e/test_full_flow.py` **đã viết sớm ngày 05/09** với bước 1→6; P5 nối bước 7→9 (lập hóa đơn,
+trả một phần, trả nốt) vào đúng kịch bản đó. Ràng buộc của tầng e2e — chỉ đi theo link và nút lấy từ
+HTML, không tự dựng URL — áp dụng cho phần nối thêm.
 
-**DoD:** TC-065→075 xanh; **TC-101 (e2e) chạy được**; regression xanh.
+**DoD:** TC-065→075 xanh; **TC-101 lên 9/11 bước**; regression xanh.
 
 ### P6 — Thống kê · KT3
 

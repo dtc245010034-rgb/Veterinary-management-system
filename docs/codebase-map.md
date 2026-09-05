@@ -70,16 +70,20 @@
 | `services/text.py` | `chuan_hoa()` — bỏ dấu tiếng Việt cho tìm kiếm, xử lý riêng chữ `đ` |
 | `services/errors.py` | `LoiNghiepVu` — lỗi nghiệp vụ, thông điệp hiển thị thẳng cho người dùng |
 | `models/care_record.py` | Bảng `care_records` — hồ sơ chăm sóc, quan hệ 1–1 với lịch hẹn (`appointment_id` UNIQUE) |
+| `models/vaccination.py` | Bảng `vaccinations` — mũi tiêm và hạn nhắc lại; property `qua_han` |
 | `services/users.py` | Nghiệp vụ tài khoản nhân viên: tạo, khóa, mở khóa, danh sách. Chặn quản lý tự khóa mình |
 | `services/owners.py` | Nghiệp vụ chủ nuôi và thú cưng: tạo, sửa, xóa, tra cứu |
 | `services/catalog.py` | Nghiệp vụ dịch vụ và gói. `danh_sach_dang_ban()` là danh sách P3 và P5 sẽ dùng |
 | `services/care_records.py` | Nghiệp vụ hồ sơ chăm sóc. Thao tác **duy nhất** đưa lịch hẹn về `done` |
 | `services/scheduling.py` | **Quy tắc chống trùng lịch**, đặt/đổi/hủy lịch, gợi ý khung trống. Khoảng nửa mở `[start, end)` |
+| `services/vaccinations.py` | Nghiệp vụ tiêm phòng: ghi mũi, hồ sơ tiêm, danh sách đến hạn. Chỉ tính mũi mới nhất của mỗi loại vắc-xin |
 | `routers/auth.py` | `/login`, `/logout`, `/` |
 | `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager`. Chỉ HTTP, nghiệp vụ ở `services/users.py` |
 | `routers/owners.py` | `/owners`, `/owners/{id}`, `/owners/{id}/pets`, `/pets/{id}/xoa` |
 | `routers/services.py` | `/services` và `/services/goi` — chỉ `manager` sửa |
-| `routers/care_records.py` | `/appointments/{id}/ho-so` ghi và xem hồ sơ; `/pets/{id}` trang chi tiết thú cưng |
+| `routers/care_records.py` | `/appointments/{id}/ho-so` — ghi và xem hồ sơ chăm sóc |
+| `routers/pets.py` | `/pets/{id}` — trang chi tiết thú cưng, gộp lịch sử chăm sóc và hồ sơ tiêm (TC-020) |
+| `routers/vaccinations.py` | `/vaccinations` danh sách đến hạn; `/pets/{id}/vaccinations` ghi mũi tiêm |
 | `routers/appointments.py` | `/appointments` lưới lịch + đặt/đổi/hủy; `/appointments/cua-toi` lịch riêng của nhân viên chăm sóc |
 | `templates/base.html` | Bố cục chung, menu hiện theo vai trò |
 | `templates/login.html` · `home.html` · `users.html` · `error.html` | Các trang từ P1 |
@@ -87,7 +91,8 @@
 | `templates/owner_detail.html` | Chi tiết chủ nuôi, danh sách thú cưng, form thêm thú cưng |
 | `templates/services.html` | Bảng giá, gói dịch vụ, form thêm dịch vụ và tạo gói |
 | `templates/care_record_form.html` | Form ghi hồ sơ, hoặc nội dung hồ sơ đã ghi |
-| `templates/pet_detail.html` | Trang chi tiết thú cưng + lịch sử chăm sóc |
+| `templates/pet_detail.html` | Trang chi tiết thú cưng: lịch sử chăm sóc + hồ sơ tiêm + form ghi mũi tiêm |
+| `templates/vaccinations.html` | Danh sách đến hạn tiêm, có nhãn **Quá hạn** và dòng khuyến cáo bác sĩ thú y |
 | `templates/appointments.html` | Lưới lịch, form đặt lịch, cột thao tác đổi/hủy, khung trống khi bị từ chối. Dùng chung cho `/appointments` và `/appointments/cua-toi` |
 | `static/style.css` | Toàn bộ CSS, một file, không build tool |
 
@@ -108,13 +113,16 @@
 | `unit/test_catalog_service.py` | Nghiệp vụ dịch vụ, ngưng bán, gói |
 | `unit/test_models_appointment.py` | Ràng buộc `appointments`: `end_at > start_at`, CHECK trạng thái |
 | `unit/test_models_care_record.py` | Ràng buộc CSDL của `care_records` |
+| `unit/test_models_vaccination.py` | Ràng buộc CSDL của `vaccinations`: CHECK `dose_no > 0`, `next_due_at >= given_at` |
 | `unit/test_care_records_service.py` | Nghiệp vụ hồ sơ chăm sóc, lịch sử, ba trường suy từ lịch hẹn |
+| `unit/test_vaccinations_service.py` | Nghiệp vụ tiêm phòng, ranh giới ngày, luật "chỉ tính mũi mới nhất" (TC-059→062) |
 | `unit/test_scheduling.py` | **6 ca biên trùng lịch**, gợi ý khung trống, đổi lịch (TC-044→047), hủy lịch (TC-048, TC-049) |
 | `integration/test_auth.py` | Đăng nhập (TC-001→004) |
 | `integration/test_users.py` | Phân quyền và quản lý tài khoản (TC-007, 008, 010→012) |
 | `integration/test_owners.py` | Chủ nuôi, thú cưng, tra cứu qua HTTP (TC-013→023) |
 | `integration/test_services.py` | Dịch vụ, bảng giá, gói qua HTTP (TC-024→031) |
 | `integration/test_care_records.py` | Ghi hồ sơ và trang thú cưng qua HTTP (TC-053, TC-054, TC-057, TC-058) |
+| `integration/test_vaccinations.py` | Ghi mũi tiêm, danh sách đến hạn, link menu, khuyến cáo bác sĩ (TC-059, TC-063, TC-064, TC-020) |
 | `integration/test_appointments.py` | Đặt/đổi/hủy lịch qua HTTP, lịch theo vai trò (TC-035, TC-043, TC-050→052, TC-009) |
 | `e2e/test_full_flow.py` | **Kịch bản xuyên suốt TC-101 bước 1→6** trên CSDL file thật, đi bằng link và nút lấy từ HTML — không tự dựng URL. Chứa `TrinhDuyet`, trình duyệt tí hon gửi form đúng như trình duyệt |
 
@@ -134,9 +142,8 @@ mục "Hiện có" và ghi rõ vai trò thật, rồi xóa dòng ở đây.
 
 | Đường dẫn | Vai trò dự kiến | Phase |
 |---|---|---|
-| `app/models/` — 10 model còn lại | owner, pet, service, package, package_item, appointment, care_record, vaccination, invoice, invoice_item, payment, ai_log | P2–P7 |
+| `app/models/` — 4 model còn lại | invoice, invoice_item, payment, ai_log | P5–P7 |
 | ~~`app/schemas/`~~ | **Bỏ.** Qua P1→P3 form đọc thẳng bằng `Form()` và kiểm ở `services/` là đủ; thêm một tầng Pydantic nữa chỉ để lặp lại phép kiểm đã có | — |
-| `app/services/scheduling.py` | Đặt/đổi/hủy lịch, kiểm tra trùng lịch | P3 |
 | `app/services/billing.py` | Lập hóa đơn, ghi nhận thanh toán | P5 |
 | `app/services/stats.py` | Lượt dịch vụ, doanh thu, khách quay lại | P6 |
 | `app/ai/provider.py` | Interface `AIProvider` | P7 |
@@ -144,4 +151,4 @@ mục "Hiện có" và ghi rõ vai trò thật, rồi xóa dòng ở đây.
 | `app/ai/fake.py` | `FakeProvider` — ghi lại prompt nhận được | P7 |
 | `app/ai/prompts.py` | System prompt + `DISCLAIMER` | P7 |
 | `app/ai/service.py` | 3 use case AI, lọc dữ liệu cá nhân, ghi `ai_logs` | P7 |
-| `app/routers/` — còn lại | appointments, care_records, vaccinations, invoices, stats, ai | P3–P7 |
+| `app/routers/` — còn lại | invoices, stats, ai | P5–P7 |

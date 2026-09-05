@@ -1,6 +1,7 @@
 # P4 — Hồ sơ chăm sóc và tiêm phòng
 
-> **Phase:** P4 · **Mốc:** KT2 — phase cuối của mốc này · **Duyệt ngày:** 2026-09-05 · **Trạng thái:** đang làm
+> **Phase:** P4 · **Mốc:** KT2 — phase cuối của mốc này · **Duyệt ngày:** 2026-09-05 · **Trạng thái:** code xong,
+> chờ smoke chặng 2
 >
 > Chia hai chặng như P3. **Khối smoke tách theo chặng ngay từ đầu** — áp dụng luật ở đầu
 > [`../testing/smoke-checklist.md`](../testing/smoke-checklist.md), lần này không đợi phạm rồi sửa.
@@ -32,12 +33,12 @@ danh sách thú cưng đến hạn tiêm.
 
 ### Chặng 2 — Tiêm phòng và trang thú cưng
 
-- [ ] 7. Model `vaccinations` + `app/services/vaccinations.py` — TC-059 → TC-061
-- [ ] 8. Danh sách đến hạn — TC-062 → TC-064
-- [ ] 9. Trang `/pets/{id}` gộp lịch sử chăm sóc + hồ sơ tiêm — TC-020 hoãn từ P2a
+- [x] 7. Model `vaccinations` + `app/services/vaccinations.py` — TC-059 → TC-061
+- [x] 8. Danh sách đến hạn — TC-062 → TC-064
+- [x] 9. Trang `/pets/{id}` gộp lịch sử chăm sóc + hồ sơ tiêm — TC-020 hoãn từ P2a
 - [x] 10. **Sửa lỗi có sẵn:** xóa thú cưng còn tham chiếu → 500, test tái hiện đỏ trước _(làm sớm ở chặng 1 — xem Điều chỉnh)_
-- [ ] 11. Cập nhật `codebase-map.md`, `test-cases.md`, log phiên
-- [ ] 12. Báo cáo P4 đầy đủ, smoke, commit
+- [x] 11. Cập nhật `codebase-map.md`, `test-cases.md`, log phiên
+- [x] 12. Báo cáo P4 đầy đủ, smoke, commit
 
 ## Chín quyết định
 
@@ -147,12 +148,12 @@ tại không?*
 
 ## Definition of Done
 
-- [ ] TC-053 → TC-064 chuyển ✅ (12 ca), và TC-020 hoãn từ P2a cũng ✅
-- [ ] Lỗi xóa thú cưng còn tham chiếu đã sửa, có test tái hiện từng chạy đỏ
-- [ ] `pytest` toàn bộ xanh, output sạch, không test nào bị skip
-- [ ] Ba sửa đổi tài liệu ở bước 0 hoàn tất **trước** khi viết code
-- [ ] `codebase-map.md` cập nhật đúng thực tế (`test_architecture.py` sẽ tự bắt nếu quên)
-- [ ] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật
+- [x] TC-053 → TC-064 chuyển ✅ (12 ca), và TC-020 hoãn từ P2a cũng ✅
+- [x] Lỗi xóa thú cưng còn tham chiếu đã sửa, có test tái hiện từng chạy đỏ
+- [x] `pytest` toàn bộ xanh, output sạch, không test nào bị skip
+- [x] Ba sửa đổi tài liệu ở bước 0 hoàn tất **trước** khi viết code
+- [x] `codebase-map.md` cập nhật đúng thực tế (`test_architecture.py` sẽ tự bắt nếu quên)
+- [x] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật
 - [ ] Khối smoke P4 tách theo chặng, tick đủ trên trình duyệt thật
 - [ ] **Mốc KT2 hoàn tất**
 
@@ -180,3 +181,21 @@ test tầng HTTP viết theo URL không bắt được — chúng chỉ lộ ra 
 Hóa đơn và ràng buộc "hủy lịch đã lập hóa đơn" (TC-021, P5). AI tóm tắt hồ sơ (P7) dù `care_records`
 chính là nguồn dữ liệu của nó. Sửa và xóa hồ sơ chăm sóc — US-15 chỉ nói tạo. Chỉ báo "hồ sơ còn
 thiếu" ở P6.
+
+
+## Bổ sung ở chặng 2
+
+**Sửa spec lần hai trước khi code — US-18 và TC-062.** Thiết kế `den_han()` lộ ra một chỗ US-18
+chưa nói tới: nếu tính mọi bản ghi trong khoảng thì mũi 1 tiêm năm ngoái, hạn nhắc đã qua, sẽ nằm
+lì trong danh sách quá hạn **vĩnh viễn** kể cả khi mũi 2 đã tiêm đúng hạn. Lời nhắc đã hoàn thành
+mà không bao giờ tắt được thì cả màn hình mất tác dụng. Thêm tiêu chí **chỉ tính mũi mới nhất của
+mỗi loại vắc-xin trên mỗi thú cưng**, sửa công khai ở `user-stories.md` và `test-cases.md` **trước
+khi** viết code — cùng cách xử lý như mâu thuẫn US-18 phát hiện ở bước 0.
+
+**Thêm `app/routers/pets.py`.** Trang `/pets/{id}` nằm nhờ trong `care_records.py` từ chặng 1. Sang
+chặng 2 nó gộp thêm hồ sơ tiêm nên thuộc về hai miền nghiệp vụ; tách ra router riêng đúng như cây
+thư mục đã ghi trong [`../architecture.md`](../architecture.md) từ KT1.
+
+**Ô `checkbox` trong smoke bị bỏ một ô, có ghi lý do.** Trạng thái rỗng của danh sách đến hạn
+(TC-064) không dựng được bằng giao diện vì không có chức năng xóa mũi tiêm. Ghi rõ trong checklist
+thay vì đưa một ô không ai tick thật được — đúng luật quyết định 9.

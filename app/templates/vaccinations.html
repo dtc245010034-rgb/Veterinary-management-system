@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block tieu_de %}Đến hạn tiêm{% endblock %}
+
+{% block noi_dung %}
+<h1>Thú cưng đến hạn tiêm</h1>
+<p class="phu">
+  Gồm mũi đã quá hạn và mũi đến hạn trong {{ so_ngay }} ngày tới, tính tới
+  {{ hom_nay.strftime("%d/%m/%Y") }}. Mỗi loại vắc-xin chỉ tính mũi mới nhất.
+</p>
+
+<p class="canh-bao">
+  Danh sách này chỉ nhắc lại đúng ngày đã ghi trong hồ sơ, không phải chỉ định y tế.
+  <strong>Lịch tiêm cụ thể do bác sĩ thú y quyết định.</strong>
+</p>
+
+{% if danh_sach %}
+  <table>
+    <thead>
+      <tr><th>Hạn nhắc</th><th>Thú cưng</th><th>Chủ nuôi</th><th>Số điện thoại</th><th>Vắc-xin</th><th>Mũi gần nhất</th></tr>
+    </thead>
+    <tbody>
+      {% for v in danh_sach %}
+        <tr class="{{ 'dong-canh-bao' if v.qua_han }}">
+          <td class="gio">
+            {{ v.next_due_at.strftime("%d/%m/%Y") }}
+            {% if v.qua_han %}<span class="nhan nhan-cancelled">Quá hạn</span>{% endif %}
+          </td>
+          <td><a href="/pets/{{ v.pet_id }}">{{ v.pet.name }}</a></td>
+          <td><a href="/owners/{{ v.pet.owner_id }}">{{ v.pet.owner.full_name }}</a></td>
+          <td>{{ v.pet.owner.phone }}</td>
+          <td>{{ v.vaccine_name }}</td>
+          <td>{{ v.given_at.strftime("%d/%m/%Y") }}{% if v.dose_no %} · mũi {{ v.dose_no }}{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="the rong">
+    <p>Không có thú cưng nào đến hạn tiêm trong {{ so_ngay }} ngày tới.</p>
+    <p class="phu">Mũi tiêm được ghi ở trang chi tiết từng thú cưng.</p>
+  </div>
+{% endif %}
+{% endblock %}

@@ -15,6 +15,7 @@ from app.models.pet import Pet
 from app.models.service import Service
 from app.models.service_package import PackageItem, ServicePackage
 from app.models.user import User
+from app.models.vaccination import Vaccination
 
 __all__ = [
     "Appointment",
@@ -25,4 +26,5 @@ __all__ = [
     "Service",
     "ServicePackage",
     "User",
+    "Vaccination",
 ]

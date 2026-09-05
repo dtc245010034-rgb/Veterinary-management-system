@@ -21,6 +21,7 @@ from app.models.pet import Pet
 from app.models.service import Service
 from app.models.service_package import PackageItem, ServicePackage
 from app.models.user import User
+from app.models.vaccination import Vaccination
 from app.security import hash_password
 from app.services import clock
 
@@ -60,6 +61,19 @@ GOI_MAU = [
 HO_SO_MAU = [
     ("Da hơi khô ở lưng, tai sạch, răng có cao răng nhẹ.", "Tắm, sấy, vệ sinh tai, cắt móng"),
     ("Lông rối vùng bụng, tâm lý hơi sợ máy sấy.", "Tắm, gỡ rối, sấy ở chế độ gió mát"),
+]
+
+# (chỉ số thú cưng, tên vắc-xin, mũi thứ mấy, ngày tiêm cách hôm nay, hạn nhắc cách hôm nay)
+# Bộ này cố ý dựng sẵn đủ bốn trạng thái mà smoke checklist P4 chặng 2 cần nhìn thấy:
+# quá hạn, sắp đến hạn, còn xa (không được hiện), và một cặp hai mũi cùng loại vắc-xin để
+# thấy luật "chỉ tính mũi mới nhất" — mũi 1 của Mực quá hạn nhưng mũi 2 đã nối tiếp nên
+# nó KHÔNG được xuất hiện trong danh sách đến hạn.
+MUI_TIEM_MAU = [
+    (0, "Dại", 1, -400, -20),
+    (0, "Dại", 2, -35, 330),
+    (1, "Care 5 bệnh", 2, -180, -5),
+    (2, "FVRCP", 1, -60, 12),
+    (3, "Dại", 1, -10, 355),
 ]
 
 
@@ -211,11 +225,30 @@ def main() -> None:
                 )
                 lich_moi += 1
 
+        mui_tiem_moi = 0
+        if db.scalar(select(Vaccination)) is None:
+            hom_nay = clock.now().date()
+            thu_cung = list(db.scalars(select(Pet).order_by(Pet.id)))
+
+            for chi_so, ten_vac_xin, mui, cach_tiem, cach_nhac in MUI_TIEM_MAU:
+                if len(thu_cung) <= chi_so:
+                    break
+                db.add(
+                    Vaccination(
+                        pet_id=thu_cung[chi_so].id,
+                        vaccine_name=ten_vac_xin,
+                        dose_no=mui,
+                        given_at=hom_nay + timedelta(days=cach_tiem),
+                        next_due_at=hom_nay + timedelta(days=cach_nhac),
+                    )
+                )
+                mui_tiem_moi += 1
+
         db.commit()
 
     print(f"Đã thêm {them_moi} tài khoản, {chu_nuoi_moi} chủ nuôi, {thu_cung_moi} thú cưng, "
           f"{dich_vu_moi} dịch vụ, {goi_moi} gói, {lich_moi} lịch hẹn, "
-          f"{ho_so_moi} hồ sơ chăm sóc.")
+          f"{ho_so_moi} hồ sơ chăm sóc, {mui_tiem_moi} mũi tiêm.")
     print(f"Mật khẩu chung của mọi tài khoản: {MAT_KHAU_MAC_DINH}\n")
     for username, full_name, role in TAI_KHOAN_MAU:
         print(f"  {username:10} {role:14} {full_name}")

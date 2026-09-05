@@ -2,6 +2,9 @@
 
 Phục vụ US-15, US-16. Chỉ làm việc HTTP; quy tắc nghiệp vụ nằm ở
 app/services/care_records.py.
+
+Trang chi tiết thú cưng từng nằm nhờ ở đây từ chặng 1; chặng 2 nó gộp thêm hồ sơ tiêm
+nên chuyển sang app/routers/pets.py.
 """
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
@@ -12,7 +15,7 @@ from app.auth import nguoi_dung_hien_tai, yeu_cau_vai_tro
 from app.db import get_db
 from app.models.user import User
 from app.services import care_records as nv
-from app.services import owners, scheduling
+from app.services import scheduling
 from app.services.errors import LoiNghiepVu
 from app.templates import templates
 
@@ -68,29 +71,6 @@ def luu_ho_so(
         )
 
     return RedirectResponse(_ve_lich_sau_khi_ghi(db, user, lich_id), status.HTTP_303_SEE_OTHER)
-
-
-@router.get("/pets/{thu_cung_id}", response_class=HTMLResponse)
-def trang_thu_cung(
-    request: Request,
-    thu_cung_id: int,
-    user: User = Depends(nguoi_dung_hien_tai),
-    db: Session = Depends(get_db),
-):
-    """Trang chi tiết thú cưng — TC-020 hoãn từ P2a.
-
-    Chặng 1 hiện lịch sử chăm sóc; chặng 2 thêm khối hồ sơ tiêm vào chính trang này.
-    """
-    try:
-        thu_cung = owners.lay_thu_cung(db, thu_cung_id)
-    except LoiNghiepVu:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Không tìm thấy thú cưng.")
-
-    return templates.TemplateResponse(
-        request,
-        "pet_detail.html",
-        {"user": user, "thu_cung": thu_cung, "lich_su": nv.lich_su(db, thu_cung_id)},
-    )
 
 
 def _ve_lich_sau_khi_ghi(db: Session, user: User, lich_id: int) -> str:

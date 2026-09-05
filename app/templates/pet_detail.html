@@ -10,6 +10,8 @@
   · chủ nuôi <a href="/owners/{{ thu_cung.owner_id }}">{{ thu_cung.owner.full_name }}</a>
 </p>
 
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
 <h2>Lịch sử chăm sóc</h2>
 {% if lich_su %}
   <table>
@@ -31,4 +33,52 @@
 {% else %}
   <div class="the rong"><p>Chưa có hồ sơ chăm sóc nào cho {{ thu_cung.name }}.</p></div>
 {% endif %}
+
+<h2>Hồ sơ tiêm</h2>
+<div class="hai-cot">
+  <div>
+    {% if ho_so_tiem %}
+      <table>
+        <thead>
+          <tr><th>Ngày tiêm</th><th>Vắc-xin</th><th>Mũi</th><th>Hạn nhắc lại</th><th>Ghi chú</th></tr>
+        </thead>
+        <tbody>
+          {% for v in ho_so_tiem %}
+            <tr>
+              <td class="gio">{{ v.given_at.strftime("%d/%m/%Y") }}</td>
+              <td>{{ v.vaccine_name }}</td>
+              <td>{{ v.dose_no or "—" }}</td>
+              <td>
+                {% if v.next_due_at %}
+                  {{ v.next_due_at.strftime("%d/%m/%Y") }}
+                  {% if v.qua_han %}<span class="nhan nhan-cancelled">Quá hạn</span>{% endif %}
+                {% else %}—{% endif %}
+              </td>
+              <td>{{ v.note or "—" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="the rong"><p>Chưa có mũi tiêm nào được ghi cho {{ thu_cung.name }}.</p></div>
+    {% endif %}
+
+    <p class="phu nhan-nho">
+      Đây là thông tin ghi lại theo lời chủ nuôi và sổ tiêm.
+      <strong>Lịch tiêm cụ thể do bác sĩ thú y quyết định.</strong>
+    </p>
+  </div>
+
+  {# Bảng phân quyền US-02: cả ba vai trò đều toàn quyền ở mục tiêm phòng. #}
+  <form class="the" method="post" action="/pets/{{ thu_cung.id }}/vaccinations">
+    <h2>Ghi mũi tiêm</h2>
+    <label>Tên vắc-xin <input name="ten_vac_xin" placeholder="Dại, Care, FVRCP…" required></label>
+    <label>Mũi thứ mấy <input name="so_mui" type="number" min="1" step="1"></label>
+    <label>Ngày tiêm <input name="ngay_tiem" type="date" max="{{ hom_nay.isoformat() }}" required></label>
+    <label>Hạn nhắc lại <input name="han_nhac" type="date"></label>
+    <label>Ghi chú <input name="ghi_chu"></label>
+    <button type="submit" class="chinh">Lưu mũi tiêm</button>
+    <p class="phu nhan-nho">Để trống hạn nhắc nếu mũi này không cần tiêm lại.</p>
+  </form>
+</div>
 {% endblock %}

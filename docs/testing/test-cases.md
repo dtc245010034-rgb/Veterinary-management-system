@@ -41,7 +41,7 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 | TC-017 | US-05 | Thêm thú cưng gắn chủ nuôi → hiện trong danh sách của chủ | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
 | TC-018 | US-05 | Ngày sinh ở tương lai → bị từ chối | U | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
 | TC-019 | US-05 | Cân nặng âm hoặc bằng 0 → bị từ chối | U | `tests/unit/test_models_owner_pet.py`, `tests/unit/test_owners_service.py` | ✅ |
-| TC-020 | US-05 | Trang chi tiết thú cưng hiện chủ nuôi, lịch sử, lịch tiêm | I | `tests/integration/test_owners.py` — phần chủ nuôi; lịch sử chăm sóc và lịch tiêm chờ P4 | 🟡 |
+| TC-020 | US-05 | Trang chi tiết thú cưng hiện chủ nuôi, lịch sử, lịch tiêm | I | `tests/integration/test_owners.py`, `tests/integration/test_care_records.py`, `tests/integration/test_vaccinations.py` | ✅ |
 | TC-021 | US-06 | Tìm theo số điện thoại → ra chủ nuôi kèm thú cưng | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
 | TC-022 | US-06 | Tìm một phần tên, không phân biệt hoa thường và dấu | U | `tests/unit/test_text.py`, `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
 | TC-023 | US-06 | Không khớp gì → trạng thái rỗng, không lỗi | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
@@ -100,12 +100,12 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-059 | US-17 | Ghi mũi tiêm hợp lệ → hiện trong hồ sơ tiêm | I | | ⬜ |
-| TC-060 | US-17 | `next_due_at` sớm hơn `given_at` → từ chối | U | | ⬜ |
-| TC-061 | US-17 | Ngày tiêm ở tương lai → từ chối | U | | ⬜ |
-| TC-062 | US-18 | Danh sách đến hạn: lấy hạn từ quá khứ tới hôm nay + 30 ngày, bỏ hạn xa hơn, sắp theo hạn tăng dần | U | | ⬜ |
-| TC-063 | US-18 | Bản ghi quá hạn được đánh dấu rõ | I | | ⬜ |
-| TC-064 | US-18 | Không ai đến hạn → trạng thái rỗng | I | | ⬜ |
+| TC-059 | US-17 | Ghi mũi tiêm hợp lệ → hiện trong hồ sơ tiêm | I | `tests/integration/test_vaccinations.py`, `tests/unit/test_vaccinations_service.py` | ✅ |
+| TC-060 | US-17 | `next_due_at` sớm hơn `given_at` → từ chối | U | `tests/unit/test_vaccinations_service.py`, `tests/unit/test_models_vaccination.py` | ✅ |
+| TC-061 | US-17 | Ngày tiêm ở tương lai → từ chối | U | `tests/unit/test_vaccinations_service.py`, `tests/integration/test_vaccinations.py` | ✅ |
+| TC-062 | US-18 | Danh sách đến hạn: lấy hạn từ quá khứ tới hôm nay + 30 ngày, bỏ hạn xa hơn, sắp theo hạn tăng dần, **chỉ tính mũi mới nhất của mỗi loại vắc-xin** | U | `tests/unit/test_vaccinations_service.py` | ✅ |
+| TC-063 | US-18 | Bản ghi quá hạn được đánh dấu rõ | I | `tests/integration/test_vaccinations.py`, `tests/unit/test_vaccinations_service.py` | ✅ |
+| TC-064 | US-18 | Không ai đến hạn → trạng thái rỗng | I | `tests/integration/test_vaccinations.py`, `tests/unit/test_vaccinations_service.py` | ✅ |
 
 ## G. Hóa đơn và thanh toán — phase P5 · **đề bài yêu cầu đích danh có test**
 

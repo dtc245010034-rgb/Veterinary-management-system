@@ -20,8 +20,10 @@ from app.routers import appointments as appointments_router
 from app.routers import auth as auth_router
 from app.routers import care_records as care_records_router
 from app.routers import owners as owners_router
+from app.routers import pets as pets_router
 from app.routers import services as services_router
 from app.routers import users as users_router
+from app.routers import vaccinations as vaccinations_router
 from app.templates import templates
 
 
@@ -43,6 +45,8 @@ app.include_router(owners_router.router)
 app.include_router(services_router.router)
 app.include_router(appointments_router.router)
 app.include_router(care_records_router.router)
+app.include_router(pets_router.router)
+app.include_router(vaccinations_router.router)
 
 
 @app.exception_handler(ChuaDangNhap)

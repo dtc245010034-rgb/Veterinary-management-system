@@ -23,6 +23,8 @@
     {# Bảng phân quyền US-02 cho cả ba vai trò quyền XEM bảng giá; chỉ quản lý mới sửa.
        Trước đây chỉ quản lý có link nên lễ tân và nhân viên phải tự gõ URL. #}
     <a href="/services">Dịch vụ</a>
+    {# US-02 cho cả ba vai trò toàn quyền ở mục tiêm phòng, nên link này không lọc vai trò. #}
+    <a href="/vaccinations">Tiêm phòng</a>
     {% if user.role == 'manager' %}
       <a href="/stats">Thống kê</a>
       <a href="/users">Tài khoản</a>
