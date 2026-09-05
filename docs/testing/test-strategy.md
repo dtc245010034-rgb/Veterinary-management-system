@@ -14,7 +14,7 @@ bị bỏ qua — và một hệ thống test bị bỏ qua thì bằng không c
 
 | Tầng | Phạm vi | Chạy khi nào | Ngân sách | Lệnh |
 |---|---|---|---|---|
-| **Unit** | Hàm trong `app/services/`, `app/ai/prompts.py`. Không HTTP, DB in-memory hoặc không DB | Mỗi lần sửa code | < 5s | `pytest tests/unit` |
+| **Unit** | Hàm trong `app/services/`, `app/ai/prompts.py`. Không HTTP, DB in-memory hoặc không DB | Mỗi lần sửa code | < 15s | `pytest tests/unit` |
 | **Integration** | Router + DB in-memory qua `TestClient`. Có phân quyền, có validation | Cuối mỗi phiên làm việc | < 30s | `pytest tests/integration` |
 | **Regression** | Chạy lại **toàn bộ** suite | Trước mỗi commit | < 1 phút | `pytest` |
 | **Hệ thống hoàn chỉnh** | `tests/e2e/test_full_flow.py` + [`smoke-checklist.md`](smoke-checklist.md) bấm tay | Cuối mỗi phase P1–P8 | vài phút | `pytest tests/e2e` |

@@ -15,6 +15,7 @@ from app.auth import ChuaDangNhap
 from app.config import settings
 import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
 from app.db import Base, engine
+from app.routers import appointments as appointments_router
 from app.routers import auth as auth_router
 from app.routers import owners as owners_router
 from app.routers import services as services_router
@@ -38,6 +39,7 @@ app.include_router(auth_router.router)
 app.include_router(users_router.router)
 app.include_router(owners_router.router)
 app.include_router(services_router.router)
+app.include_router(appointments_router.router)
 
 
 @app.exception_handler(ChuaDangNhap)

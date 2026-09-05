@@ -34,4 +34,4 @@ Chép vào đây thì kế hoạch trở thành một phần của lịch sử d
 | 2026-09-04 | [Nền tảng, đăng nhập và phân quyền](2026-09-04-p1-nen-tang-va-xac-thuc.md) | P1 | Hoàn thành |
 | 2026-09-04 | [Chủ nuôi và thú cưng](2026-09-04-p2a-chu-nuoi-va-thu-cung.md) | P2a | Hoàn thành |
 | 2026-09-05 | [Dịch vụ, bảng giá và gói](2026-09-05-p2b-dich-vu-va-goi.md) | P2b | Hoàn thành |
-| 2026-09-05 | [Lịch hẹn và chống trùng lịch](2026-09-05-p3-lich-hen.md) | P3 | Đang thực hiện chặng 1 |
+| 2026-09-05 | [Lịch hẹn và chống trùng lịch](2026-09-05-p3-lich-hen.md) | P3 | Chặng 1 xong, chờ duyệt sang chặng 2 |

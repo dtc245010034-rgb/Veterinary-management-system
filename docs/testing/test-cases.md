@@ -50,31 +50,31 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-024 | US-07 | Thêm dịch vụ hợp lệ → xuất hiện khi đặt lịch | I | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — phần `danh_sach_dang_ban()`; hiện trong form đặt lịch chờ P3 | ✅ |
+| TC-024 | US-07 | Thêm dịch vụ hợp lệ → xuất hiện khi đặt lịch | I | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py`, `tests/integration/test_appointments.py` | ✅ |
 | TC-025 | US-07 | Giá âm hoặc thời lượng ≤ 0 → bị từ chối | U | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` | ✅ |
 | TC-026 | US-07 | Đổi giá dịch vụ → hóa đơn cũ giữ nguyên giá | U | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — đổi giá xong; hóa đơn cũ giữ giá chờ **P5** | 🟡 |
 | TC-027 | US-08 | Tạo gói 3 dịch vụ → hiện khi lập hóa đơn | I | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — tạo gói xong; hiện khi lập hóa đơn chờ **P5** | 🟡 |
 | TC-028 | US-08 | Chi tiết gói hiện thành phần và tổng giá lẻ để so sánh | I | `tests/unit/test_models_service.py`, `tests/integration/test_services.py` | ✅ |
 | TC-029 | US-08 | Gói không có thành phần → không lưu được | U | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` | ✅ |
-| TC-030 | US-09 | Ngưng bán dịch vụ → biến mất khỏi danh sách đặt lịch mới | I | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — biến khỏi `danh_sach_dang_ban()`; form đặt lịch chờ P3 | ✅ |
+| TC-030 | US-09 | Ngưng bán dịch vụ → biến mất khỏi danh sách đặt lịch mới | I | `tests/unit/test_catalog_service.py`, `tests/unit/test_scheduling.py`, `tests/integration/test_appointments.py` | ✅ |
 | TC-031 | US-09 | Hóa đơn cũ chứa dịch vụ đã ngưng bán vẫn hiển thị đủ | I | — chờ **P5**, cần hóa đơn để kiểm | 🟡 |
 
 ## D. Lịch hẹn — phase P3 · **đề bài yêu cầu đích danh có test**
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-032 | US-10 | Đặt lịch hợp lệ → `booked`, `end_at` tính từ thời lượng dịch vụ | U | | ⬜ |
-| TC-033 | US-10 | Giờ bắt đầu trong quá khứ → bị từ chối | U | | ⬜ |
-| TC-034 | US-10 | Nhân viên không phải `caretaker` → bị từ chối | U | | ⬜ |
-| TC-035 | US-10 | Lịch vừa tạo hiện đúng khung giờ, đúng nhân viên | I | | ⬜ |
-| TC-036 | US-11 | **Trùng nhân viên, giao nhau một phần** (09:30 vs 09:00–10:00) → từ chối | U | | ⬜ |
-| TC-037 | US-11 | Từ chối kèm gợi ý khung trống trong ngày | U | | ⬜ |
-| TC-038 | US-11 | **Liền kề** (10:00–11:00 sau 09:00–10:00) → chấp nhận | U | | ⬜ |
-| TC-039 | US-11 | **Trùng thú cưng**, khác nhân viên → từ chối | U | | ⬜ |
-| TC-040 | US-11 | Lịch cũ đã `cancelled` → khung giờ đó đặt lại được | U | | ⬜ |
-| TC-041 | US-11 | **Bao trọn** (08:00–11:00 phủ 09:00–10:00) → từ chối | U | | ⬜ |
-| TC-042 | US-11 | **Nằm gọn bên trong** (09:15–09:45) → từ chối | U | | ⬜ |
-| TC-043 | US-11 | Chặn trùng lịch qua API, không chỉ ở tầng service | I | | ⬜ |
+| TC-032 | US-10 | Đặt lịch hợp lệ → `booked`, `end_at` tính từ thời lượng dịch vụ | U | `tests/unit/test_scheduling.py`, `tests/unit/test_models_appointment.py` | ✅ |
+| TC-033 | US-10 | Giờ bắt đầu trong quá khứ → bị từ chối | U | `tests/unit/test_scheduling.py`, `tests/integration/test_appointments.py` | ✅ |
+| TC-034 | US-10 | Nhân viên không phải `caretaker` → bị từ chối | U | `tests/unit/test_scheduling.py` | ✅ |
+| TC-035 | US-10 | Lịch vừa tạo hiện đúng khung giờ, đúng nhân viên | I | `tests/integration/test_appointments.py` | ✅ |
+| TC-036 | US-11 | **Trùng nhân viên, giao nhau một phần** (09:30 vs 09:00–10:00) → từ chối | U | `tests/unit/test_scheduling.py` | ✅ |
+| TC-037 | US-11 | Từ chối kèm gợi ý khung trống trong ngày | U | `tests/unit/test_scheduling.py`, `tests/integration/test_appointments.py` | ✅ |
+| TC-038 | US-11 | **Liền kề** (10:00–11:00 sau 09:00–10:00) → chấp nhận | U | `tests/unit/test_scheduling.py`, `tests/integration/test_appointments.py` | ✅ |
+| TC-039 | US-11 | **Trùng thú cưng**, khác nhân viên → từ chối | U | `tests/unit/test_scheduling.py` | ✅ |
+| TC-040 | US-11 | Lịch cũ đã `cancelled` → khung giờ đó đặt lại được | U | `tests/unit/test_scheduling.py` | ✅ |
+| TC-041 | US-11 | **Bao trọn** (08:00–11:00 phủ 09:00–10:00) → từ chối | U | `tests/unit/test_scheduling.py` | ✅ |
+| TC-042 | US-11 | **Nằm gọn bên trong** (09:15–09:45) → từ chối | U | `tests/unit/test_scheduling.py` | ✅ |
+| TC-043 | US-11 | Chặn trùng lịch qua API, không chỉ ở tầng service | I | `tests/integration/test_appointments.py` | ✅ |
 | TC-044 | US-12 | Đổi sang khung trống → cập nhật giờ, trạng thái `rescheduled` | U | | ⬜ |
 | TC-045 | US-12 | Đổi sang khung đã bận → từ chối, **lịch giữ nguyên giờ cũ** | U | | ⬜ |
 | TC-046 | US-12 | Đổi lịch **không tự so sánh với chính nó** | U | | ⬜ |

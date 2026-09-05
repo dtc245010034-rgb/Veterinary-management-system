@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block tieu_de %}Lịch hẹn{% endblock %}
+
+{% block noi_dung %}
+<h1>Lịch hẹn ngày {{ ngay.strftime("%d/%m/%Y") }}</h1>
+
+<form class="thanh-tim" method="get" action="/appointments">
+  <label class="loc">Ngày <input name="ngay" type="date" value="{{ ngay.isoformat() }}"></label>
+  <label class="loc">Nhân viên
+    <select name="nhan_vien_id">
+      <option value="">Tất cả</option>
+      {% for nv in nhan_vien %}
+        <option value="{{ nv.id }}" {{ 'selected' if nhan_vien_id == nv.id }}>{{ nv.full_name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit" class="chinh">Xem</button>
+</form>
+
+{% if loi %}
+<div class="loi" role="alert">
+  <p>{{ loi }}</p>
+  {% if khung_trong %}
+    <p class="goi-y"><strong>Khung giờ còn trống:</strong>
+      {% for k in khung_trong %}<span class="khung">{{ k.strftime("%H:%M") }}</span>{% endfor %}
+    </p>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="hai-cot">
+  <div>
+    {% if danh_sach %}
+      <table>
+        <thead>
+          <tr><th>Giờ</th><th>Thú cưng</th><th>Chủ nuôi</th><th>Dịch vụ</th><th>Nhân viên</th><th>Trạng thái</th></tr>
+        </thead>
+        <tbody>
+        {% for a in danh_sach %}
+          <tr class="{{ 'dong-mo' if a.status == 'cancelled' }}">
+            <td class="gio">{{ a.start_at.strftime("%H:%M") }}–{{ a.end_at.strftime("%H:%M") }}</td>
+            <td>{{ a.pet.name }}</td>
+            <td><a href="/owners/{{ a.pet.owner_id }}">{{ a.pet.owner.full_name }}</a></td>
+            <td>{{ a.service.name }}</td>
+            <td>{{ a.staff.full_name }}</td>
+            <td><span class="nhan nhan-{{ a.status }}">{{ a.ten_trang_thai }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="the rong">
+        <p>Chưa có lịch hẹn nào trong ngày này.</p>
+        {% if user.role in ('manager', 'receptionist') %}<p class="phu">Đặt lịch ở khung bên cạnh.</p>{% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if user.role in ('manager', 'receptionist') %}
+  <form class="the" method="post" action="/appointments">
+    <h2>Đặt lịch</h2>
+    <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">
+
+    <label>Thú cưng
+      <select name="thu_cung_id" required>
+        {% for p in thu_cung %}
+          <option value="{{ p.id }}">{{ p.name }} — {{ p.owner.full_name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Dịch vụ
+      <select name="dich_vu_id" required>
+        {% for s in dich_vu %}
+          <option value="{{ s.id }}">{{ s.name }} ({{ s.duration_min }} phút)</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Nhân viên chăm sóc
+      <select name="nhan_vien_id" required>
+        {% for nv in nhan_vien %}<option value="{{ nv.id }}">{{ nv.full_name }}</option>{% endfor %}
+      </select>
+    </label>
+
+    <label>Giờ bắt đầu <input name="gio" type="time" step="900" required></label>
+    <label>Ghi chú <input name="ghi_chu"></label>
+
+    <button type="submit" class="chinh">Đặt lịch</button>
+    <p class="phu nhan-nho">Giờ kết thúc tự tính theo thời lượng dịch vụ.</p>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

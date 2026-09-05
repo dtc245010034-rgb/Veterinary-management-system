@@ -199,3 +199,23 @@ tr.dong-mo td { opacity: .55; }
 .dong-thanh-phan { display: grid; grid-template-columns: 1fr 80px; gap: 8px; align-items: center; font-weight: 400; }
 .dong-thanh-phan input { margin-top: 0; }
 .nhan-nho { font-size: 13px; margin: 0 0 10px; }
+
+/* --- Lịch hẹn --- */
+.loc { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 500; }
+.loc input, .loc select { margin-top: 0; width: auto; }
+
+td.gio { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 500; }
+
+.nhan { font-size: 12px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.nhan-booked { background: #e8f3ee; color: var(--chinh-dam); }
+.nhan-rescheduled { background: #fff4e5; color: #93370d; }
+.nhan-cancelled { background: #f1f3f5; color: var(--chu-phu); }
+.nhan-done { background: #eaf0fb; color: #1f4a8c; }
+
+.loi p { margin: 0; }
+.goi-y { margin-top: 8px !important; }
+.khung {
+  display: inline-block; background: #fff; border: 1px solid #fecdca;
+  border-radius: 6px; padding: 2px 9px; margin: 2px 4px 0 0;
+  font-variant-numeric: tabular-nums; color: var(--chu);
+}

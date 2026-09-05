@@ -7,18 +7,21 @@ thú cưng và dịch vụ mẫu sẽ thêm vào đây.
 """
 
 import sys
+from datetime import timedelta
 from decimal import Decimal
 
 from sqlalchemy import select
 
 import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
 from app.db import Base, SessionLocal, engine
+from app.models.appointment import Appointment
 from app.models.owner import Owner
 from app.models.pet import Pet
 from app.models.service import Service
 from app.models.service_package import PackageItem, ServicePackage
 from app.models.user import User
 from app.security import hash_password
+from app.services import clock
 
 MAT_KHAU_MAC_DINH = "matkhau123"
 
@@ -115,10 +118,43 @@ def main() -> None:
             db.add(goi)
             goi_moi += 1
 
+        db.flush()
+
+        # Lịch mẫu cho ngày mai, trong giờ làm việc, không trùng nhau.
+        # Đặt ở tương lai để không vi phạm quy tắc "không đặt lịch trong quá khứ".
+        mai = (clock.now() + timedelta(days=1)).replace(
+            hour=9, minute=0, second=0, microsecond=0
+        )
+        lich_moi = 0
+        if db.scalar(select(Appointment)) is None:
+            le_tan = db.scalar(select(User).where(User.username == "letan"))
+            cham_soc = list(db.scalars(select(User).where(User.role == "caretaker")))
+            thu_cung = list(db.scalars(select(Pet).order_by(Pet.id)))
+            dich_vu = db.scalar(select(Service).where(Service.code == "TAM"))
+
+            # Hai nhân viên, mỗi người hai lịch liên tiếp — chính là tình huống mà quy
+            # tắc nửa mở [start, end) cho phép và cách cài đặt sai sẽ chặn nhầm.
+            for i, nhan_su in enumerate(cham_soc[:2]):
+                for j in range(2):
+                    if len(thu_cung) <= i * 2 + j:
+                        break
+                    bat_dau = mai + timedelta(hours=j)
+                    db.add(
+                        Appointment(
+                            pet_id=thu_cung[i * 2 + j].id,
+                            service_id=dich_vu.id,
+                            staff_id=nhan_su.id,
+                            start_at=bat_dau,
+                            end_at=bat_dau + timedelta(minutes=dich_vu.duration_min),
+                            created_by=le_tan.id,
+                        )
+                    )
+                    lich_moi += 1
+
         db.commit()
 
     print(f"Đã thêm {them_moi} tài khoản, {chu_nuoi_moi} chủ nuôi, {thu_cung_moi} thú cưng, "
-          f"{dich_vu_moi} dịch vụ, {goi_moi} gói.")
+          f"{dich_vu_moi} dịch vụ, {goi_moi} gói, {lich_moi} lịch hẹn.")
     print(f"Mật khẩu chung của mọi tài khoản: {MAT_KHAU_MAC_DINH}\n")
     for username, full_name, role in TAI_KHOAN_MAU:
         print(f"  {username:10} {role:14} {full_name}")
