@@ -29,20 +29,28 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 
 ## P2 — Chủ nuôi, thú cưng, dịch vụ
 
-- [ ] Thêm chủ nuôi mới → hiện ngay trong danh sách
-- [ ] Bỏ trống họ tên → lỗi hiện **ngay cạnh ô nhập**, không phải trang lỗi riêng
-- [ ] Nhập số điện thoại đã tồn tại → cảnh báo trùng hiện ra
-- [ ] Thêm thú cưng cho chủ nuôi vừa tạo → hiện trong danh sách thú cưng của chủ đó
-- [ ] Nhập ngày sinh tương lai → bị chặn với thông báo dễ hiểu
-- [ ] Mở trang chi tiết thú cưng → thấy chủ nuôi, lịch sử chăm sóc, lịch tiêm
-- [ ] Tìm theo số điện thoại → ra đúng chủ nuôi
-- [ ] Tìm "MUN" chữ hoa → vẫn ra thú cưng tên "mun"
-- [ ] Tìm từ khóa vô nghĩa → trang trạng thái rỗng có hướng dẫn, không phải trang trắng
-- [ ] `manager` thêm dịch vụ mới → xuất hiện trong danh sách chọn khi đặt lịch
-- [ ] `receptionist` mở trang dịch vụ → chỉ xem được, không có nút sửa
+- [x] Thêm chủ nuôi mới → hiện ngay trong danh sách
+- [x] Bỏ trống họ tên → lỗi hiện **ngay cạnh ô nhập**, không phải trang lỗi riêng
+- [x] Nhập số điện thoại đã tồn tại → cảnh báo trùng hiện ra
+- [x] Thêm thú cưng cho chủ nuôi vừa tạo → hiện trong danh sách thú cưng của chủ đó
+- [x] Nhập ngày sinh tương lai → bị chặn với thông báo dễ hiểu
+- [x] Mở trang chi tiết chủ nuôi → thấy thông tin liên hệ và danh sách thú cưng
+  <br>_(phần lịch sử chăm sóc và lịch tiêm chuyển xuống P4 — hiện chỉ có dòng ghi chú)_
+- [x] Tìm theo số điện thoại → ra đúng chủ nuôi
+- [x] Tìm "MUN" chữ hoa → vẫn ra thú cưng tên "mun"
+- [x] Tìm từ khóa vô nghĩa → trang trạng thái rỗng có hướng dẫn, không phải trang trắng
+- [x] `manager` thêm dịch vụ mới → xuất hiện ngay trong bảng giá
+  <br>_(phần "hiện trong form đặt lịch" chuyển xuống P3)_
+- [x] `receptionist` mở trang dịch vụ → chỉ xem được, không có nút sửa
+- [ ] Tạo gói từ 2–3 dịch vụ → gói hiện kèm tổng giá lẻ và số tiền tiết kiệm
+- [ ] Gói có giá cao hơn tổng giá lẻ → số tiết kiệm hiện **màu đỏ** với dấu âm
+- [ ] Ngưng bán một dịch vụ → dòng mờ đi, ghi "Đã ngưng bán", **không** biến mất
+- [ ] Dịch vụ đã ngưng bán → không còn trong form tạo gói
 
 ## P3 — Lịch hẹn
 
+- [ ] Dịch vụ vừa thêm ở `/services` xuất hiện trong form đặt lịch (hoãn từ P2)
+- [ ] Dịch vụ đã ngưng bán **không** xuất hiện trong form đặt lịch (hoãn từ P2)
 - [ ] Đặt lịch mới → hiện trên lưới lịch đúng khung giờ, đúng nhân viên
 - [ ] Đặt lịch cho cùng nhân viên, giờ giao nhau → **bị từ chối**, thông báo nêu rõ lý do
 - [ ] Thông báo từ chối có **gợi ý khung giờ trống**
@@ -56,6 +64,7 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 
 ## P4 — Hồ sơ chăm sóc và tiêm phòng
 
+- [ ] Trang chi tiết chủ nuôi hiện lịch sử chăm sóc và lịch tiêm của từng thú cưng (hoãn từ P2)
 - [ ] `caretaker` ghi hồ sơ cho lịch của mình → lưu được, lịch chuyển trạng thái hoàn thành
 - [ ] `caretaker` mở lịch của người khác → không có nút ghi hồ sơ
 - [ ] Ghi hồ sơ lần hai cho cùng lịch → bị chặn

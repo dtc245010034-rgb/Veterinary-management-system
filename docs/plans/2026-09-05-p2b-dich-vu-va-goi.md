@@ -86,7 +86,8 @@ TC-025, TC-028, TC-029 hoàn tất trọn vẹn ở phase này.
 - [x] `pytest` toàn bộ xanh (166 passed in 12.61s), output sạch, không test nào bị skip
 - [x] `codebase-map.md` cập nhật đúng thực tế
 - [x] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật
-- [ ] Khối smoke phần dịch vụ tick đủ trên trình duyệt thật
+- [x] Khối smoke P2 phần dịch vụ tick đủ 11/11 trên trình duyệt thật
+- [ ] Bốn ô mới bổ sung cho gói dịch vụ — chưa ai tick, xem “Điều chỉnh” bên dưới
 
 ## Ngoài phạm vi
 
@@ -101,3 +102,19 @@ lượt bị gán ngược. Sửa test, không sửa code.
 
 **Một lỗi trong dữ liệu mẫu** — gói "Combo làm đẹp" đắt hơn tổng giá lẻ. Không test nào đỏ vì hệ
 thống xử lý đúng; phát hiện nhờ nhìn con số thật trên trang.
+
+**Checklist smoke P2 thiếu phần gói dịch vụ.** Nó được viết ở P0, trước khi biết gói sẽ trông thế
+nào. Đã bổ sung bốn ô: tạo gói và xem tiền tiết kiệm, gói đắt hơn hiện số âm màu đỏ, ngưng bán làm
+dòng mờ đi chứ không biến mất, và dịch vụ đã ngưng không còn trong form tạo gói. Bốn ô này **chưa
+ai tick** — người dùng đã smoke test trước khi chúng tồn tại.
+
+**Hai ô trong checklist P2 mô tả thứ chưa tồn tại**, đã sửa lại cho khớp thực tế và dời phần chờ
+xuống đúng phase:
+
+| Ô gốc | Vấn đề | Xử lý |
+|---|---|---|
+| "chi tiết thú cưng → thấy lịch sử chăm sóc, lịch tiêm" | Hai thứ đó thuộc P4 | Sửa mô tả; phần chờ dời xuống khối P4 |
+| "thêm dịch vụ → xuất hiện trong danh sách chọn khi đặt lịch" | Form đặt lịch thuộc P3 | Sửa thành "xuất hiện trong bảng giá"; phần chờ dời xuống khối P3 |
+
+Đây là lần thứ hai gặp kiểu lỗi này (lần đầu là ô `/stats` ở P1). Nguyên nhân chung: checklist
+viết một lần ở P0 mô tả hệ thống hoàn chỉnh, trong khi mỗi phase chỉ dựng được một phần.
