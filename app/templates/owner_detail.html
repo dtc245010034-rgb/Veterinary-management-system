@@ -31,7 +31,7 @@
         <tbody>
         {% for p in chu_nuoi.pets %}
           <tr>
-            <td>{{ p.name }}</td>
+            <td><a href="/pets/{{ p.id }}">{{ p.name }}</a></td>
             <td>{{ p.species }}</td>
             <td>{{ p.breed or "—" }}</td>
             <td>{{ p.birth_date.strftime("%d/%m/%Y") if p.birth_date else "—" }}</td>

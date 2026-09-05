@@ -152,14 +152,22 @@ def them_thu_cung(
     return RedirectResponse(f"/owners/{chu_nuoi_id}", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.post("/pets/{thu_cung_id}/xoa")
+@router.post("/pets/{thu_cung_id}/xoa", response_class=HTMLResponse)
 def xoa_thu_cung(
+    request: Request,
     thu_cung_id: int,
     user: User = duoc_sua,
     db: Session = Depends(get_db),
 ):
     chu_nuoi_id = nv.lay_thu_cung(db, thu_cung_id).owner_id
-    nv.xoa_thu_cung(db, thu_cung_id)
+
+    try:
+        nv.xoa_thu_cung(db, thu_cung_id)
+    except LoiNghiepVu as loi:
+        # Thiếu nhánh này thì LoiNghiepVu bay ra thành 500 — đúng lỗi mà việc chặn ở
+        # tầng services vừa sửa xong lại tái diễn ở tầng HTTP.
+        return trang_chi_tiet(request, chu_nuoi_id, user, db, loi=str(loi))
+
     return RedirectResponse(f"/owners/{chu_nuoi_id}", status_code=status.HTTP_303_SEE_OTHER)
 
 

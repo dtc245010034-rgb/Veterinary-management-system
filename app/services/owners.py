@@ -10,6 +10,7 @@ from datetime import date
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from app.models.appointment import Appointment
 from app.models.owner import Owner
 from app.models.pet import Pet
 from app.services import clock
@@ -176,7 +177,24 @@ def lay_thu_cung(db: Session, thu_cung_id: int) -> Pet:
 
 
 def xoa_thu_cung(db: Session, thu_cung_id: int) -> None:
-    db.delete(lay_thu_cung(db, thu_cung_id))
+    """Chặn khi thú cưng còn lịch hẹn hoặc hồ sơ chăm sóc.
+
+    Cùng luật với `xoa_chu_nuoi`: khóa ngoại của SQLite cũng chặn, nhưng nó ném
+    IntegrityError và người dùng nhận về lỗi 500. Kiểm ở đây để trả thông báo đọc hiểu
+    được; khóa ngoại giữ vai trò lớp chặn cuối.
+
+    Lỗi này tồn tại từ P3 (chỉ có `appointments` trỏ vào) và nặng thêm ở P4 khi có thêm
+    `care_records`. Tìm ra khi rà luồng bằng tay sau chặng 1, không phải khi viết code.
+    """
+    p = lay_thu_cung(db, thu_cung_id)
+
+    if db.scalar(select(Appointment).where(Appointment.pet_id == p.id)) is not None:
+        raise LoiNghiepVu(
+            f"“{p.name}” vẫn còn lịch hẹn hoặc hồ sơ chăm sóc nên không xóa được. "
+            "Hồ sơ chăm sóc là dữ liệu lịch sử, xóa đi thì không khôi phục được."
+        )
+
+    db.delete(p)
     db.commit()
 
 

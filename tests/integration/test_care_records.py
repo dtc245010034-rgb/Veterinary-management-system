@@ -216,3 +216,80 @@ def test_trang_thu_cung_khong_ton_tai_tra_ve_404(client, nen):
     dang_nhap(client, "letan")
 
     assert client.get("/pets/9999").status_code == 404
+
+
+# --- Ba lỗi tìm được khi rà luồng sau chặng 1 ------------------------------------
+
+
+def test_trang_chu_nuoi_co_link_toi_trang_thu_cung(client, db, nen):
+    """Lỗi 1: `/pets/{id}` không có link nào trỏ tới, chỉ vào được nếu gõ URL.
+
+    Trang tồn tại và chạy đúng nhưng không ai bấm tới được — đúng loại lỗi mà chỉ đi
+    hết luồng bằng chuột mới lộ ra, test tầng HTTP viết theo URL thì không.
+    """
+    dang_nhap(client, "letan")
+
+    r = client.get(f"/owners/{nen['pet'].owner_id}")
+
+    assert f'href="/pets/{nen["pet"].id}"' in r.text
+
+
+def test_luoi_lich_co_link_toi_trang_thu_cung(client, db, nen):
+    """Cùng lỗi 1: từ lịch hẹn phải mở được hồ sơ con vật đang chăm."""
+    dat(client, nen)
+    dang_nhap(client, "letan")
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert f'href="/pets/{nen["pet"].id}"' in r.text
+
+
+def test_quan_ly_ghi_ho_so_xong_ve_trang_thay_duoc_lich(client, db, nen):
+    """Lỗi 2: quản lý ghi hộ xong bị đẩy sang `/appointments/cua-toi`.
+
+    Quản lý không được phân lịch nào nên trang đó luôn rỗng: vừa làm xong một việc thì
+    nhận về màn hình trắng, không có dấu hiệu nào cho biết đã lưu thành công.
+    """
+    dat(client, nen)
+    ma = ma_lich(db)
+    dang_nhap(client, "quanly")
+
+    with clock.freeze(SAU_BUOI):
+        r = client.post(
+            f"/appointments/{ma}/ho-so", data={"tinh_trang": "Quản lý ghi hộ"},
+            follow_redirects=False,
+        )
+        dich = client.get(r.headers["location"])
+
+    assert "Chưa có lịch hẹn nào" not in dich.text
+    assert "Hoàn thành" in dich.text
+
+
+def test_nhan_vien_ghi_ho_so_xong_van_ve_lich_cua_minh(client, db, nen):
+    """Nửa còn lại của lỗi 2: sửa cho quản lý không được làm hỏng đường của nhân viên."""
+    dat(client, nen)
+    ma = ma_lich(db)
+    dang_nhap(client, "chamsoc1")
+
+    with clock.freeze(SAU_BUOI):
+        r = client.post(
+            f"/appointments/{ma}/ho-so", data={"tinh_trang": "Đã tắm"},
+            follow_redirects=False,
+        )
+
+    assert "/appointments/cua-toi" in r.headers["location"]
+
+
+def test_xoa_thu_cung_con_lich_hen_bi_chan_khong_phai_loi_500(client, db, nen):
+    """Lỗi 3: đã tồn tại từ P3, nay nặng thêm vì có cả hồ sơ chăm sóc trỏ vào.
+
+    `xoa_chu_nuoi` chặn tử tế từ P2a; `xoa_thu_cung` thì không, nên IntegrityError bay
+    thẳng ra thành lỗi 500.
+    """
+    dat(client, nen)
+    dang_nhap(client, "letan")
+
+    r = client.post(f"/pets/{nen['pet'].id}/xoa", follow_redirects=True)
+
+    assert r.status_code != 500
+    assert "lịch hẹn" in r.text.lower()

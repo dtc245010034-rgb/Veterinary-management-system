@@ -35,7 +35,7 @@ danh sách thú cưng đến hạn tiêm.
 - [ ] 7. Model `vaccinations` + `app/services/vaccinations.py` — TC-059 → TC-061
 - [ ] 8. Danh sách đến hạn — TC-062 → TC-064
 - [ ] 9. Trang `/pets/{id}` gộp lịch sử chăm sóc + hồ sơ tiêm — TC-020 hoãn từ P2a
-- [ ] 10. **Sửa lỗi có sẵn:** xóa thú cưng còn tham chiếu → 500, test tái hiện đỏ trước
+- [x] 10. **Sửa lỗi có sẵn:** xóa thú cưng còn tham chiếu → 500, test tái hiện đỏ trước _(làm sớm ở chặng 1 — xem Điều chỉnh)_
 - [ ] 11. Cập nhật `codebase-map.md`, `test-cases.md`, log phiên
 - [ ] 12. Báo cáo P4 đầy đủ, smoke, commit
 
@@ -155,6 +155,25 @@ tại không?*
 - [ ] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật
 - [ ] Khối smoke P4 tách theo chặng, tick đủ trên trình duyệt thật
 - [ ] **Mốc KT2 hoàn tất**
+
+## Điều chỉnh so với kế hoạch gốc
+
+**Bước 10 làm sớm ở chặng 1.** Kế hoạch xếp việc sửa lỗi xóa thú cưng vào chặng 2. Đợt rà luồng sau
+chặng 1 xác nhận nó trả **500 thật qua HTTP**, và người dùng sắp smoke test — để một lỗi 500 sống
+trong app trong lúc người ta bấm thử là không chấp nhận được. Chuyển lên làm ngay.
+
+**Hai lỗi khác không có trong kế hoạch, tìm ra khi rà luồng:**
+
+1. **`/pets/{id}` không có link nào trỏ tới.** Trang tồn tại, chạy đúng, có test HTTP xanh — nhưng
+   không ai bấm tới được vì test viết theo URL chứ không đi theo đường bấm. Ô smoke "Mở `/pets/{id}`"
+   sẽ buộc người dùng gõ URL bằng tay. Đã thêm link ở tên thú cưng trên trang chủ nuôi và trên lưới
+   lịch hẹn.
+2. **Quản lý ghi hồ sơ hộ xong bị đẩy sang trang rỗng.** Redirect cứng về `/appointments/cua-toi`,
+   mà quản lý không được phân lịch nào nên trang đó luôn trắng — vừa làm xong một việc thì không có
+   dấu hiệu nào cho biết đã lưu. Nay điều hướng theo vai trò.
+
+Cả ba đều có test tái hiện chạy **đỏ trước**, đúng luật 2 chống test giả. Cả ba đều là loại lỗi mà
+test tầng HTTP viết theo URL không bắt được — chúng chỉ lộ ra khi đi hết luồng như người dùng thật.
 
 ## Ngoài phạm vi
 

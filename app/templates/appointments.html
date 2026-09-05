@@ -41,7 +41,7 @@
         {% for a in danh_sach %}
           <tr class="{{ 'dong-mo' if a.status == 'cancelled' }}">
             <td class="gio">{{ a.start_at.strftime("%H:%M") }}–{{ a.end_at.strftime("%H:%M") }}</td>
-            <td>{{ a.pet.name }}</td>
+            <td><a href="/pets/{{ a.pet_id }}">{{ a.pet.name }}</a></td>
             <td><a href="/owners/{{ a.pet.owner_id }}">{{ a.pet.owner.full_name }}</a></td>
             <td>{{ a.service.name }}</td>
             <td>{{ a.staff.full_name }}</td>

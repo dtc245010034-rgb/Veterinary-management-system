@@ -326,3 +326,38 @@ def test_xoa_thu_cung_thanh_cong_va_chu_nuoi_van_con(db, frozen_clock):
 def test_xoa_thu_cung_khong_ton_tai_bi_tu_choi(db):
     with pytest.raises(LoiNghiepVu):
         nv.xoa_thu_cung(db, 9999)
+
+
+def test_xoa_thu_cung_con_lich_hen_bi_chan_kem_thong_bao(db, frozen_clock):
+    """Lỗi tồn tại từ P3: khóa ngoại ném IntegrityError thành lỗi 500.
+
+    Cùng luật với `xoa_chu_nuoi` — chặn ở đây để trả thông báo đọc hiểu được, khóa ngoại
+    giữ vai trò lớp chặn cuối.
+    """
+    from datetime import datetime
+    from decimal import Decimal
+
+    from app.models.appointment import Appointment
+    from app.models.service import Service
+    from app.models.user import User
+
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+    p = nv.tao_thu_cung(db, o.id, ten="Mực", loai="Chó")
+    dv = Service(code="TAM", name="Tắm", duration_min=60, price=Decimal("1"))
+    u = User(username="cs", password_hash="b", full_name="Chăm", role="caretaker")
+    db.add_all([dv, u])
+    db.commit()
+    db.add(
+        Appointment(
+            pet_id=p.id, service_id=dv.id, staff_id=u.id,
+            start_at=datetime(2026, 3, 12, 9), end_at=datetime(2026, 3, 12, 10),
+            created_by=u.id,
+        )
+    )
+    db.commit()
+
+    with pytest.raises(LoiNghiepVu) as loi:
+        nv.xoa_thu_cung(db, p.id)
+
+    assert "lịch hẹn" in str(loi.value).lower()
+    assert nv.lay_thu_cung(db, p.id) is not None

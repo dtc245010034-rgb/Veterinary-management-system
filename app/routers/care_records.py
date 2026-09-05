@@ -67,10 +67,7 @@ def luu_ho_so(
             request, lich_id, user, db, loi=str(loi), ma=status.HTTP_400_BAD_REQUEST
         )
 
-    return RedirectResponse(
-        f"/appointments/cua-toi?ngay={_ngay_cua_lich(db, lich_id)}",
-        status_code=status.HTTP_303_SEE_OTHER,
-    )
+    return RedirectResponse(_ve_lich_sau_khi_ghi(db, user, lich_id), status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/pets/{thu_cung_id}", response_class=HTMLResponse)
@@ -96,5 +93,12 @@ def trang_thu_cung(
     )
 
 
-def _ngay_cua_lich(db: Session, lich_id: int) -> str:
-    return scheduling.lay_lich(db, lich_id).start_at.date().isoformat()
+def _ve_lich_sau_khi_ghi(db: Session, user: User, lich_id: int) -> str:
+    """Về đúng trang mà người vừa ghi nhìn thấy được lịch đó.
+
+    Quản lý không được phân lịch nào nên `/appointments/cua-toi` với họ luôn rỗng: vừa
+    làm xong một việc thì nhận về màn hình trắng, không dấu hiệu nào cho biết đã lưu.
+    """
+    ngay = scheduling.lay_lich(db, lich_id).start_at.date().isoformat()
+    trang = "/appointments/cua-toi" if user.role == "caretaker" else "/appointments"
+    return f"{trang}?ngay={ngay}"
