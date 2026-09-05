@@ -176,8 +176,12 @@ Toàn bộ chạy với `FakeProvider`. Mã `G-xx` tham chiếu bộ ca trong [`
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | ⬜ |
+| TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | 🟡 bước 1→6 |
 | TC-102 | nhiều | Checklist bấm tay theo [`smoke-checklist.md`](smoke-checklist.md) | thủ công | — | ⬜ |
+
+TC-101 kéo lên sớm từ P5 (kế hoạch: [`../plans/2026-09-05-e2e-xuyen-suot.md`](../plans/2026-09-05-e2e-xuyen-suot.md)).
+Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→11 cần hóa đơn, thống kê và AI nên nối tiếp ở P5, P6,
+P7. Chỉ tick ✅ khi đủ 11 bước.
 
 ---
 

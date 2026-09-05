@@ -174,23 +174,30 @@ kiểm chứng được prompt sạch dữ liệu cá nhân, và US-28 sẽ ch�
 `tests/e2e/test_full_flow.py` — một test duy nhất, chạy trên **DB file thật** (không in-memory) để
 bắt được cả lỗi ở tầng lưu trữ:
 
-1. Đăng nhập vai trò lễ tân
-2. Tạo chủ nuôi → tạo thú cưng
-3. Đặt lịch chăm sóc
-4. Thử đặt lịch trùng → phải bị từ chối
-5. Đổi lịch sang khung trống → thành công
-6. Đăng nhập vai trò nhân viên chăm sóc → ghi hồ sơ chăm sóc → lịch chuyển `done`
-7. Đăng nhập lễ tân → lập hóa đơn
-8. Ghi nhận thanh toán một phần → trạng thái `partial`
-9. Ghi nhận nốt phần còn lại → trạng thái `paid`
-10. Gọi AI tóm tắt hồ sơ → có nội dung và có `DISCLAIMER`
-11. Đăng nhập quản lý → xem thống kê → doanh thu khớp số đã thu
+1. ✅ Đăng nhập vai trò lễ tân
+2. ✅ Tạo chủ nuôi → tạo thú cưng
+3. ✅ Đặt lịch chăm sóc
+4. ✅ Thử đặt lịch trùng → phải bị từ chối
+5. ✅ Đổi lịch sang khung trống → thành công
+6. ✅ Đăng nhập vai trò nhân viên chăm sóc → ghi hồ sơ chăm sóc → lịch chuyển `done`
+7. ⬜ Đăng nhập lễ tân → lập hóa đơn *(P5)*
+8. ⬜ Ghi nhận thanh toán một phần → trạng thái `partial` *(P5)*
+9. ⬜ Ghi nhận nốt phần còn lại → trạng thái `paid` *(P5)*
+10. ⬜ Gọi AI tóm tắt hồ sơ → có nội dung và có `DISCLAIMER` *(P7)*
+11. ⬜ Đăng nhập quản lý → xem thống kê → doanh thu khớp số đã thu *(P6)*
 
 Một test đi qua gần hết hệ thống, nên nó bắt được lỗi tích hợp mà unit test không thấy: sai thứ tự
 trạng thái, session đăng nhập rơi giữa chừng, dữ liệu không commit, phân quyền chặn nhầm.
 
 Đổi lại, khi nó đỏ thì thông tin chẩn đoán kém — nên nó **không thay thế** ba tầng trên, chỉ chạy
 cuối mỗi phase.
+
+**Luật riêng của tầng này, thêm ngày 05/09:** kịch bản **chỉ được đi theo link và nút lấy từ HTML
+trả về**; địa chỉ gõ tay duy nhất là `/`. Form phải gửi đúng như trình duyệt gửi — đủ mọi trường
+`hidden`, và `<select>` không có option nào `selected` thì lấy **option đầu tiên**. Lý do: năm trong
+chín lỗi tìm được ngày 05/09 lọt qua toàn bộ test tầng HTTP vì test tự dựng URL và tự dựng `data={}`.
+Viết e2e theo kiểu cũ thì nó xanh mà vẫn để lọt đúng những lỗi ấy — đã chứng minh bằng đột biến:
+bỏ dấu `selected` ở ô chọn nhân viên làm **e2e đỏ trong khi cả 344 test unit + integration vẫn xanh**.
 
 ---
 

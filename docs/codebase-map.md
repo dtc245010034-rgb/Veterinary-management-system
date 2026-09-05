@@ -116,6 +116,7 @@
 | `integration/test_services.py` | Dịch vụ, bảng giá, gói qua HTTP (TC-024→031) |
 | `integration/test_care_records.py` | Ghi hồ sơ và trang thú cưng qua HTTP (TC-053, TC-054, TC-057, TC-058) |
 | `integration/test_appointments.py` | Đặt/đổi/hủy lịch qua HTTP, lịch theo vai trò (TC-035, TC-043, TC-050→052, TC-009) |
+| `e2e/test_full_flow.py` | **Kịch bản xuyên suốt TC-101 bước 1→6** trên CSDL file thật, đi bằng link và nút lấy từ HTML — không tự dựng URL. Chứa `TrinhDuyet`, trình duyệt tí hon gửi form đúng như trình duyệt |
 
 ### Cấu hình
 
@@ -144,4 +145,3 @@ mục "Hiện có" và ghi rõ vai trò thật, rồi xóa dòng ở đây.
 | `app/ai/prompts.py` | System prompt + `DISCLAIMER` | P7 |
 | `app/ai/service.py` | 3 use case AI, lọc dữ liệu cá nhân, ghi `ai_logs` | P7 |
 | `app/routers/` — còn lại | appointments, care_records, vaccinations, invoices, stats, ai | P3–P7 |
-| `tests/e2e/test_full_flow.py` | Kịch bản xuyên suốt 11 bước | P5 |
