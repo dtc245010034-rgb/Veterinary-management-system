@@ -11,6 +11,12 @@ thấy được không.
 Cách dùng: chép nguyên khối checklist của các phase đã hoàn thành vào file report, rồi tick trong
 lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước** — đó là phần hồi quy thủ công.
 
+> **Chỉ tick ô kiểm được thật.** File này viết ở P0 mô tả hệ thống hoàn chỉnh, nên nhiều ô nói về
+> chức năng của phase chưa tới. Đã ba lần có ô được tick cho thứ chưa tồn tại (`/stats` ở P1, lịch
+> sử chăm sóc ở P2, đổi/hủy lịch ở P3). Khi chia một phase thành nhiều chặng, **tách khối checklist
+> theo chặng trước khi đưa cho người dùng tick** — trách nhiệm này thuộc về agent, không phải người
+> tick.
+
 **Chuẩn bị:** `uvicorn app.main:app --reload`, mở `http://127.0.0.1:8000`, dùng CSDL có dữ liệu mẫu.
 
 ---
@@ -42,25 +48,33 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 - [x] `manager` thêm dịch vụ mới → xuất hiện ngay trong bảng giá
   <br>_(phần "hiện trong form đặt lịch" chuyển xuống P3)_
 - [x] `receptionist` mở trang dịch vụ → chỉ xem được, không có nút sửa
-- [ ] Tạo gói từ 2–3 dịch vụ → gói hiện kèm tổng giá lẻ và số tiền tiết kiệm
-- [ ] Gói có giá cao hơn tổng giá lẻ → số tiết kiệm hiện **màu đỏ** với dấu âm
-- [ ] Ngưng bán một dịch vụ → dòng mờ đi, ghi "Đã ngưng bán", **không** biến mất
-- [ ] Dịch vụ đã ngưng bán → không còn trong form tạo gói
+- [x] Tạo gói từ 2–3 dịch vụ → gói hiện kèm tổng giá lẻ và số tiền tiết kiệm
+- [x] Gói có giá cao hơn tổng giá lẻ → số tiết kiệm hiện **màu đỏ** với dấu âm
+- [x] Ngưng bán một dịch vụ → dòng mờ đi, ghi "Đã ngưng bán", **không** biến mất
+- [x] Dịch vụ đã ngưng bán → không còn trong form tạo gói
 
-## P3 — Lịch hẹn
+## P3 chặng 1 — Đặt lịch và chống trùng
 
-- [ ] Dịch vụ vừa thêm ở `/services` xuất hiện trong form đặt lịch (hoãn từ P2)
-- [ ] Dịch vụ đã ngưng bán **không** xuất hiện trong form đặt lịch (hoãn từ P2)
-- [ ] Đặt lịch mới → hiện trên lưới lịch đúng khung giờ, đúng nhân viên
-- [ ] Đặt lịch cho cùng nhân viên, giờ giao nhau → **bị từ chối**, thông báo nêu rõ lý do
-- [ ] Thông báo từ chối có **gợi ý khung giờ trống**
-- [ ] Đặt lịch liền kề ngay sau lịch cũ (10:00 sau lịch kết thúc 10:00) → **được chấp nhận**
-- [ ] Đặt lịch cho cùng thú cưng với nhân viên khác, giờ giao nhau → bị từ chối
+- [x] Dịch vụ vừa thêm ở `/services` xuất hiện trong form đặt lịch (hoãn từ P2)
+- [x] Dịch vụ đã ngưng bán **không** xuất hiện trong form đặt lịch (hoãn từ P2)
+- [x] Đặt lịch mới → hiện trên lưới lịch đúng khung giờ, đúng nhân viên
+- [x] Đặt lịch cho cùng nhân viên, giờ giao nhau → **bị từ chối**, thông báo nêu rõ lý do
+- [x] Thông báo từ chối có **gợi ý khung giờ trống**
+- [x] Đặt lịch liền kề ngay sau lịch cũ (10:00 sau lịch kết thúc 10:00) → **được chấp nhận**
+- [x] Đặt lịch cho cùng thú cưng với nhân viên khác, giờ giao nhau → bị từ chối
+- [x] Xem ngày không có lịch → trạng thái rỗng rõ ràng
+
+## P3 chặng 2 — Đổi lịch, hủy lịch, xem theo vai trò
+
+> Chưa kiểm được: chặng 2 chưa cài đặt. Giao diện lịch hiện chỉ có nút "Xem" và
+> "Đặt lịch"; `/appointments/cua-toi` mới là link trong menu, chưa có route.
+
 - [ ] Đổi lịch sang khung trống → cập nhật thành công, lưới lịch hiển thị giờ mới
 - [ ] Đổi lịch sang khung đã bận → bị từ chối, và **lịch cũ vẫn nguyên giờ ban đầu**
 - [ ] Hủy lịch kèm lý do → biến khỏi lưới lịch hoạt động, khung giờ đặt lại được
-- [ ] Đăng nhập `caretaker` → chỉ thấy lịch của chính mình
-- [ ] Xem ngày không có lịch → trạng thái rỗng rõ ràng
+- [ ] Hủy lịch đã hoàn thành → bị chặn
+- [ ] Đăng nhập `caretaker` → chỉ thấy lịch của chính mình, không thấy lịch người khác
+- [ ] `caretaker` gõ thẳng `/appointments` → chỉ thấy lịch của mình hoặc bị chặn
 
 ## P4 — Hồ sơ chăm sóc và tiêm phòng
 

@@ -87,7 +87,7 @@ TC-025, TC-028, TC-029 hoàn tất trọn vẹn ở phase này.
 - [x] `codebase-map.md` cập nhật đúng thực tế
 - [x] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật
 - [x] Khối smoke P2 phần dịch vụ tick đủ 11/11 trên trình duyệt thật
-- [ ] Bốn ô mới bổ sung cho gói dịch vụ — chưa ai tick, xem “Điều chỉnh” bên dưới
+- [x] Bốn ô mới bổ sung cho gói dịch vụ — người dùng đã tick đủ (khối P2 nay 15/15)
 
 ## Ngoài phạm vi
 
