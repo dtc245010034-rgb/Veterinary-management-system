@@ -26,9 +26,9 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 | TC-007 | US-02 | `receptionist` mở trang quản lý tài khoản → 403 | I | `tests/integration/test_users.py` | ✅ |
 | TC-008 | US-02 | `manager` truy cập được mọi trang | I | `tests/integration/test_users.py` | ✅ |
 | TC-009 | US-02 | `caretaker` xem lịch → chỉ thấy lịch của mình | I | `test_appointments.py::test_caretaker_go_thang_trang_lich_chung_van_chi_thay_lich_minh` | ✅ |
-| TC-010 | US-03 | Tạo tài khoản mới → đăng nhập được ngay | I | `tests/integration/test_users.py` | ✅ |
-| TC-011 | US-03 | Tên đăng nhập trùng → bị từ chối | I | `tests/integration/test_users.py`, `tests/unit/test_models_user.py` | ✅ |
-| TC-012 | US-03 | Khóa tài khoản → không đăng nhập được, dữ liệu cũ còn nguyên | I | `tests/integration/test_users.py` | ✅ |
+| TC-010 | US-03 | Tạo tài khoản mới → đăng nhập được ngay | I | `tests/integration/test_users.py`, `tests/unit/test_users_service.py` | ✅ |
+| TC-011 | US-03 | Tên đăng nhập trùng → bị từ chối | I | `tests/integration/test_users.py`, `tests/unit/test_models_user.py`, `tests/unit/test_users_service.py::test_tao_tai_khoan_trung_username_bi_tu_choi` | ✅ |
+| TC-012 | US-03 | Khóa tài khoản → không đăng nhập được, dữ liệu cũ còn nguyên | I | `tests/integration/test_users.py`, `tests/unit/test_users_service.py::test_quan_ly_khong_tu_khoa_chinh_minh` | ✅ |
 
 ## B. Chủ nuôi và thú cưng — phase P2
 

@@ -210,3 +210,119 @@ def test_tu_khoa_rong_tra_ve_rong(db, du_lieu_tra_cuu):
 
     assert kq.chu_nuoi == []
     assert kq.thu_cung == []
+
+
+# --- Sửa, lấy, xóa: bù bao phủ cho các hàm public còn thiếu -----------------------
+#
+# Sáu hàm dưới đây đã có sẵn từ P2a và chạy đúng, nhưng chỉ được kiểm gián tiếp qua
+# integration test. Luật bao phủ trong CLAUDE.md mục 7 đòi mỗi hàm public trong
+# app/services/ có tối thiểu 1 happy path + 1 ca biên gọi thẳng.
+
+
+def test_sua_chu_nuoi_doi_dung_truong_va_dong_bo_search_name(db):
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+
+    nv.sua_chu_nuoi(db, o.id, ho_ten="Trần Thị Lệ Hằng", dia_chi="12 Lê Lợi")
+
+    assert o.full_name == "Trần Thị Lệ Hằng"
+    assert o.address == "12 Lê Lợi"
+    assert o.search_name == "tran thi le hang"
+    assert o.phone == "0912345678"  # trường không truyền thì giữ nguyên
+
+
+def test_sua_chu_nuoi_bo_trong_ho_ten_bi_tu_choi(db):
+    """Sửa phải chặt như tạo, nếu không có thể xóa trắng tên bằng đường sửa."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+
+    with pytest.raises(LoiNghiepVu):
+        nv.sua_chu_nuoi(db, o.id, ho_ten="   ")
+
+    db.expire_all()
+    assert nv.lay_chu_nuoi(db, o.id).full_name == "Trần Thị Lễ"
+
+
+def test_sua_chu_nuoi_khong_ton_tai_bi_tu_choi(db):
+    with pytest.raises(LoiNghiepVu):
+        nv.sua_chu_nuoi(db, 9999, ho_ten="Ai đó")
+
+
+def test_danh_sach_chu_nuoi_sap_theo_ho_ten(db):
+    for ten in ("Trần Thị Lễ", "Đỗ Thị Hằng", "Lý Thu Hà"):
+        nv.tao_chu_nuoi(db, ho_ten=ten, so_dien_thoai="0912345678")
+
+    assert [o.full_name for o in nv.danh_sach_chu_nuoi(db)] == [
+        "Lý Thu Hà", "Trần Thị Lễ", "Đỗ Thị Hằng"
+    ]
+
+
+def test_danh_sach_chu_nuoi_rong_khi_chua_co_ai(db):
+    assert nv.danh_sach_chu_nuoi(db) == []
+
+
+def test_lay_chu_nuoi_tra_ve_dung_ban_ghi(db):
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+
+    assert nv.lay_chu_nuoi(db, o.id).id == o.id
+
+
+def test_lay_chu_nuoi_khong_ton_tai_nem_loi_nghiep_vu(db):
+    """Trả None sẽ đẩy lỗi xuống chỗ khác thành AttributeError khó lần."""
+    with pytest.raises(LoiNghiepVu):
+        nv.lay_chu_nuoi(db, 9999)
+
+
+def test_sua_thu_cung_doi_can_nang_va_ghi_chu(db, frozen_clock):
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+    p = nv.tao_thu_cung(db, o.id, ten="Mực", loai="Chó", can_nang=8.0)
+
+    nv.sua_thu_cung(db, p.id, can_nang=9.5, ghi_chu="Sợ máy sấy")
+
+    assert p.weight_kg == 9.5
+    assert p.note == "Sợ máy sấy"
+    assert p.name == "Mực"
+
+
+def test_sua_thu_cung_can_nang_khong_duong_bi_tu_choi(db, frozen_clock):
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+    p = nv.tao_thu_cung(db, o.id, ten="Mực", loai="Chó", can_nang=8.0)
+
+    with pytest.raises(LoiNghiepVu):
+        nv.sua_thu_cung(db, p.id, can_nang=0)
+
+    db.expire_all()
+    assert nv.lay_thu_cung(db, p.id).weight_kg == 8.0
+
+
+def test_sua_thu_cung_ngay_sinh_tuong_lai_bi_tu_choi(db, frozen_clock):
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+    p = nv.tao_thu_cung(db, o.id, ten="Mực", loai="Chó")
+
+    with pytest.raises(LoiNghiepVu):
+        nv.sua_thu_cung(db, p.id, ngay_sinh=HOM_NAY + timedelta(days=1))
+
+
+def test_lay_thu_cung_tra_ve_dung_ban_ghi(db, frozen_clock):
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+    p = nv.tao_thu_cung(db, o.id, ten="Mực", loai="Chó")
+
+    assert nv.lay_thu_cung(db, p.id).name == "Mực"
+
+
+def test_lay_thu_cung_khong_ton_tai_nem_loi_nghiep_vu(db):
+    with pytest.raises(LoiNghiepVu):
+        nv.lay_thu_cung(db, 9999)
+
+
+def test_xoa_thu_cung_thanh_cong_va_chu_nuoi_van_con(db, frozen_clock):
+    o = nv.tao_chu_nuoi(db, ho_ten="Trần Thị Lễ", so_dien_thoai="0912345678")
+    p = nv.tao_thu_cung(db, o.id, ten="Mực", loai="Chó")
+
+    nv.xoa_thu_cung(db, p.id)
+
+    assert db.get(Pet, p.id) is None
+    assert nv.lay_chu_nuoi(db, o.id) is not None
+
+
+def test_xoa_thu_cung_khong_ton_tai_bi_tu_choi(db):
+    with pytest.raises(LoiNghiepVu):
+        nv.xoa_thu_cung(db, 9999)

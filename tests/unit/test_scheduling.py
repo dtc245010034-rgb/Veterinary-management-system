@@ -463,3 +463,48 @@ def test_huy_lich_da_huy_bi_tu_choi(db, nen):
 
     with pytest.raises(LoiNghiepVu):
         nv.huy_lich(db, a.id, "Hủy lần nữa")
+
+
+# --- Gọi thẳng hai hàm nền --------------------------------------------------------
+#
+# tim_lich_trung() và khung_gio_trong() tới giờ chỉ được kiểm gián tiếp qua dat_lich()
+# và doi_lich(). Chúng là hàm public nên luật bao phủ ở CLAUDE.md mục 7 đòi test gọi
+# thẳng: gián tiếp thì khi đỏ không biết lỗi nằm ở hàm nền hay ở lớp gọi nó.
+
+
+def test_tim_lich_trung_tra_ve_dung_lich_bi_giao(db, nen):
+    a = dat(db, nen, gio(9))
+
+    trung = nv.tim_lich_trung(db, nen["pet1"].id, nen["nv1"].id, gio(9, 30), gio(10, 30))
+
+    assert trung is not None
+    assert trung.id == a.id
+
+
+def test_tim_lich_trung_tra_ve_none_khi_khong_giao(db, nen):
+    dat(db, nen, gio(9))
+
+    assert nv.tim_lich_trung(db, nen["pet1"].id, nen["nv1"].id, gio(10), gio(11)) is None
+
+
+def test_tim_lich_trung_bo_qua_id_loai_dung_ban_ghi_do(db, nen):
+    """Ca biên của `bo_qua_id`: loại chính nó ra thì không còn lịch trùng nào."""
+    a = dat(db, nen, gio(9))
+
+    assert nv.tim_lich_trung(
+        db, nen["pet1"].id, nen["nv1"].id, gio(9, 30), gio(10, 30), bo_qua_id=a.id
+    ) is None
+
+
+def test_khung_gio_trong_bat_dau_tu_gio_mo_cua_khi_lich_con_trong(db, nen):
+    ket_qua = nv.khung_gio_trong(db, nen["nv1"].id, nen["pet1"].id, NGAY.date(), 60)
+
+    assert ket_qua[0] == gio(nv.GIO_MO_CUA)
+    assert len(ket_qua) == nv.SO_GOI_Y
+
+
+def test_khung_gio_trong_rong_khi_thoi_luong_dai_hon_gio_lam_viec(db, nen):
+    """Ca biên: dịch vụ 11 tiếng không nhét vừa khung 08:00–18:00 nào."""
+    ket_qua = nv.khung_gio_trong(db, nen["nv1"].id, nen["pet1"].id, NGAY.date(), 11 * 60)
+
+    assert ket_qua == []

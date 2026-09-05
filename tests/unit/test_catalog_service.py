@@ -194,3 +194,41 @@ def test_ngung_ban_goi(db):
 
     assert nv.danh_sach_goi_dang_ban(db) == []
     assert len(nv.danh_sach_goi(db)) == 1
+
+
+# --- Bù bao phủ: lay_goi và ban_lai_goi -------------------------------------------
+#
+# Hai hàm này có từ P2b nhưng chỉ chạy qua router. Luật bao phủ ở CLAUDE.md mục 7 đòi
+# gọi thẳng, tối thiểu 1 happy path + 1 ca biên.
+
+
+def test_lay_goi_tra_ve_dung_ban_ghi_kem_thanh_phan(db):
+    a = them_dich_vu(db, ma="TAM")
+    goi = nv.tao_goi(db, ten="Combo cơ bản", gia=Decimal("180000"), thanh_phan={a.id: 2})
+
+    lay_ra = nv.lay_goi(db, goi.id)
+
+    assert lay_ra.name == "Combo cơ bản"
+    assert [(m.service_id, m.quantity) for m in lay_ra.items] == [(a.id, 2)]
+
+
+def test_lay_goi_khong_ton_tai_nem_loi_nghiep_vu(db):
+    with pytest.raises(LoiNghiepVu):
+        nv.lay_goi(db, 9999)
+
+
+def test_ban_lai_goi_da_ngung_thi_hien_lai_trong_danh_sach_dang_ban(db):
+    a = them_dich_vu(db, ma="TAM")
+    goi = nv.tao_goi(db, ten="Combo cơ bản", gia=Decimal("180000"), thanh_phan={a.id: 1})
+    nv.ngung_ban_goi(db, goi.id)
+    assert goi.id not in [g.id for g in nv.danh_sach_goi_dang_ban(db)]
+
+    nv.ban_lai_goi(db, goi.id)
+
+    assert goi.is_active is True
+    assert goi.id in [g.id for g in nv.danh_sach_goi_dang_ban(db)]
+
+
+def test_ban_lai_goi_khong_ton_tai_bi_tu_choi(db):
+    with pytest.raises(LoiNghiepVu):
+        nv.ban_lai_goi(db, 9999)

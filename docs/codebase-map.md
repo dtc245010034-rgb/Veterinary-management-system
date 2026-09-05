@@ -69,11 +69,12 @@
 | `services/clock.py` | `now()` và `freeze()` — điểm lấy thời gian duy nhất của hệ thống |
 | `services/text.py` | `chuan_hoa()` — bỏ dấu tiếng Việt cho tìm kiếm, xử lý riêng chữ `đ` |
 | `services/errors.py` | `LoiNghiepVu` — lỗi nghiệp vụ, thông điệp hiển thị thẳng cho người dùng |
+| `services/users.py` | Nghiệp vụ tài khoản nhân viên: tạo, khóa, mở khóa, danh sách. Chặn quản lý tự khóa mình |
 | `services/owners.py` | Nghiệp vụ chủ nuôi và thú cưng: tạo, sửa, xóa, tra cứu |
 | `services/catalog.py` | Nghiệp vụ dịch vụ và gói. `danh_sach_dang_ban()` là danh sách P3 và P5 sẽ dùng |
 | `services/scheduling.py` | **Quy tắc chống trùng lịch**, đặt/đổi/hủy lịch, gợi ý khung trống. Khoảng nửa mở `[start, end)` |
 | `routers/auth.py` | `/login`, `/logout`, `/` |
-| `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager` |
+| `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager`. Chỉ HTTP, nghiệp vụ ở `services/users.py` |
 | `routers/owners.py` | `/owners`, `/owners/{id}`, `/owners/{id}/pets`, `/pets/{id}/xoa` |
 | `routers/services.py` | `/services` và `/services/goi` — chỉ `manager` sửa |
 | `routers/appointments.py` | `/appointments` lưới lịch + đặt/đổi/hủy; `/appointments/cua-toi` lịch riêng của nhân viên chăm sóc |
@@ -95,6 +96,7 @@
 | `unit/test_models_user.py` | Ràng buộc bảng `users`: UNIQUE username, CHECK role |
 | `unit/test_text.py` | Chuẩn hóa chuỗi tiếng Việt, gồm bẫy chữ `đ` |
 | `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
+| `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa |
 | `unit/test_owners_service.py` | Nghiệp vụ chủ nuôi, thú cưng, tra cứu |
 | `unit/test_models_service.py` | Ràng buộc `services`, gói, và **kiểu tiền `Decimal`** |
 | `unit/test_catalog_service.py` | Nghiệp vụ dịch vụ, ngưng bán, gói |
