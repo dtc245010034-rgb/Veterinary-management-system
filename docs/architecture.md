@@ -25,7 +25,6 @@ hethongquanlythucung/
 │   ├── db.py                engine, SessionLocal, get_db()
 │   ├── security.py          băm mật khẩu, session cookie, dependency kiểm tra vai trò
 │   ├── models/              SQLAlchemy — 13 bảng, mỗi nhóm một file
-│   ├── schemas/             Pydantic request/response
 │   ├── services/            LOGIC NGHIỆP VỤ — không import gì từ FastAPI
 │   │   ├── scheduling.py    đặt/đổi/hủy lịch, kiểm tra trùng lịch
 │   │   ├── billing.py       lập hóa đơn, ghi nhận thanh toán
@@ -85,7 +84,7 @@ Ba nhóm, ba cách xử lý khác nhau:
 
 | Nhóm | Ví dụ | Cách xử lý |
 |---|---|---|
-| Lỗi nhập liệu | Thiếu tên, cân nặng âm | Pydantic bắt ở `schemas/`, trả 422, hiện lỗi ngay cạnh ô nhập |
+| Lỗi nhập liệu | Thiếu tên, cân nặng âm | FastAPI bắt thiếu trường ở `Form(...)` → 422; sai giá trị thì `services/` ném `LoiNghiepVu`, router render lại trang với mã 400 và thông báo tiếng Việt |
 | Lỗi nghiệp vụ | Trùng lịch, hủy lịch đã có hóa đơn | `services/` ném exception riêng, router bắt và trả 400 kèm thông báo tiếng Việt |
 | Lỗi hạ tầng | Gemini hết quota, mất mạng | `ai/service.py` bắt, ghi `ai_logs` với `is_error = true`, trả thông báo lỗi thân thiện. **Trang không được vỡ** (US-24) |
 

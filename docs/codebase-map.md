@@ -39,13 +39,14 @@
 | `codebase-map.md` | File này |
 | `roadmap.md` | Lộ trình P0→P8 gắn với mốc KT1/KT2/KT3/cuối kỳ, kèm Definition of Done |
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
-| `plans/2026-09-04-kt1-bo-context-va-dac-ta.md` | Kế hoạch phase P0 kèm checklist |
+| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 5: P0, P1, P2a, P2b, P3 |
 | `sessions/README.md` | Quy ước log phiên làm việc |
-| `sessions/2026-09-04-01.md` | Log phiên đầu tiên |
+| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 5 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
 | `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 102 test case |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
 | `testing/reports/README.md` | Mẫu báo cáo kiểm thử cuối phase |
+| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 5: P1, P2a, P2b, P3 chặng 1, P3 chặng 2 |
 
 ### Ứng dụng (`app/`) — từ P1
 
@@ -122,7 +123,7 @@ mục "Hiện có" và ghi rõ vai trò thật, rồi xóa dòng ở đây.
 | Đường dẫn | Vai trò dự kiến | Phase |
 |---|---|---|
 | `app/models/` — 10 model còn lại | owner, pet, service, package, package_item, appointment, care_record, vaccination, invoice, invoice_item, payment, ai_log | P2–P7 |
-| `app/schemas/` | Pydantic request/response. Chưa cần ở P1 vì form đơn giản đọc thẳng qua `Form()` | P2+ |
+| ~~`app/schemas/`~~ | **Bỏ.** Qua P1→P3 form đọc thẳng bằng `Form()` và kiểm ở `services/` là đủ; thêm một tầng Pydantic nữa chỉ để lặp lại phép kiểm đã có | — |
 | `app/services/scheduling.py` | Đặt/đổi/hủy lịch, kiểm tra trùng lịch | P3 |
 | `app/services/billing.py` | Lập hóa đơn, ghi nhận thanh toán | P5 |
 | `app/services/stats.py` | Lượt dịch vụ, doanh thu, khách quay lại | P6 |
