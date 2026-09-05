@@ -60,6 +60,13 @@
                   <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">
                   <input name="gio" type="time" step="900" value="{{ a.start_at.strftime('%H:%M') }}" required>
                   <select name="nhan_vien_id">
+                    {# Nhân viên đã ngưng hoạt động không còn trong danh sách phân lịch, nhưng
+                       lịch cũ của họ vẫn còn. Thiếu dòng này thì không option nào được chọn,
+                       trình duyệt gửi option đầu tiên, và bấm "Đổi" sẽ âm thầm chuyển lịch
+                       sang người khác. #}
+                    {% if a.staff_id not in nhan_vien | map(attribute='id') | list %}
+                      <option value="{{ a.staff_id }}" selected>{{ a.staff.full_name }} (đã ngưng)</option>
+                    {% endif %}
                     {% for nv in nhan_vien %}
                       <option value="{{ nv.id }}" {{ 'selected' if nv.id == a.staff_id }}>{{ nv.full_name }}</option>
                     {% endfor %}

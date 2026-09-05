@@ -6,9 +6,10 @@ tiếng Việt thay vì JSON thô.
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as LoiHTTPStarlette
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.auth import ChuaDangNhap
@@ -50,8 +51,12 @@ async def xu_ly_chua_dang_nhap(request: Request, exc: ChuaDangNhap):
     return RedirectResponse("/login", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@app.exception_handler(HTTPException)
-async def xu_ly_loi_http(request: Request, exc: HTTPException):
+# Đăng ký trên lớp của Starlette chứ KHÔNG phải fastapi.HTTPException: URL không khớp
+# route nào ném lớp cha, mà handler đăng ký ở lớp con không bắt được lớp cha. Vì vậy
+# `/stats` — một link có sẵn trong menu quản lý — từng trả `{"detail":"Not Found"}` thô.
+# fastapi.HTTPException kế thừa lớp này nên một handler bắt được cả hai.
+@app.exception_handler(LoiHTTPStarlette)
+async def xu_ly_loi_http(request: Request, exc: LoiHTTPStarlette):
     """403 và 404 hiển thị thành trang có bố cục, không phải JSON.
 
     TC-007 yêu cầu người dùng gõ thẳng URL bị chặn phải thấy trang báo lỗi tử tế.

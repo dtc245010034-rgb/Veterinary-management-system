@@ -81,15 +81,41 @@ def test_thieu_truong_bat_buoc_hien_loi_tren_trang(client, seed_basic, ho_ten, s
     assert tu_khoa_loi in r.text
 
 
-def test_so_dien_thoai_trung_hien_canh_bao_nhung_van_them_duoc(client, seed_basic):
-    """TC-015: cảnh báo chứ không cấm."""
+def test_so_dien_thoai_trung_hien_canh_bao_ngay_sau_khi_them(client, seed_basic):
+    """TC-015: cảnh báo chứ không cấm — và cảnh báo phải hiện TRONG LUỒNG.
+
+    Bản test cũ gọi thẳng `/owners?sdt_kiem_tra=...`, một URL không nút nào trong giao
+    diện sinh ra. Nó xanh suốt từ P2a trong khi người dùng thật thêm chủ nuôi trùng số
+    mà không thấy cảnh báo nào. Tìm ra khi rà bằng chuột trên trình duyệt ở P4.
+    """
     dang_nhap(client, "letan")
     them_chu_nuoi(client, ho_ten="Người Một", sdt="0912345678")
 
-    r = client.get("/owners?sdt_kiem_tra=0912345678")
+    r = them_chu_nuoi(client, ho_ten="Người Hai", sdt="0912345678")
 
-    assert "Người Một" in r.text
     assert "đã dùng số này" in r.text
+    assert "Người Một" in r.text
+    # Không tự liệt kê chính người vừa tạo — nói "đã có" mà trỏ vào chính nó thì vô nghĩa.
+    assert r.text.count("Người Hai") == 1
+
+
+def test_them_chu_nuoi_so_dien_thoai_moi_khong_hien_canh_bao(client, seed_basic):
+    """Ca biên: cảnh báo chỉ được xuất hiện khi thật sự có trùng."""
+    dang_nhap(client, "letan")
+
+    r = them_chu_nuoi(client, ho_ten="Người Một", sdt="0988777666")
+
+    assert "đã dùng số này" not in r.text
+
+
+def test_trang_chi_tiet_chu_nuoi_khong_hua_hen_phase_tuong_lai(client, seed_basic):
+    """Ghi chú "sẽ hiển thị từ phase P4" đã lỗi thời — P4 đặt lịch sử ở /pets/{id}."""
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client, ho_ten="Người Một", sdt="0912345678")
+
+    r = client.get("/owners/1")
+
+    assert "phase P4" not in r.text
 
 
 def test_xoa_chu_nuoi_con_thu_cung_bi_chan_kem_thong_bao(client, seed_basic):

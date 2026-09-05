@@ -86,16 +86,26 @@ def lay_chu_nuoi(db: Session, chu_nuoi_id: int) -> Owner:
     return o
 
 
-def tim_theo_so_dien_thoai(db: Session, so_dien_thoai: str) -> list[Owner]:
+def tim_theo_so_dien_thoai(
+    db: Session, so_dien_thoai: str, bo_qua_id: int | None = None
+) -> list[Owner]:
     """Dùng để cảnh báo trùng số khi thêm chủ nuôi mới (TC-015).
 
     Trả về danh sách chứ không phải một bản ghi: số điện thoại cố ý không đặt UNIQUE,
     vì hai người trong cùng gia đình dùng chung một số là chuyện thường.
+
+    `bo_qua_id` loại chính chủ nuôi vừa tạo ra khỏi danh sách cảnh báo — nói "đã có
+    người dùng số này" mà trỏ vào chính bản ghi vừa tạo thì vô nghĩa.
     """
     so = (so_dien_thoai or "").strip()
     if not so:
         return []
-    return list(db.scalars(select(Owner).where(Owner.phone == so)))
+
+    dieu_kien = [Owner.phone == so]
+    if bo_qua_id is not None:
+        dieu_kien.append(Owner.id != bo_qua_id)
+
+    return list(db.scalars(select(Owner).where(*dieu_kien)))
 
 
 def xoa_chu_nuoi(db: Session, chu_nuoi_id: int) -> None:

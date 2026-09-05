@@ -4,6 +4,8 @@ Phục vụ US-01: TC-001 (đăng nhập đúng), TC-002 (sai mật khẩu khôn
 TC-003 (tài khoản bị khóa), TC-004 (chưa đăng nhập bị chuyển về trang đăng nhập).
 """
 
+import pytest
+
 from app.models.user import User
 from app.security import hash_password
 
@@ -75,3 +77,42 @@ def test_dang_xuat_thi_mat_quyen_truy_cap(client, seed_basic):
     r = client.get("/", follow_redirects=False)
 
     assert r.status_code == 303
+
+
+
+# --- Lỗi tìm được khi rà bằng chuột trên trình duyệt (P4) ------------------------
+
+
+def dang_nhap(client, username, password="matkhau123"):
+    r = client.post("/login", data={"username": username, "password": password})
+    assert r.status_code in (200, 303)
+    return client
+
+
+def test_url_khong_khop_route_nao_van_hien_trang_loi_co_bo_cuc(client, seed_basic):
+    """TC-007 mở rộng: 404 do không khớp route cũng phải là trang, không phải JSON.
+
+    Handler đăng ký trên `fastapi.HTTPException`, còn route không khớp ném
+    `starlette.HTTPException` — lớp cha. Đăng ký ở lớp con không bắt được lớp cha, nên
+    `/stats` (link có sẵn trong menu quản lý) trả `{"detail":"Not Found"}` trên nền đen.
+    """
+    dang_nhap(client, "quanly")
+
+    r = client.get("/khong-co-trang-nay")
+
+    assert r.status_code == 404
+    assert "Không tìm thấy trang" in r.text
+    assert "detail" not in r.text
+
+
+@pytest.mark.parametrize("username", ["quanly", "letan", "chamsoc1"])
+def test_moi_vai_tro_deu_co_link_menu_toi_bang_gia_dich_vu(client, seed_basic, username):
+    """Bảng phân quyền US-02 cho cả ba vai trò quyền xem dịch vụ.
+
+    Trước đây chỉ `manager` có link; lễ tân và nhân viên mở được trang nhưng phải gõ URL.
+    """
+    dang_nhap(client, username)
+
+    r = client.get("/")
+
+    assert 'href="/services"' in r.text

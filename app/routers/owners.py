@@ -29,6 +29,7 @@ def _trang_danh_sach(
     user: User,
     tu_khoa: str = "",
     sdt_kiem_tra: str = "",
+    bo_qua_id: int | None = None,
     loi: str | None = None,
     ma: int = 200,
 ):
@@ -43,7 +44,11 @@ def _trang_danh_sach(
             "tu_khoa": tu_khoa,
             "ket_qua": ket_qua,
             "tat_ca": tat_ca,
-            "trung_so": nv.tim_theo_so_dien_thoai(db, sdt_kiem_tra) if sdt_kiem_tra else [],
+            "trung_so": (
+                nv.tim_theo_so_dien_thoai(db, sdt_kiem_tra, bo_qua_id)
+                if sdt_kiem_tra
+                else []
+            ),
             "sdt_kiem_tra": sdt_kiem_tra,
             "loi": loi,
         },
@@ -56,10 +61,13 @@ def trang_chu_nuoi(
     request: Request,
     q: str = "",
     sdt_kiem_tra: str = "",
+    bo_qua_id: int | None = None,
     user: User = Depends(nguoi_dung_hien_tai),
     db: Session = Depends(get_db),
 ):
-    return _trang_danh_sach(request, db, user, tu_khoa=q, sdt_kiem_tra=sdt_kiem_tra)
+    return _trang_danh_sach(
+        request, db, user, tu_khoa=q, sdt_kiem_tra=sdt_kiem_tra, bo_qua_id=bo_qua_id
+    )
 
 
 @router.post("/owners", response_class=HTMLResponse)
@@ -74,7 +82,7 @@ def them_chu_nuoi(
     db: Session = Depends(get_db),
 ):
     try:
-        nv.tao_chu_nuoi(
+        moi = nv.tao_chu_nuoi(
             db,
             ho_ten=ho_ten,
             so_dien_thoai=so_dien_thoai,
@@ -84,6 +92,15 @@ def them_chu_nuoi(
         )
     except LoiNghiepVu as loi:
         return _trang_danh_sach(request, db, user, loi=str(loi), ma=status.HTTP_400_BAD_REQUEST)
+
+    # US-04: trùng số thì cảnh báo chứ không cấm. Khối cảnh báo có sẵn trong template từ
+    # P2a nhưng chỉ hiện khi tự gõ `?sdt_kiem_tra=` — không nút nào sinh ra URL đó, nên
+    # trên thực tế người dùng thêm chủ nuôi trùng số mà chưa từng thấy cảnh báo nào.
+    if nv.tim_theo_so_dien_thoai(db, moi.phone, bo_qua_id=moi.id):
+        return RedirectResponse(
+            f"/owners?sdt_kiem_tra={moi.phone}&bo_qua_id={moi.id}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
 
     return RedirectResponse("/owners", status_code=status.HTTP_303_SEE_OTHER)
 

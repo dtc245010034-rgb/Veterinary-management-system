@@ -20,8 +20,10 @@
     {% if user.role == 'caretaker' %}
       <a href="/appointments/cua-toi">Lịch của tôi</a>
     {% endif %}
+    {# Bảng phân quyền US-02 cho cả ba vai trò quyền XEM bảng giá; chỉ quản lý mới sửa.
+       Trước đây chỉ quản lý có link nên lễ tân và nhân viên phải tự gõ URL. #}
+    <a href="/services">Dịch vụ</a>
     {% if user.role == 'manager' %}
-      <a href="/services">Dịch vụ</a>
       <a href="/stats">Thống kê</a>
       <a href="/users">Tài khoản</a>
     {% endif %}

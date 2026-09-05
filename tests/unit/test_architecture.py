@@ -117,6 +117,42 @@ def test_moi_file_app_va_tests_deu_co_trong_codebase_map():
     assert not thieu, "File chưa có trong docs/codebase-map.md:\n  " + "\n  ".join(thieu)
 
 
+def test_moi_loai_o_nhap_deu_dung_chung_quy_tac_khung_voi_input():
+    """Lỗi thật: form hồ sơ chăm sóc ở P4 là form đầu tiên dùng `<textarea>`.
+
+    `style.css` chỉ tạo kiểu cho `input, select`, nên ba ô nhập lệch hẳn khỏi nhãn, chữ
+    monospace, không giãn hết chiều rộng — khác hẳn mọi form khác. Không test nào bắt
+    được vì HTML vẫn đúng; chỉ nhìn bằng mắt mới thấy.
+
+    Đây là phép kiểm HÌNH DẠNG, không phải phép kiểm giao diện: nó chỉ khẳng định mọi
+    thẻ nhập liệu dùng trong template đều nằm chung bộ chọn với `input` ở quy tắc khung
+    (`width: 100%`). Trông có đẹp hay không thì vẫn phải nhìn bằng mắt.
+
+    NẾU TEST NÀY ĐỎ: thêm thẻ đó vào bộ chọn của quy tắc khung, đừng xóa test.
+    """
+    css = _doc(GOC / "app" / "static" / "style.css")
+    html = "".join(_doc(p) for p in (GOC / "app" / "templates").glob("*.html"))
+
+    quy_tac_khung = [
+        khoi.split("{")[0].rsplit("}", 1)[-1]
+        for khoi in re.findall(r"[^{}]*\{[^{}]*\}", css)
+        if "width: 100%" in khoi and re.search(r"(^|[\s,])input([\s,:]|$)", khoi.split("{")[0])
+    ]
+    assert quy_tac_khung, "Không tìm thấy quy tắc khung dùng chung cho ô nhập liệu."
+    bo_chon = quy_tac_khung[0]
+
+    thieu = [
+        the
+        for the in ("input", "select", "textarea")
+        if f"<{the}" in html and not re.search(rf"(^|[\s,]){the}([\s,:]|$)", bo_chon)
+    ]
+
+    assert not thieu, (
+        "Template dùng thẻ này nhưng nó không nằm trong quy tắc khung dùng chung "
+        f"({bo_chon.strip()}): " + ", ".join(thieu)
+    )
+
+
 # --- Bao phủ tầng nghiệp vụ ------------------------------------------------------
 
 

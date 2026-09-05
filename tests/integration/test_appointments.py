@@ -361,3 +361,45 @@ def test_caretaker_ngay_khong_co_lich_hien_trang_thai_rong(client, hai_lich):
 
     assert r.status_code == 200
     assert "Chưa có lịch hẹn nào" in r.text
+
+
+# --- Lỗi tìm được khi rà bằng chuột trên trình duyệt (P4) ------------------------
+
+
+def test_form_doi_lich_van_giu_nhan_vien_da_khoa_lam_lua_chon_hien_tai(client, db, nen):
+    """Lỗi nặng nhất tìm được khi smoke bằng chuột.
+
+    Ô chọn nhân viên trong nút "Đổi" chỉ liệt kê nhân viên đang hoạt động. Khi lịch
+    thuộc về nhân viên đã bị khóa, không option nào được chọn nên trình duyệt gửi
+    option ĐẦU TIÊN — bấm "Đổi" mà không sửa gì sẽ âm thầm chuyển lịch sang người khác.
+
+    Chỉ lộ ra khi dựng đúng trạng thái "nhân viên bị khóa nhưng còn lịch cũ", nên không
+    test nào trước đó bắt được.
+    """
+    dang_nhap(client, "letan")
+    dat(client, nen, gio="09:00", nhan_vien="nv2")
+    nen["nv2"].is_active = False
+    db.commit()
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert f'value="{nen["nv2"].id}" selected' in r.text
+
+
+def test_doi_lich_sang_nhan_vien_da_khoa_bi_tu_choi(client, db, nen):
+    """Lớp chặn thứ hai: kể cả gõ thẳng id cũng không phân được cho người đã khóa."""
+    dang_nhap(client, "letan")
+    dat(client, nen, gio="09:00", nhan_vien="nv1")
+    ma = id_lich(db)
+    nen["nv2"].is_active = False
+    db.commit()
+
+    r = client.post(
+        f"/appointments/{ma}/doi",
+        data={"ngay": NGAY, "gio": "14:00", "nhan_vien_id": str(nen["nv2"].id)},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 400
+    db.expire_all()
+    assert db.get(Appointment, ma).staff_id == nen["nv1"].id

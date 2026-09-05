@@ -36,7 +36,7 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 |---|---|---|---|---|---|
 | TC-013 | US-04 | Thêm chủ nuôi hợp lệ → lưu và hiện trong danh sách | I | `tests/integration/test_owners.py` | ✅ |
 | TC-014 | US-04 | Thiếu họ tên hoặc số điện thoại → bị từ chối | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
-| TC-015 | US-04 | Số điện thoại trùng → cảnh báo khách cũ | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
+| TC-015 | US-04 | Số điện thoại trùng → cảnh báo khách cũ | I | `tests/unit/test_owners_service.py`, `test_owners.py::test_so_dien_thoai_trung_hien_canh_bao_ngay_sau_khi_them` — viết lại 2026-09-05: bản cũ gọi thẳng URL mà giao diện không sinh ra nên xanh dù chức năng không tới được | ✅ |
 | TC-016 | US-04 | Xóa chủ nuôi còn thú cưng → bị chặn | U | `tests/unit/test_owners_service.py`, `tests/unit/test_models_owner_pet.py` | ✅ |
 | TC-017 | US-05 | Thêm thú cưng gắn chủ nuôi → hiện trong danh sách của chủ | I | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
 | TC-018 | US-05 | Ngày sinh ở tương lai → bị từ chối | U | `tests/unit/test_owners_service.py`, `tests/integration/test_owners.py` | ✅ |
