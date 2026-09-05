@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block tieu_de %}{{ thu_cung.name }}{% endblock %}
+
+{% block noi_dung %}
+<h1>{{ thu_cung.name }}</h1>
+<p class="phu">
+  {{ thu_cung.species }}{% if thu_cung.breed %} · {{ thu_cung.breed }}{% endif %}
+  {% if thu_cung.sex %} · {{ thu_cung.sex }}{% endif %}
+  {% if thu_cung.weight_kg %} · {{ thu_cung.weight_kg }} kg{% endif %}
+  · chủ nuôi <a href="/owners/{{ thu_cung.owner_id }}">{{ thu_cung.owner.full_name }}</a>
+</p>
+
+<h2>Lịch sử chăm sóc</h2>
+{% if lich_su %}
+  <table>
+    <thead>
+      <tr><th>Ngày</th><th>Dịch vụ</th><th>Nhân viên</th><th>Tình trạng</th><th>Việc đã làm</th></tr>
+    </thead>
+    <tbody>
+      {% for hs in lich_su %}
+        <tr>
+          <td class="gio">{{ hs.performed_at.strftime("%d/%m/%Y %H:%M") }}</td>
+          <td>{{ hs.lich_hen.service.name }}</td>
+          <td>{{ hs.staff.full_name }}</td>
+          <td>{{ hs.condition_note }}</td>
+          <td>{{ hs.actions_taken or "—" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="the rong"><p>Chưa có hồ sơ chăm sóc nào cho {{ thu_cung.name }}.</p></div>
+{% endif %}
+{% endblock %}

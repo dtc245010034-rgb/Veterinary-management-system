@@ -182,9 +182,14 @@ tham gia kiểm tra trùng.
 ### US-18 — Danh sách đến hạn tiêm
 **Là** lễ tân, **tôi muốn** xem thú cưng sắp hoặc đã quá hạn tiêm, **để** chủ động gọi nhắc khách.
 
-- Given nhiều thú cưng có `next_due_at` khác nhau, When xem danh sách đến hạn trong 30 ngày tới, Then chỉ thấy thú cưng có hạn nằm trong khoảng đó, sắp xếp theo hạn tăng dần.
+- Given nhiều thú cưng có `next_due_at` khác nhau, When mở danh sách đến hạn, Then thấy mọi thú cưng có hạn **từ quá khứ tới hôm nay + 30 ngày**, sắp xếp theo hạn tăng dần; thú cưng có hạn xa hơn 30 ngày không hiện.
 - Given một thú cưng đã quá hạn tiêm, When xem danh sách, Then bản ghi được đánh dấu quá hạn rõ ràng.
 - Given không thú cưng nào đến hạn, When xem, Then hiện trạng thái rỗng.
+
+> **Sửa spec ngày 2026-09-05 (P4).** Bản gốc viết "chỉ thấy thú cưng có hạn nằm trong 30 ngày tới",
+> mâu thuẫn với chính tiêu chí ngay dưới nó: nếu chỉ lấy khoảng tương lai thì không bản ghi quá hạn
+> nào lọt vào để mà đánh dấu, và thú cưng quá hạn biến mất khỏi màn hình đúng lúc cần gọi nhắc nhất.
+> Khoảng lấy đổi thành mở về phía quá khứ. Sửa công khai ở đây thay vì lặng lẽ code khác spec.
 
 > Đây là chức năng **thông tin**, không phải chỉ định y tế. Màn hình phải ghi rõ lịch tiêm cụ thể do
 > bác sĩ thú y quyết định.

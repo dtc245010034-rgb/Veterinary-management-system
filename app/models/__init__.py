@@ -9,6 +9,7 @@ Import ở đây một lần để mọi nơi chỉ cần `import app.models`.
 """
 
 from app.models.appointment import Appointment
+from app.models.care_record import CareRecord
 from app.models.owner import Owner
 from app.models.pet import Pet
 from app.models.service import Service
@@ -17,6 +18,7 @@ from app.models.user import User
 
 __all__ = [
     "Appointment",
+    "CareRecord",
     "Owner",
     "PackageItem",
     "Pet",

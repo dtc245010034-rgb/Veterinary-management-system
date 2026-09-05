@@ -35,7 +35,7 @@
     {% if danh_sach %}
       <table>
         <thead>
-          <tr><th>Giờ</th><th>Thú cưng</th><th>Chủ nuôi</th><th>Dịch vụ</th><th>Nhân viên</th><th>Trạng thái</th>{% if user.role in ('manager', 'receptionist') %}<th>Thao tác</th>{% endif %}</tr>
+          <tr><th>Giờ</th><th>Thú cưng</th><th>Chủ nuôi</th><th>Dịch vụ</th><th>Nhân viên</th><th>Trạng thái</th><th>Thao tác</th></tr>
         </thead>
         <tbody>
         {% for a in danh_sach %}
@@ -46,9 +46,16 @@
             <td>{{ a.service.name }}</td>
             <td>{{ a.staff.full_name }}</td>
             <td><span class="nhan nhan-{{ a.status }}">{{ a.ten_trang_thai }}</span></td>
-            {% if user.role in ('manager', 'receptionist') %}
             <td class="thao-tac">
-              {% if a.status in ('booked', 'rescheduled') %}
+              {% if a.status == 'done' %}
+                <a href="/appointments/{{ a.id }}/ho-so">Xem hồ sơ</a>
+              {% elif a.status in ('booked', 'rescheduled')
+                      and a.start_at <= bay_gio
+                      and (user.role == 'manager' or a.staff_id == user.id) %}
+                <a class="chinh-nhe" href="/appointments/{{ a.id }}/ho-so">Ghi hồ sơ</a>
+              {% endif %}
+              {% if user.role in ('manager', 'receptionist') %}
+                {% if a.status in ('booked', 'rescheduled') %}
                 <form method="post" action="/appointments/{{ a.id }}/doi">
                   <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">
                   <input name="gio" type="time" step="900" value="{{ a.start_at.strftime('%H:%M') }}" required>
@@ -64,11 +71,11 @@
                   <input name="ly_do" placeholder="Lý do hủy" required>
                   <button type="submit" class="nguy-hiem">Hủy</button>
                 </form>
-              {% elif a.cancel_reason %}
-                <span class="phu nhan-nho">{{ a.cancel_reason }}</span>
+                {% elif a.cancel_reason %}
+                  <span class="phu nhan-nho">{{ a.cancel_reason }}</span>
+                {% endif %}
               {% endif %}
             </td>
-            {% endif %}
           </tr>
         {% endfor %}
         </tbody>

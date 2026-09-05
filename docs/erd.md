@@ -296,7 +296,7 @@ Phục vụ US-17, US-18, US-24.
 | `pet_id` | int | FK → `pets.id`, NOT NULL | |
 | `vaccine_name` | varchar(100) | NOT NULL | |
 | `dose_no` | int | NULL, CHECK > 0 | Mũi thứ mấy |
-| `given_at` | date | NOT NULL, CHECK ≤ hôm nay | |
+| `given_at` | date | NOT NULL. Không nhận ngày tiêm ở tương lai (US-17). Kiểm ở tầng services, **không** dùng CHECK — cùng lý do với `pets.birth_date` | |
 | `next_due_at` | date | NULL, CHECK ≥ `given_at` | Nguồn cho danh sách đến hạn (US-18) |
 | `note` | text | NULL | |
 

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block tieu_de %}Hồ sơ chăm sóc{% endblock %}
+
+{% block noi_dung %}
+<h1>Hồ sơ chăm sóc</h1>
+
+<div class="the">
+  <h2>{{ lich.pet.name }} — {{ lich.service.name }}</h2>
+  <p class="phu">
+    {{ lich.start_at.strftime("%H:%M") }}–{{ lich.end_at.strftime("%H:%M") }}
+    ngày {{ lich.start_at.strftime("%d/%m/%Y") }} ·
+    nhân viên {{ lich.staff.full_name }} ·
+    chủ nuôi <a href="/owners/{{ lich.pet.owner_id }}">{{ lich.pet.owner.full_name }}</a>
+  </p>
+</div>
+
+{% if loi %}<div class="loi" role="alert"><p>{{ loi }}</p></div>{% endif %}
+
+{% if ho_so %}
+  <div class="the">
+    <h2>Đã ghi</h2>
+    <p><strong>Tình trạng:</strong> {{ ho_so.condition_note }}</p>
+    {% if ho_so.actions_taken %}<p><strong>Việc đã làm:</strong> {{ ho_so.actions_taken }}</p>{% endif %}
+    {% if ho_so.next_advice %}<p><strong>Dặn lần sau:</strong> {{ ho_so.next_advice }}</p>{% endif %}
+    <p class="phu nhan-nho">Mỗi lịch hẹn chỉ một hồ sơ, không sửa lại được.</p>
+  </div>
+{% elif user.role in ('manager', 'caretaker') %}
+  <form class="the" method="post" action="/appointments/{{ lich.id }}/ho-so">
+    <h2>Ghi hồ sơ</h2>
+    <label>Tình trạng thú cưng <span class="bat-buoc">*</span>
+      <textarea name="tinh_trang" rows="3" required></textarea>
+    </label>
+    <label>Việc đã làm <textarea name="viec_da_lam" rows="2"></textarea></label>
+    <label>Dặn dò lần sau <textarea name="dan_do" rows="2"></textarea></label>
+    <button type="submit" class="chinh">Lưu hồ sơ</button>
+    <p class="phu nhan-nho">Lưu xong lịch chuyển sang <strong>Hoàn thành</strong> và không đổi hay hủy được nữa.</p>
+  </form>
+{% endif %}
+
+<p><a href="/pets/{{ lich.pet_id }}">Xem lịch sử chăm sóc của {{ lich.pet.name }}</a></p>
+{% endblock %}

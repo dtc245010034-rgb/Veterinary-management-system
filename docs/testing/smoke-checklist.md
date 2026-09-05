@@ -80,19 +80,37 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 - [x] Đăng nhập `caretaker` → chỉ thấy lịch của chính mình, không thấy lịch người khác
 - [x] `caretaker` gõ thẳng `/appointments` → chỉ thấy lịch của mình hoặc bị chặn
 
-## P4 — Hồ sơ chăm sóc và tiêm phòng
+## P4 chặng 1 — Hồ sơ chăm sóc
 
-- [ ] Trang chi tiết chủ nuôi hiện lịch sử chăm sóc và lịch tiêm của từng thú cưng (hoãn từ P2)
-- [ ] `caretaker` ghi hồ sơ cho lịch của mình → lưu được, lịch chuyển trạng thái hoàn thành
-- [ ] Sau khi lịch chuyển hoàn thành → nút Đổi và Hủy biến mất, gọi thẳng `POST /appointments/{id}/huy` bị chặn _(chuyển từ khối P3: trước P4 không có đường nào đưa lịch về trạng thái hoàn thành để kiểm bằng tay; hành vi đã có test TC-049)_
-- [ ] `caretaker` mở lịch của người khác → không có nút ghi hồ sơ
-- [ ] Ghi hồ sơ lần hai cho cùng lịch → bị chặn
-- [ ] Bỏ trống ghi chú tình trạng → bị chặn
-- [ ] Mở lịch sử chăm sóc của thú cưng → danh sách mới nhất lên đầu
-- [ ] Ghi mũi tiêm với hạn nhắc lại → hiện trong hồ sơ tiêm
+> Dữ liệu mẫu đã dựng sẵn trạng thái cần thiết: đăng nhập `chamsoc1`, mở lịch **ngày hôm qua** —
+> có hai buổi đã hoàn thành và **một buổi chưa ghi hồ sơ** để bấm thử.
+
+- [ ] `chamsoc1` mở lịch hôm qua → buổi chưa ghi có nút **Ghi hồ sơ**, buổi đã xong có **Xem hồ sơ**
+- [ ] Bấm Ghi hồ sơ, bỏ trống ô tình trạng → bị chặn kèm thông báo đọc được
+- [ ] Ghi hồ sơ hợp lệ → lưu được, dòng lịch chuyển sang **Hoàn thành**
+- [ ] Mở lại lịch vừa ghi → hiện nội dung đã ghi, **không** còn form nhập lần hai
+- [ ] Lịch **ngày mai** (chưa diễn ra) → **không** có nút Ghi hồ sơ
+- [ ] Sau khi hoàn thành → nút Đổi và Hủy biến mất; đăng nhập `letan` gõ thẳng
+      `POST /appointments/{id}/huy` cũng bị chặn _(ô chuyển từ khối P3)_
+- [ ] `chamsoc2` gõ thẳng URL `/appointments/{id}/ho-so` của lịch thuộc `chamsoc1` → không lưu được
+- [ ] `letan` mở trang hồ sơ → xem được nội dung nhưng không có form ghi
+- [ ] Mở `/pets/{id}` của thú cưng đã qua nhiều buổi → lịch sử mới nhất lên đầu, mỗi dòng đủ
+      ngày, dịch vụ, nhân viên, tình trạng
+- [ ] Mở `/pets/{id}` của thú cưng chưa dùng dịch vụ → trạng thái rỗng rõ ràng
+
+## P4 chặng 2 — Tiêm phòng
+
+> Chưa kiểm được: chặng 2 chưa cài đặt. Chưa có bảng `vaccinations`, chưa có trang
+> `/vaccinations`, và khối tiêm phòng chưa xuất hiện trên `/pets/{id}`.
+
+- [ ] Ghi mũi tiêm với hạn nhắc lại → hiện trong hồ sơ tiêm trên trang thú cưng
 - [ ] Nhập hạn nhắc sớm hơn ngày tiêm → bị chặn
+- [ ] Nhập ngày tiêm ở tương lai → bị chặn
 - [ ] Mở danh sách đến hạn tiêm → sắp theo hạn tăng dần, bản ghi quá hạn có dấu hiệu nhận biết
+- [ ] Thú cưng có hạn xa hơn 30 ngày → **không** xuất hiện trong danh sách
+- [ ] Không ai đến hạn → trạng thái rỗng rõ ràng
 - [ ] Màn hình tiêm phòng có ghi rõ **lịch tiêm cụ thể do bác sĩ thú y quyết định**
+- [ ] Trang `/pets/{id}` hiện đủ cả lịch sử chăm sóc lẫn hồ sơ tiêm _(TC-020 hoãn từ P2)_
 
 ## P5 — Hóa đơn và thanh toán
 

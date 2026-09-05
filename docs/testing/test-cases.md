@@ -89,12 +89,12 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-053 | US-15 | Ghi hồ sơ cho lịch của mình → lưu và lịch chuyển `done` | I | | ⬜ |
-| TC-054 | US-15 | Ghi hồ sơ cho lịch của nhân viên khác → từ chối | I | | ⬜ |
-| TC-055 | US-15 | Ghi hồ sơ lần hai cho cùng lịch → từ chối | U | | ⬜ |
-| TC-056 | US-15 | Bỏ trống ghi chú tình trạng → từ chối | U | | ⬜ |
-| TC-057 | US-16 | Lịch sử chăm sóc theo thời gian giảm dần, đủ thông tin mỗi dòng | I | | ⬜ |
-| TC-058 | US-16 | Thú cưng chưa dùng dịch vụ → trạng thái rỗng | I | | ⬜ |
+| TC-053 | US-15 | Ghi hồ sơ cho lịch của mình → lưu và lịch chuyển `done` | I | `test_care_records.py::test_nhan_vien_ghi_ho_so_cho_lich_cua_minh`, `test_care_records_service.py` | ✅ |
+| TC-054 | US-15 | Ghi hồ sơ cho lịch của nhân viên khác → từ chối | I | `test_care_records.py::test_nhan_vien_khac_khong_ghi_duoc_ho_so` | ✅ |
+| TC-055 | US-15 | Ghi hồ sơ lần hai cho cùng lịch → từ chối | U | `test_care_records_service.py::test_ghi_ho_so_lan_hai_cho_cung_lich_bi_tu_choi`, `test_models_care_record.py` | ✅ |
+| TC-056 | US-15 | Bỏ trống ghi chú tình trạng → từ chối | U | `test_care_records_service.py::test_bo_trong_ghi_chu_tinh_trang_bi_tu_choi` | ✅ |
+| TC-057 | US-16 | Lịch sử chăm sóc theo thời gian giảm dần, đủ thông tin mỗi dòng | I | `test_care_records_service.py::test_lich_su_sap_theo_thoi_gian_giam_dan`, `test_care_records.py::test_trang_thu_cung_hien_lich_su_cham_soc` | ✅ |
+| TC-058 | US-16 | Thú cưng chưa dùng dịch vụ → trạng thái rỗng | I | `test_care_records.py::test_thu_cung_chua_dung_dich_vu_hien_trang_thai_rong` | ✅ |
 
 ## F. Tiêm phòng — phase P4
 
@@ -103,7 +103,7 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 | TC-059 | US-17 | Ghi mũi tiêm hợp lệ → hiện trong hồ sơ tiêm | I | | ⬜ |
 | TC-060 | US-17 | `next_due_at` sớm hơn `given_at` → từ chối | U | | ⬜ |
 | TC-061 | US-17 | Ngày tiêm ở tương lai → từ chối | U | | ⬜ |
-| TC-062 | US-18 | Danh sách đến hạn 30 ngày, lọc đúng, sắp theo hạn tăng dần | U | | ⬜ |
+| TC-062 | US-18 | Danh sách đến hạn: lấy hạn từ quá khứ tới hôm nay + 30 ngày, bỏ hạn xa hơn, sắp theo hạn tăng dần | U | | ⬜ |
 | TC-063 | US-18 | Bản ghi quá hạn được đánh dấu rõ | I | | ⬜ |
 | TC-064 | US-18 | Không ai đến hạn → trạng thái rỗng | I | | ⬜ |
 

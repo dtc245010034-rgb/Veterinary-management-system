@@ -51,6 +51,8 @@ def _render(
             "loi": loi,
             "khung_trong": khung_trong or [],
             "chi_cua_toi": chi_cua_toi,
+            # Nút "Ghi hồ sơ" chỉ hiện khi buổi chăm sóc đã diễn ra — quyết định 5 của P4.
+            "bay_gio": clock.now(),
             "duong_dan": "/appointments/cua-toi" if chi_cua_toi else "/appointments",
         },
         status_code=ma,

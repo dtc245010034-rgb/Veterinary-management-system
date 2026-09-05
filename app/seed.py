@@ -15,6 +15,7 @@ from sqlalchemy import select
 import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
 from app.db import Base, SessionLocal, engine
 from app.models.appointment import Appointment
+from app.models.care_record import CareRecord
 from app.models.owner import Owner
 from app.models.pet import Pet
 from app.models.service import Service
@@ -53,6 +54,12 @@ DICH_VU_MAU = [
 GOI_MAU = [
     ("Combo vệ sinh cơ bản", "220000", {"TAM": 1, "CATMONG": 1, "VESINHTAI": 1}),
     ("Combo làm đẹp", "400000", {"TAM": 1, "CATTIA": 1, "CATMONG": 1}),
+]
+
+
+HO_SO_MAU = [
+    ("Da hơi khô ở lưng, tai sạch, răng có cao răng nhẹ.", "Tắm, sấy, vệ sinh tai, cắt móng"),
+    ("Lông rối vùng bụng, tâm lý hơi sợ máy sấy.", "Tắm, gỡ rối, sấy ở chế độ gió mát"),
 ]
 
 
@@ -151,10 +158,64 @@ def main() -> None:
                     )
                     lich_moi += 1
 
+        # Hai buổi đã xong hôm qua, kèm hồ sơ — để trang chi tiết thú cưng có lịch sử
+        # thật ngay sau khi seed, thay vì phải chờ một buổi chăm sóc diễn ra.
+        ho_so_moi = 0
+        if db.scalar(select(CareRecord)) is None:
+            hom_qua = mai - timedelta(days=2)
+            le_tan = db.scalar(select(User).where(User.username == "letan"))
+            cham_soc = list(db.scalars(select(User).where(User.role == "caretaker")))
+            thu_cung = list(db.scalars(select(Pet).order_by(Pet.id)))
+            dich_vu = db.scalar(select(Service).where(Service.code == "TAM"))
+
+            for j, (tinh_trang, viec) in enumerate(HO_SO_MAU):
+                if len(thu_cung) <= j:
+                    break
+                bat_dau = hom_qua + timedelta(hours=j)
+                lich = Appointment(
+                    pet_id=thu_cung[j].id,
+                    service_id=dich_vu.id,
+                    staff_id=cham_soc[0].id,
+                    start_at=bat_dau,
+                    end_at=bat_dau + timedelta(minutes=dich_vu.duration_min),
+                    status="done",
+                    created_by=le_tan.id,
+                )
+                db.add(lich)
+                db.flush()
+                db.add(
+                    CareRecord(
+                        appointment_id=lich.id,
+                        pet_id=lich.pet_id,
+                        staff_id=lich.staff_id,
+                        performed_at=lich.start_at,
+                        condition_note=tinh_trang,
+                        actions_taken=viec,
+                    )
+                )
+                ho_so_moi += 1
+
+            # Một buổi đã qua nhưng CHƯA ghi hồ sơ. Không có bản ghi kiểu này thì không ai
+            # bấm thử được nút "Ghi hồ sơ" — phải đợi một lịch hẹn trôi qua trong thực tế.
+            if len(thu_cung) > len(HO_SO_MAU):
+                bat_dau = hom_qua + timedelta(hours=len(HO_SO_MAU))
+                db.add(
+                    Appointment(
+                        pet_id=thu_cung[len(HO_SO_MAU)].id,
+                        service_id=dich_vu.id,
+                        staff_id=cham_soc[0].id,
+                        start_at=bat_dau,
+                        end_at=bat_dau + timedelta(minutes=dich_vu.duration_min),
+                        created_by=le_tan.id,
+                    )
+                )
+                lich_moi += 1
+
         db.commit()
 
     print(f"Đã thêm {them_moi} tài khoản, {chu_nuoi_moi} chủ nuôi, {thu_cung_moi} thú cưng, "
-          f"{dich_vu_moi} dịch vụ, {goi_moi} gói, {lich_moi} lịch hẹn.")
+          f"{dich_vu_moi} dịch vụ, {goi_moi} gói, {lich_moi} lịch hẹn, "
+          f"{ho_so_moi} hồ sơ chăm sóc.")
     print(f"Mật khẩu chung của mọi tài khoản: {MAT_KHAU_MAC_DINH}\n")
     for username, full_name, role in TAI_KHOAN_MAU:
         print(f"  {username:10} {role:14} {full_name}")
