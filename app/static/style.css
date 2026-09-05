@@ -219,3 +219,10 @@ td.gio { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 5
   border-radius: 6px; padding: 2px 9px; margin: 2px 4px 0 0;
   font-variant-numeric: tabular-nums; color: var(--chu);
 }
+
+/* Thao tác trên từng dòng lịch: đổi giờ và hủy ngay tại chỗ, không phải mở trang riêng. */
+td.thao-tac form { display: flex; gap: 4px; align-items: center; margin-bottom: 4px; }
+td.thao-tac input, td.thao-tac select { margin-top: 0; width: auto; font-size: 13px; padding: 3px 6px; }
+td.thao-tac input[name="ly_do"] { width: 120px; }
+td.thao-tac button { padding: 3px 10px; font-size: 13px; }
+.nguy-hiem { color: var(--loi); border-color: #fecdca; }

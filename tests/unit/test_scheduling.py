@@ -315,3 +315,151 @@ def test_loc_lich_theo_nhan_vien(db, nen):
     ds = nv.lich_theo_ngay(db, NGAY.date(), nhan_vien_id=nen["nv1"].id)
 
     assert [a.staff_id for a in ds] == [nen["nv1"].id]
+
+
+# --- Đổi lịch (chặng 2) ------------------------------------------------------------
+
+
+def test_doi_sang_khung_trong_cap_nhat_gio_va_chuyen_trang_thai(db, nen):
+    """TC-044."""
+    a = dat(db, nen, gio(9))
+
+    nv.doi_lich(db, a.id, bat_dau=gio(14))
+
+    assert a.start_at == gio(14)
+    assert a.end_at == gio(15)
+    assert a.status == "rescheduled"
+
+
+def test_doi_sang_khung_ban_bi_tu_choi_va_giu_nguyen_gio_cu(db, nen):
+    """TC-045 — ca quan trọng nhất của đổi lịch.
+
+    Cập nhật trước rồi mới kiểm tra sẽ để lịch rơi vào trạng thái nửa vời: giờ đã đổi
+    nhưng thao tác báo lỗi. Phải kiểm xong mới ghi.
+    """
+    a = dat(db, nen, gio(9))
+    dat(db, nen, gio(14), pet="pet2")
+
+    with pytest.raises(nv.TrungLich):
+        nv.doi_lich(db, a.id, bat_dau=gio(14))
+
+    assert a.start_at == gio(9)
+    assert a.status == "booked"
+
+    # Đọc lại từ CSDL: nếu có bản ghi nào đã lỡ ghi xuống thì phải lộ ra ở đây.
+    db.expire_all()
+    assert nv.lay_lich(db, a.id).start_at == gio(9)
+
+
+def test_doi_lich_khong_tu_so_sanh_voi_chinh_no(db, nen):
+    """TC-046 — cái bẫy thứ hai.
+
+    Lịch 09:00–10:00 dời sang 09:30–10:30. Lịch duy nhất giao với khung mới chính là
+    nó. Không loại ra khỏi tập so sánh thì không lịch nào đổi giờ được.
+    """
+    a = dat(db, nen, gio(9))
+
+    nv.doi_lich(db, a.id, bat_dau=gio(9, 30))
+
+    assert a.start_at == gio(9, 30)
+
+
+def test_doi_lich_da_huy_bi_tu_choi(db, nen):
+    """TC-047."""
+    a = dat(db, nen, gio(9))
+    nv.huy_lich(db, a.id, "Khách báo bận")
+
+    with pytest.raises(LoiNghiepVu):
+        nv.doi_lich(db, a.id, bat_dau=gio(14))
+
+
+def test_doi_lich_da_hoan_thanh_bi_tu_choi(db, nen):
+    """TC-047 — nửa còn lại."""
+    a = dat(db, nen, gio(9))
+    a.status = "done"
+    db.commit()
+
+    with pytest.raises(LoiNghiepVu):
+        nv.doi_lich(db, a.id, bat_dau=gio(14))
+
+
+def test_doi_sang_nhan_vien_khac(db, nen):
+    """US-12 cho phép đổi cả nhân viên, không chỉ giờ."""
+    a = dat(db, nen, gio(9), nhan_vien="nv1")
+
+    nv.doi_lich(db, a.id, bat_dau=gio(9), nhan_vien_id=nen["nv2"].id)
+
+    assert a.staff_id == nen["nv2"].id
+    assert a.start_at == gio(9)
+
+
+def test_doi_lich_ve_qua_khu_bi_tu_choi(db, nen):
+    """frozen_clock đang ở 08:00 ngày 12/03."""
+    a = dat(db, nen, gio(9))
+
+    with pytest.raises(LoiNghiepVu):
+        nv.doi_lich(db, a.id, bat_dau=gio(7))
+
+
+def test_doi_lich_giu_nguyen_gio_van_bao_trung_neu_nhan_vien_moi_ban(db, nen):
+    """Đổi nhân viên sang người đã có lịch trùng giờ → từ chối."""
+    a = dat(db, nen, gio(9), nhan_vien="nv1")
+    dat(db, nen, gio(9), pet="pet2", nhan_vien="nv2")
+
+    with pytest.raises(nv.TrungLich):
+        nv.doi_lich(db, a.id, bat_dau=gio(9), nhan_vien_id=nen["nv2"].id)
+
+    assert a.staff_id == nen["nv1"].id
+
+
+# --- Hủy lịch (chặng 2) ------------------------------------------------------------
+
+
+def test_huy_lich_kem_ly_do_doi_trang_thai_va_luu_ly_do(db, nen):
+    """TC-048."""
+    a = dat(db, nen, gio(9))
+
+    nv.huy_lich(db, a.id, "Khách báo bận")
+
+    assert a.status == "cancelled"
+    assert a.cancel_reason == "Khách báo bận"
+
+
+def test_khung_gio_sau_khi_huy_dat_lai_duoc(db, nen):
+    """TC-048 — nửa sau: hủy phải thật sự giải phóng khung giờ."""
+    a = dat(db, nen, gio(9))
+    nv.huy_lich(db, a.id, "Khách báo bận")
+
+    b = dat(db, nen, gio(9), pet="pet2")
+
+    assert b.start_at == gio(9)
+
+
+def test_huy_lich_da_hoan_thanh_bi_tu_choi(db, nen):
+    """TC-049: buổi chăm sóc đã làm xong thì không hủy được nữa."""
+    a = dat(db, nen, gio(9))
+    a.status = "done"
+    db.commit()
+
+    with pytest.raises(LoiNghiepVu):
+        nv.huy_lich(db, a.id, "Đổi ý")
+
+    assert a.status == "done"
+
+
+def test_huy_lich_khong_co_ly_do_bi_tu_choi(db, nen):
+    """Lý do hủy là bắt buộc — ERD ghi rõ, và không có lý do thì không truy nguyên được."""
+    a = dat(db, nen, gio(9))
+
+    with pytest.raises(LoiNghiepVu):
+        nv.huy_lich(db, a.id, "   ")
+
+    assert a.status == "booked"
+
+
+def test_huy_lich_da_huy_bi_tu_choi(db, nen):
+    a = dat(db, nen, gio(9))
+    nv.huy_lich(db, a.id, "Khách báo bận")
+
+    with pytest.raises(LoiNghiepVu):
+        nv.huy_lich(db, a.id, "Hủy lần nữa")

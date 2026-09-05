@@ -25,7 +25,7 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 | TC-006 | US-02 | `caretaker` mở trang thống kê → 403 | I | — hoãn tới P6 (trang thống kê chưa có) | ⬜ |
 | TC-007 | US-02 | `receptionist` mở trang quản lý tài khoản → 403 | I | `tests/integration/test_users.py` | ✅ |
 | TC-008 | US-02 | `manager` truy cập được mọi trang | I | `tests/integration/test_users.py` | ✅ |
-| TC-009 | US-02 | `caretaker` xem lịch → chỉ thấy lịch của mình | I | — hoãn tới P3 (lịch hẹn chưa có) | ⬜ |
+| TC-009 | US-02 | `caretaker` xem lịch → chỉ thấy lịch của mình | I | `test_appointments.py::test_caretaker_go_thang_trang_lich_chung_van_chi_thay_lich_minh` | ✅ |
 | TC-010 | US-03 | Tạo tài khoản mới → đăng nhập được ngay | I | `tests/integration/test_users.py` | ✅ |
 | TC-011 | US-03 | Tên đăng nhập trùng → bị từ chối | I | `tests/integration/test_users.py`, `tests/unit/test_models_user.py` | ✅ |
 | TC-012 | US-03 | Khóa tài khoản → không đăng nhập được, dữ liệu cũ còn nguyên | I | `tests/integration/test_users.py` | ✅ |
@@ -75,15 +75,15 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 | TC-041 | US-11 | **Bao trọn** (08:00–11:00 phủ 09:00–10:00) → từ chối | U | `tests/unit/test_scheduling.py` | ✅ |
 | TC-042 | US-11 | **Nằm gọn bên trong** (09:15–09:45) → từ chối | U | `tests/unit/test_scheduling.py` | ✅ |
 | TC-043 | US-11 | Chặn trùng lịch qua API, không chỉ ở tầng service | I | `tests/integration/test_appointments.py` | ✅ |
-| TC-044 | US-12 | Đổi sang khung trống → cập nhật giờ, trạng thái `rescheduled` | U | | ⬜ |
-| TC-045 | US-12 | Đổi sang khung đã bận → từ chối, **lịch giữ nguyên giờ cũ** | U | | ⬜ |
-| TC-046 | US-12 | Đổi lịch **không tự so sánh với chính nó** | U | | ⬜ |
-| TC-047 | US-12 | Đổi lịch đã `cancelled` hoặc `done` → từ chối | U | | ⬜ |
-| TC-048 | US-13 | Hủy kèm lý do → `cancelled`, lý do được lưu | U | | ⬜ |
-| TC-049 | US-13 | Hủy lịch đã `done` → từ chối | U | | ⬜ |
-| TC-050 | US-14 | `caretaker` chỉ thấy lịch của mình, sắp theo giờ tăng dần | I | | ⬜ |
-| TC-051 | US-14 | `receptionist` thấy toàn bộ, lọc được theo ngày và nhân viên | I | | ⬜ |
-| TC-052 | US-14 | Ngày không có lịch → trạng thái rỗng | I | | ⬜ |
+| TC-044 | US-12 | Đổi sang khung trống → cập nhật giờ, trạng thái `rescheduled` | U | `test_scheduling.py::test_doi_sang_khung_trong_cap_nhat_gio_va_chuyen_trang_thai` | ✅ |
+| TC-045 | US-12 | Đổi sang khung đã bận → từ chối, **lịch giữ nguyên giờ cũ** | U | `test_scheduling.py::test_doi_sang_khung_ban_bi_tu_choi_va_giu_nguyen_gio_cu` | ✅ |
+| TC-046 | US-12 | Đổi lịch **không tự so sánh với chính nó** | U | `test_scheduling.py::test_doi_lich_khong_tu_so_sanh_voi_chinh_no` | ✅ |
+| TC-047 | US-12 | Đổi lịch đã `cancelled` hoặc `done` → từ chối | U | `test_scheduling.py::test_doi_lich_da_huy_bi_tu_choi`, `…_da_hoan_thanh_…` | ✅ |
+| TC-048 | US-13 | Hủy kèm lý do → `cancelled`, lý do được lưu | U | `test_scheduling.py::test_huy_lich_kem_ly_do_doi_trang_thai_va_luu_ly_do`, `…_khung_gio_sau_khi_huy_dat_lai_duoc` | ✅ |
+| TC-049 | US-13 | Hủy lịch đã `done` → từ chối | U | `test_scheduling.py::test_huy_lich_da_hoan_thanh_bi_tu_choi` | ✅ |
+| TC-050 | US-14 | `caretaker` chỉ thấy lịch của mình, sắp theo giờ tăng dần | I | `test_appointments.py::test_caretaker_chi_thay_lich_cua_minh` | ✅ |
+| TC-051 | US-14 | `receptionist` thấy toàn bộ, lọc được theo ngày và nhân viên | I | `test_appointments.py::test_le_tan_thay_lich_cua_moi_nhan_vien`, `…_loc_lich_theo_nhan_vien` | ✅ |
+| TC-052 | US-14 | Ngày không có lịch → trạng thái rỗng | I | `test_appointments.py::test_ngay_khong_co_lich_hien_trang_thai_rong`, `…_caretaker_ngay_khong_co_lich…` | ✅ |
 
 ## E. Hồ sơ chăm sóc — phase P4 · **đề bài yêu cầu đích danh có test**
 

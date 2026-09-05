@@ -70,18 +70,18 @@
 | `services/errors.py` | `LoiNghiepVu` — lỗi nghiệp vụ, thông điệp hiển thị thẳng cho người dùng |
 | `services/owners.py` | Nghiệp vụ chủ nuôi và thú cưng: tạo, sửa, xóa, tra cứu |
 | `services/catalog.py` | Nghiệp vụ dịch vụ và gói. `danh_sach_dang_ban()` là danh sách P3 và P5 sẽ dùng |
-| `services/scheduling.py` | **Quy tắc chống trùng lịch**, đặt lịch, gợi ý khung trống. Khoảng nửa mở `[start, end)` |
+| `services/scheduling.py` | **Quy tắc chống trùng lịch**, đặt/đổi/hủy lịch, gợi ý khung trống. Khoảng nửa mở `[start, end)` |
 | `routers/auth.py` | `/login`, `/logout`, `/` |
 | `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager` |
 | `routers/owners.py` | `/owners`, `/owners/{id}`, `/owners/{id}/pets`, `/pets/{id}/xoa` |
 | `routers/services.py` | `/services` và `/services/goi` — chỉ `manager` sửa |
-| `routers/appointments.py` | `/appointments` — lưới lịch theo ngày và form đặt lịch |
+| `routers/appointments.py` | `/appointments` lưới lịch + đặt/đổi/hủy; `/appointments/cua-toi` lịch riêng của nhân viên chăm sóc |
 | `templates/base.html` | Bố cục chung, menu hiện theo vai trò |
 | `templates/login.html` · `home.html` · `users.html` · `error.html` | Các trang từ P1 |
 | `templates/owners.html` | Danh sách, tra cứu, form thêm chủ nuôi |
 | `templates/owner_detail.html` | Chi tiết chủ nuôi, danh sách thú cưng, form thêm thú cưng |
 | `templates/services.html` | Bảng giá, gói dịch vụ, form thêm dịch vụ và tạo gói |
-| `templates/appointments.html` | Lưới lịch, form đặt lịch, hiển thị khung trống khi bị từ chối |
+| `templates/appointments.html` | Lưới lịch, form đặt lịch, cột thao tác đổi/hủy, khung trống khi bị từ chối. Dùng chung cho `/appointments` và `/appointments/cua-toi` |
 | `static/style.css` | Toàn bộ CSS, một file, không build tool |
 
 ### Kiểm thử (`tests/`) — từ P1
@@ -98,12 +98,12 @@
 | `unit/test_models_service.py` | Ràng buộc `services`, gói, và **kiểu tiền `Decimal`** |
 | `unit/test_catalog_service.py` | Nghiệp vụ dịch vụ, ngưng bán, gói |
 | `unit/test_models_appointment.py` | Ràng buộc `appointments`: `end_at > start_at`, CHECK trạng thái |
-| `unit/test_scheduling.py` | **6 ca biên trùng lịch**, gợi ý khung trống, truy vấn lịch |
+| `unit/test_scheduling.py` | **6 ca biên trùng lịch**, gợi ý khung trống, đổi lịch (TC-044→047), hủy lịch (TC-048, TC-049) |
 | `integration/test_auth.py` | Đăng nhập (TC-001→004) |
 | `integration/test_users.py` | Phân quyền và quản lý tài khoản (TC-007, 008, 010→012) |
 | `integration/test_owners.py` | Chủ nuôi, thú cưng, tra cứu qua HTTP (TC-013→023) |
 | `integration/test_services.py` | Dịch vụ, bảng giá, gói qua HTTP (TC-024→031) |
-| `integration/test_appointments.py` | Đặt lịch và chặn trùng qua HTTP (TC-035, TC-043) |
+| `integration/test_appointments.py` | Đặt/đổi/hủy lịch qua HTTP, lịch theo vai trò (TC-035, TC-043, TC-050→052, TC-009) |
 
 ### Cấu hình
 

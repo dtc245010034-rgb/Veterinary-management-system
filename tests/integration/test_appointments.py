@@ -10,7 +10,9 @@ from datetime import datetime
 from decimal import Decimal
 
 import pytest
+from sqlalchemy import select
 
+from app.models.appointment import Appointment
 from app.models.owner import Owner
 from app.models.pet import Pet
 from app.models.service import Service
@@ -206,3 +208,156 @@ def test_mac_dinh_mo_lich_hom_nay(client, nen):
     r = client.get("/appointments")
 
     assert datetime.fromisoformat(NGAY).strftime("%d/%m/%Y") in r.text
+
+
+# --- Đổi lịch và hủy lịch qua HTTP (chặng 2) ---------------------------------------
+
+
+def id_lich(db):
+    """Lấy id lịch sớm nhất — test qua HTTP nhưng vẫn cần id để dựng URL."""
+    return db.scalars(select(Appointment).order_by(Appointment.start_at)).first().id
+
+
+def test_doi_lich_qua_api_cap_nhat_gio_moi(client, db, nen):
+    """TC-044 qua HTTP."""
+    dang_nhap(client, "letan")
+    dat(client, nen, gio="09:00")
+    ma = id_lich(db)
+
+    r = client.post(
+        f"/appointments/{ma}/doi",
+        data={"ngay": NGAY, "gio": "14:00", "nhan_vien_id": str(nen["nv1"].id)},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 200
+    assert "14:00" in r.text
+    assert "Đã đổi lịch" in r.text
+
+
+def test_doi_lich_trung_qua_api_giu_nguyen_gio_cu(client, db, nen):
+    """TC-045 qua HTTP: từ chối và lịch cũ vẫn nguyên giờ ban đầu."""
+    dang_nhap(client, "letan")
+    dat(client, nen, gio="09:00")
+    dat(client, nen, gio="14:00", pet="pet2")
+    ma = id_lich(db)
+
+    r = client.post(
+        f"/appointments/{ma}/doi",
+        data={"ngay": NGAY, "gio": "14:00", "nhan_vien_id": str(nen["nv1"].id)},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 400
+    db.expire_all()
+    assert db.get(Appointment, ma).start_at.strftime("%H:%M") == "09:00"
+
+
+def test_huy_lich_qua_api_luu_ly_do(client, db, nen):
+    """TC-048 qua HTTP."""
+    dang_nhap(client, "letan")
+    dat(client, nen, gio="09:00")
+    ma = id_lich(db)
+
+    r = client.post(
+        f"/appointments/{ma}/huy",
+        data={"ngay": NGAY, "ly_do": "Khách báo bận"},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 200
+    assert "Đã hủy" in r.text
+    db.expire_all()
+    assert db.get(Appointment, ma).cancel_reason == "Khách báo bận"
+
+
+def test_huy_lich_khong_ly_do_bi_tu_choi_qua_api(client, db, nen):
+    dang_nhap(client, "letan")
+    dat(client, nen, gio="09:00")
+    ma = id_lich(db)
+
+    r = client.post(
+        f"/appointments/{ma}/huy", data={"ngay": NGAY, "ly_do": " "}, follow_redirects=True
+    )
+
+    assert r.status_code == 400
+    assert "lý do" in r.text.lower()
+
+
+def test_nhan_vien_cham_soc_khong_doi_duoc_lich(client, db, nen):
+    dang_nhap(client, "letan")
+    dat(client, nen, gio="09:00")
+    ma = id_lich(db)
+    client.post("/logout")
+    dang_nhap(client, "chamsoc1")
+
+    r = client.post(
+        f"/appointments/{ma}/doi", data={"ngay": NGAY, "gio": "14:00"}, follow_redirects=True
+    )
+
+    assert r.status_code == 403
+
+
+# --- Xem lịch theo vai trò (chặng 2) -----------------------------------------------
+
+
+@pytest.fixture
+def hai_lich(client, nen):
+    """Nhân viên 1 chăm Mực lúc 09:00, nhân viên 2 chăm Bông lúc 10:00."""
+    dang_nhap(client, "letan")
+    dat(client, nen, gio="09:00", pet="pet1", nhan_vien="nv1")
+    dat(client, nen, gio="10:00", pet="pet2", nhan_vien="nv2")
+    client.post("/logout")
+    return nen
+
+
+def test_caretaker_chi_thay_lich_cua_minh(client, hai_lich):
+    """TC-050 và TC-009 hoãn từ P1."""
+    dang_nhap(client, "chamsoc1")
+
+    r = client.get(f"/appointments/cua-toi?ngay={NGAY}")
+
+    assert r.status_code == 200
+    assert "Mực" in r.text
+    assert "Bông" not in r.text
+
+
+def test_caretaker_go_thang_trang_lich_chung_van_chi_thay_lich_minh(client, hai_lich):
+    """TC-009: chặn đường vòng, không chỉ ẩn link trong menu."""
+    dang_nhap(client, "chamsoc1")
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert r.status_code == 200
+    assert "Mực" in r.text
+    assert "Bông" not in r.text
+
+
+def test_caretaker_khong_thay_form_dat_lich(client, hai_lich):
+    dang_nhap(client, "chamsoc1")
+
+    r = client.get(f"/appointments/cua-toi?ngay={NGAY}")
+
+    assert r.status_code == 200
+    assert "Đặt lịch" not in r.text
+    assert "Hủy" not in r.text
+
+
+def test_le_tan_thay_lich_cua_moi_nhan_vien(client, hai_lich):
+    """TC-051."""
+    dang_nhap(client, "letan")
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert "Mực" in r.text
+    assert "Bông" in r.text
+
+
+def test_caretaker_ngay_khong_co_lich_hien_trang_thai_rong(client, hai_lich):
+    """TC-052 cho trang riêng của nhân viên chăm sóc."""
+    dang_nhap(client, "chamsoc1")
+
+    r = client.get("/appointments/cua-toi?ngay=2026-03-20")
+
+    assert r.status_code == 200
+    assert "Chưa có lịch hẹn nào" in r.text

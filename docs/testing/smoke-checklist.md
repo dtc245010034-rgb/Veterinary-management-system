@@ -66,8 +66,9 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 
 ## P3 chặng 2 — Đổi lịch, hủy lịch, xem theo vai trò
 
-> Chưa kiểm được: chặng 2 chưa cài đặt. Giao diện lịch hiện chỉ có nút "Xem" và
-> "Đặt lịch"; `/appointments/cua-toi` mới là link trong menu, chưa có route.
+> Đã cài đặt xong ngày 2026-09-05. Cột "Thao tác" trên lưới lịch có ô giờ + ô chọn
+> nhân viên kèm nút **Đổi**, và ô lý do kèm nút **Hủy**. Đăng nhập `chamsoc1` /
+> `matkhau123` để kiểm hai ô cuối.
 
 - [ ] Đổi lịch sang khung trống → cập nhật thành công, lưới lịch hiển thị giờ mới
 - [ ] Đổi lịch sang khung đã bận → bị từ chối, và **lịch cũ vẫn nguyên giờ ban đầu**

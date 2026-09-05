@@ -1,9 +1,7 @@
-"""Router lịch hẹn — chặng 1 của P3: xem lịch và đặt lịch.
+"""Router lịch hẹn: xem, đặt, đổi, hủy.
 
-Phục vụ US-10, US-11, US-14. Chỉ làm việc HTTP; quy tắc trùng lịch nằm ở
+Phục vụ US-10 → US-14. Chỉ làm việc HTTP; quy tắc trùng lịch nằm ở
 app/services/scheduling.py.
-
-Đổi lịch, hủy lịch và trang riêng của nhân viên chăm sóc thuộc chặng 2.
 """
 
 from datetime import date, datetime, time
@@ -37,6 +35,7 @@ def _render(
     loi: str | None = None,
     khung_trong: list[datetime] | None = None,
     ma: int = 200,
+    chi_cua_toi: bool = False,
 ):
     return templates.TemplateResponse(
         request,
@@ -51,6 +50,8 @@ def _render(
             "nhan_vien": _danh_sach_nhan_vien(db),
             "loi": loi,
             "khung_trong": khung_trong or [],
+            "chi_cua_toi": chi_cua_toi,
+            "duong_dan": "/appointments/cua-toi" if chi_cua_toi else "/appointments",
         },
         status_code=ma,
     )
@@ -79,7 +80,28 @@ def trang_lich(
     user: User = Depends(nguoi_dung_hien_tai),
     db: Session = Depends(get_db),
 ):
-    return _render(request, db, user, _doc_ngay(ngay), nhan_vien_id)
+    ngay_chon = _doc_ngay(ngay)
+
+    # Chặn đường vòng chứ không chỉ ẩn link trong menu: gõ thẳng /appointments cũng
+    # chỉ thấy lịch của chính mình (TC-009, TC-050).
+    if user.role == "caretaker":
+        return RedirectResponse(
+            f"/appointments/cua-toi?ngay={ngay_chon.isoformat()}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    return _render(request, db, user, ngay_chon, nhan_vien_id)
+
+
+@router.get("/cua-toi", response_class=HTMLResponse)
+def lich_cua_toi(
+    request: Request,
+    ngay: str = "",
+    user: User = Depends(nguoi_dung_hien_tai),
+    db: Session = Depends(get_db),
+):
+    """Lịch được phân cho chính người đang đăng nhập — US-14."""
+    return _render(request, db, user, _doc_ngay(ngay), nhan_vien_id=user.id, chi_cua_toi=True)
 
 
 @router.post("", response_class=HTMLResponse)
@@ -106,17 +128,69 @@ def dat_lich(
             nguoi_tao_id=user.id,
             ghi_chu=ghi_chu,
         )
-    except nv.TrungLich as loi:
-        # Kèm khung trống để lễ tân chọn ngay, không phải tự dò từng khung.
-        return _render(
-            request, db, user, ngay_chon, loi=str(loi),
-            khung_trong=loi.khung_trong, ma=status.HTTP_400_BAD_REQUEST,
+    except LoiNghiepVu as loi:
+        return _bao_loi(request, db, user, ngay_chon, loi)
+
+    return _ve_lich(ngay_chon)
+
+
+@router.post("/{lich_id}/doi", response_class=HTMLResponse)
+def doi_lich(
+    request: Request,
+    lich_id: int,
+    ngay: str = Form(""),
+    gio: str = Form(""),
+    nhan_vien_id: int | None = Form(None),
+    user: User = duoc_dat_lich,
+    db: Session = Depends(get_db),
+):
+    ngay_chon = _doc_ngay(ngay)
+
+    try:
+        nv.doi_lich(
+            db,
+            lich_id,
+            bat_dau=datetime.combine(ngay_chon, _doc_gio(gio)),
+            nhan_vien_id=nhan_vien_id,
         )
     except LoiNghiepVu as loi:
-        return _render(request, db, user, ngay_chon, loi=str(loi), ma=status.HTTP_400_BAD_REQUEST)
+        return _bao_loi(request, db, user, ngay_chon, loi)
 
+    return _ve_lich(ngay_chon)
+
+
+@router.post("/{lich_id}/huy", response_class=HTMLResponse)
+def huy_lich(
+    request: Request,
+    lich_id: int,
+    ngay: str = Form(""),
+    ly_do: str = Form(""),
+    user: User = duoc_dat_lich,
+    db: Session = Depends(get_db),
+):
+    ngay_chon = _doc_ngay(ngay)
+
+    try:
+        nv.huy_lich(db, lich_id, ly_do)
+    except LoiNghiepVu as loi:
+        return _bao_loi(request, db, user, ngay_chon, loi)
+
+    return _ve_lich(ngay_chon)
+
+
+def _bao_loi(request: Request, db: Session, user: User, ngay: date, loi: LoiNghiepVu):
+    """TrungLich mang theo khung trống để lễ tân chọn ngay, không phải tự dò từng khung."""
+    return _render(
+        request, db, user, ngay,
+        loi=str(loi),
+        khung_trong=getattr(loi, "khung_trong", None),
+        ma=status.HTTP_400_BAD_REQUEST,
+    )
+
+
+def _ve_lich(ngay: date) -> RedirectResponse:
     return RedirectResponse(
-        f"/appointments?ngay={ngay_chon.isoformat()}", status_code=status.HTTP_303_SEE_OTHER
+        f"/appointments?ngay={ngay.isoformat()}", status_code=status.HTTP_303_SEE_OTHER
     )
 
 

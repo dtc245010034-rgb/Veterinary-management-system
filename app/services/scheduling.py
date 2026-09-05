@@ -23,7 +23,11 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
-from app.models.appointment import TRANG_THAI_CON_HIEU_LUC, Appointment
+from app.models.appointment import (
+    TEN_TRANG_THAI,
+    TRANG_THAI_CON_HIEU_LUC,
+    Appointment,
+)
 from app.models.pet import Pet
 from app.models.service import Service
 from app.models.user import User
@@ -41,6 +45,10 @@ BUOC_GOI_Y = 30
 
 # Số khung trống tối đa gợi ý cho mỗi lần từ chối.
 SO_GOI_Y = 5
+
+# Chỉ lịch chưa hủy và chưa làm xong mới đổi hoặc hủy được. Lịch `done` là việc đã
+# thực hiện rồi — sửa nó là sửa lịch sử.
+TRANG_THAI_SUA_DUOC = ("booked", "rescheduled")
 
 
 class TrungLich(LoiNghiepVu):
@@ -142,13 +150,7 @@ def dat_lich(
     if not dich_vu.is_active:
         raise LoiNghiepVu(f"Dịch vụ “{dich_vu.name}” đã ngưng bán, không đặt lịch mới được.")
 
-    nhan_vien = db.get(User, nhan_vien_id)
-    if nhan_vien is None:
-        raise LoiNghiepVu("Không tìm thấy nhân viên.")
-    if nhan_vien.role != "caretaker":
-        raise LoiNghiepVu("Chỉ nhân viên chăm sóc mới được phân lịch.")
-    if not nhan_vien.is_active:
-        raise LoiNghiepVu("Nhân viên này đã ngưng hoạt động.")
+    _kiem_nhan_vien(db, nhan_vien_id)
 
     # Dùng clock.now() thay vì datetime.now() để test cố định được thời gian (TC-033).
     if bat_dau < clock.now():
@@ -205,6 +207,83 @@ def _chan_neu_trung(
             db, nhan_vien_id, thu_cung_id, bat_dau.date(), thoi_luong_phut, bo_qua_id
         ),
     )
+
+
+def _kiem_nhan_vien(db: Session, nhan_vien_id: int) -> User:
+    nhan_vien = db.get(User, nhan_vien_id)
+    if nhan_vien is None:
+        raise LoiNghiepVu("Không tìm thấy nhân viên.")
+    if nhan_vien.role != "caretaker":
+        raise LoiNghiepVu("Chỉ nhân viên chăm sóc mới được phân lịch.")
+    if not nhan_vien.is_active:
+        raise LoiNghiepVu("Nhân viên này đã ngưng hoạt động.")
+    return nhan_vien
+
+
+def _chan_neu_khong_sua_duoc(lich: Appointment, hanh_dong: str) -> None:
+    if lich.status not in TRANG_THAI_SUA_DUOC:
+        raise LoiNghiepVu(
+            f"Lịch ở trạng thái “{TEN_TRANG_THAI[lich.status]}” nên không {hanh_dong} được."
+        )
+
+
+def doi_lich(
+    db: Session,
+    lich_id: int,
+    bat_dau: datetime,
+    nhan_vien_id: int | None = None,
+) -> Appointment:
+    """Đổi giờ và/hoặc nhân viên của một lịch hẹn. TC-044 → TC-047.
+
+    THỨ TỰ Ở ĐÂY LÀ BẮT BUỘC: kiểm tra xong hết mới ghi. Cập nhật trước rồi mới kiểm
+    sẽ để lịch rơi vào trạng thái nửa vời — giờ đã đổi nhưng thao tác báo lỗi (TC-045).
+    """
+    lich = lay_lich(db, lich_id)
+    _chan_neu_khong_sua_duoc(lich, "đổi")
+
+    if bat_dau < clock.now():
+        raise LoiNghiepVu("Không thể đổi lịch về quá khứ.")
+
+    nhan_vien_moi = lich.staff_id if nhan_vien_id is None else nhan_vien_id
+    if nhan_vien_moi != lich.staff_id:
+        _kiem_nhan_vien(db, nhan_vien_moi)
+
+    thoi_luong = lich.service.duration_min
+    ket_thuc = bat_dau + timedelta(minutes=thoi_luong)
+
+    # bo_qua_id: loại chính lịch đang sửa ra khỏi tập so sánh, nếu không nó tự báo trùng
+    # với chính mình và không lịch nào đổi giờ được (TC-046).
+    _chan_neu_trung(
+        db, lich.pet_id, nhan_vien_moi, bat_dau, ket_thuc, thoi_luong, bo_qua_id=lich.id
+    )
+
+    lich.start_at = bat_dau
+    lich.end_at = ket_thuc
+    lich.staff_id = nhan_vien_moi
+    lich.status = "rescheduled"
+    db.commit()
+    db.refresh(lich)
+    return lich
+
+
+def huy_lich(db: Session, lich_id: int, ly_do: str) -> Appointment:
+    """Hủy lịch kèm lý do. TC-048, TC-049.
+
+    Lý do là bắt buộc: khung giờ bị giải phóng mà không ai biết vì sao thì sau này
+    không truy nguyên được, và thống kê ở P6 không phân biệt được khách hủy với lỗi vận hành.
+    """
+    lich = lay_lich(db, lich_id)
+    _chan_neu_khong_sua_duoc(lich, "hủy")
+
+    ly_do = (ly_do or "").strip()
+    if not ly_do:
+        raise LoiNghiepVu("Phải ghi lý do hủy lịch.")
+
+    lich.status = "cancelled"
+    lich.cancel_reason = ly_do
+    db.commit()
+    db.refresh(lich)
+    return lich
 
 
 # --- Truy vấn --------------------------------------------------------------------

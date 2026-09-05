@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block tieu_de %}Lịch hẹn{% endblock %}
+{% block tieu_de %}{{ "Lịch của tôi" if chi_cua_toi else "Lịch hẹn" }}{% endblock %}
 
 {% block noi_dung %}
-<h1>Lịch hẹn ngày {{ ngay.strftime("%d/%m/%Y") }}</h1>
+<h1>{{ "Lịch của tôi" if chi_cua_toi else "Lịch hẹn" }} ngày {{ ngay.strftime("%d/%m/%Y") }}</h1>
 
-<form class="thanh-tim" method="get" action="/appointments">
+<form class="thanh-tim" method="get" action="{{ duong_dan }}">
   <label class="loc">Ngày <input name="ngay" type="date" value="{{ ngay.isoformat() }}"></label>
+  {% if not chi_cua_toi %}
   <label class="loc">Nhân viên
     <select name="nhan_vien_id">
       <option value="">Tất cả</option>
@@ -14,6 +15,7 @@
       {% endfor %}
     </select>
   </label>
+  {% endif %}
   <button type="submit" class="chinh">Xem</button>
 </form>
 
@@ -33,7 +35,7 @@
     {% if danh_sach %}
       <table>
         <thead>
-          <tr><th>Giờ</th><th>Thú cưng</th><th>Chủ nuôi</th><th>Dịch vụ</th><th>Nhân viên</th><th>Trạng thái</th></tr>
+          <tr><th>Giờ</th><th>Thú cưng</th><th>Chủ nuôi</th><th>Dịch vụ</th><th>Nhân viên</th><th>Trạng thái</th>{% if user.role in ('manager', 'receptionist') %}<th>Thao tác</th>{% endif %}</tr>
         </thead>
         <tbody>
         {% for a in danh_sach %}
@@ -44,6 +46,29 @@
             <td>{{ a.service.name }}</td>
             <td>{{ a.staff.full_name }}</td>
             <td><span class="nhan nhan-{{ a.status }}">{{ a.ten_trang_thai }}</span></td>
+            {% if user.role in ('manager', 'receptionist') %}
+            <td class="thao-tac">
+              {% if a.status in ('booked', 'rescheduled') %}
+                <form method="post" action="/appointments/{{ a.id }}/doi">
+                  <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">
+                  <input name="gio" type="time" step="900" value="{{ a.start_at.strftime('%H:%M') }}" required>
+                  <select name="nhan_vien_id">
+                    {% for nv in nhan_vien %}
+                      <option value="{{ nv.id }}" {{ 'selected' if nv.id == a.staff_id }}>{{ nv.full_name }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit">Đổi</button>
+                </form>
+                <form method="post" action="/appointments/{{ a.id }}/huy">
+                  <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">
+                  <input name="ly_do" placeholder="Lý do hủy" required>
+                  <button type="submit" class="nguy-hiem">Hủy</button>
+                </form>
+              {% elif a.cancel_reason %}
+                <span class="phu nhan-nho">{{ a.cancel_reason }}</span>
+              {% endif %}
+            </td>
+            {% endif %}
           </tr>
         {% endfor %}
         </tbody>
