@@ -85,18 +85,21 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 > Dữ liệu mẫu đã dựng sẵn trạng thái cần thiết: đăng nhập `chamsoc1`, mở lịch **ngày hôm qua** —
 > có hai buổi đã hoàn thành và **một buổi chưa ghi hồ sơ** để bấm thử.
 
-- [ ] `chamsoc1` mở lịch hôm qua → buổi chưa ghi có nút **Ghi hồ sơ**, buổi đã xong có **Xem hồ sơ**
-- [ ] Bấm Ghi hồ sơ, bỏ trống ô tình trạng → bị chặn kèm thông báo đọc được
-- [ ] Ghi hồ sơ hợp lệ → lưu được, dòng lịch chuyển sang **Hoàn thành**
-- [ ] Mở lại lịch vừa ghi → hiện nội dung đã ghi, **không** còn form nhập lần hai
-- [ ] Lịch **ngày mai** (chưa diễn ra) → **không** có nút Ghi hồ sơ
-- [ ] Sau khi hoàn thành → nút Đổi và Hủy biến mất; đăng nhập `letan` gõ thẳng
-      `POST /appointments/{id}/huy` cũng bị chặn _(ô chuyển từ khối P3)_
-- [ ] `chamsoc2` gõ thẳng URL `/appointments/{id}/ho-so` của lịch thuộc `chamsoc1` → không lưu được
-- [ ] `letan` mở trang hồ sơ → xem được nội dung nhưng không có form ghi
-- [ ] Mở `/pets/{id}` của thú cưng đã qua nhiều buổi → lịch sử mới nhất lên đầu, mỗi dòng đủ
+- [x] `chamsoc1` mở lịch hôm qua → buổi chưa ghi có nút **Ghi hồ sơ**, buổi đã xong có **Xem hồ sơ**
+- [x] Bấm Ghi hồ sơ, bỏ trống ô tình trạng → bị chặn kèm thông báo đọc được
+- [x] Ghi hồ sơ hợp lệ → lưu được, dòng lịch chuyển sang **Hoàn thành**
+- [x] Mở lại lịch vừa ghi → hiện nội dung đã ghi, **không** còn form nhập lần hai
+- [x] Lịch **ngày mai** (chưa diễn ra) → **không** có nút Ghi hồ sơ
+- [x] Sau khi hoàn thành → nút **Đổi** và **Hủy** biến mất khỏi dòng đó, kể cả khi xem bằng
+      `letan` _(ô chuyển từ khối P3)_
+      <br>_Phần "gọi thẳng `POST .../huy` cũng bị chặn" không bấm bằng trình duyệt được nên
+      không đưa thành ô riêng — đã có TC-049 và `test_sau_khi_ghi_ho_so_lich_khong_con_doi_hay_huy_duoc`
+      chứng minh._
+- [x] `chamsoc2` gõ thẳng URL `/appointments/{id}/ho-so` của lịch thuộc `chamsoc1` → không lưu được
+- [x] `letan` mở trang hồ sơ → xem được nội dung nhưng không có form ghi
+- [x] Mở `/pets/{id}` của thú cưng đã qua nhiều buổi → lịch sử mới nhất lên đầu, mỗi dòng đủ
       ngày, dịch vụ, nhân viên, tình trạng
-- [ ] Mở `/pets/{id}` của thú cưng chưa dùng dịch vụ → trạng thái rỗng rõ ràng
+- [x] Mở `/pets/{id}` của thú cưng chưa dùng dịch vụ → trạng thái rỗng rõ ràng
 
 ## P4 chặng 2 — Tiêm phòng
 
