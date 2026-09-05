@@ -1,6 +1,6 @@
 # P2a — Chủ nuôi và thú cưng
 
-> **Phase:** P2a · **Mốc:** KT2 · **Duyệt ngày:** 2026-09-04 · **Trạng thái:** đang thực hiện
+> **Phase:** P2a · **Mốc:** KT2 · **Duyệt ngày:** 2026-09-04 · **Trạng thái:** hoàn thành
 >
 > P2 được tách đôi theo yêu cầu: **P2a** chủ nuôi + thú cưng + tra cứu (TC-013→023),
 > **P2b** dịch vụ + bảng giá + gói (TC-024→031). Lý do tách: 19 test case và 5 bảng trong một
@@ -94,7 +94,7 @@ Theo [`../erd.md`](../erd.md). Hai bảng, thêm một cột ngoài ERD:
 
 - [x] TC-013→019, TC-021→023 chuyển ✅; TC-020 🟡 một phần (chờ P4) trong [`../testing/test-cases.md`](../testing/test-cases.md)
 - [x] `pytest` toàn bộ xanh (114 passed in 8.93s), output sạch, không test nào bị skip
-- [ ] Phần chủ nuôi / thú cưng của khối smoke P2 tick đủ, cùng toàn bộ khối P1 (hồi quy thủ công)
+- [x] Phần chủ nuôi / thú cưng của khối smoke P2 tick đủ, cùng toàn bộ khối P1 (hồi quy thủ công)
 - [x] `codebase-map.md` và `erd.md` (cột `search_name`) cập nhật đúng thực tế
 - [x] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật
 
