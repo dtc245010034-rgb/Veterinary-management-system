@@ -70,8 +70,8 @@ làm**, nên nó đang được làm nhòe đi đúng lúc cần nổi lên. Th�
 Nhập đủ năm ô, sai một ô ngày, bấm Lưu: thông báo hiện đúng, và **cả năm ô trắng trơn**. Phải gõ lại
 từ đầu, gồm hai ô ngày. **Sửa:** trả lại nguyên những gì đã nhập.
 
-Cùng vấn đề tồn tại ở form thêm chủ nuôi và form thêm thú cưng từ P2a — **chưa sửa**, vì chúng nằm
-ngoài phạm vi đợt này. Ghi lại để quyết ở P5.
+Cùng vấn đề tồn tại ở form thêm chủ nuôi và form thêm thú cưng từ P2a — đã sửa nốt trong đợt bổ
+sung, xem mục 8.
 
 ## 3. Bài học biến thành máy canh
 
@@ -131,11 +131,30 @@ $ pytest
 
 Tăng 7 test so với trước đợt rà (391).
 
-## 8. Còn lại, chưa sửa
+## 8. Sửa nốt các điểm nhỏ tồn đọng — bổ sung cùng ngày
 
-- Form thêm chủ nuôi và thêm thú cưng cũng xóa sạch dữ liệu khi báo lỗi (từ P2a).
-- Thông báo lỗi form chủ nuôi nằm ở cột trái, xa ô nhập ở cột phải.
-- Trang lịch hẹn tràn ngang: ở bề rộng ~1030px, cột "Chủ nuôi" và "Dịch vụ" vỡ thành ba dòng và
-  bảng vẫn có thanh cuộn ngang. Nhìn rõ hơn hôm qua vì cột "Thao tác" nay có thêm link "Ghi hồ sơ".
-- `xoa_chu_nuoi` vẫn dùng cách liệt kê bảng như `xoa_thu_cung` trước khi sửa. Hiện đúng, vì mới chỉ
-  có `pets` trỏ vào `owners`. **P5 thêm `invoices` trỏ vào `owners` là lỗi tương tự sẽ xuất hiện.**
+Người dùng yêu cầu dọn nốt danh sách "chưa sửa". Năm việc, tất cả đã xong:
+
+| Việc | Cách sửa |
+|---|---|
+| Form chủ nuôi và form thú cưng mất dữ liệu khi báo lỗi | Trả lại giá trị đã nhập, như đã làm cho form mũi tiêm |
+| Thông báo lỗi form chủ nuôi nằm xa ô nhập | Tách hai chỗ: `loi` cho lỗi cả trang (xóa chủ nuôi), `loi_nhap` hiện **trong** khung nhập |
+| Lưới lịch hẹn tràn ngang ở ~1030px | `.hai-cot.cot-rong` xếp dọc từ 1100px thay vì 820px — bảng lấy trọn bề ngang |
+| Link "Ghi hồ sơ" xuống hai dòng tạo vùng chết | `td.thao-tac .chinh-nhe { white-space: nowrap }` |
+| Dữ liệu mẫu chỉ cho mỗi thú cưng một hồ sơ | Mực có thêm buổi cách đó gần một tháng — ô smoke "mới nhất lên đầu" nay nhìn ra được |
+| `xoa_chu_nuoi` sẽ lặp lỗi 500 ở P5 | Giữ phép kiểm rõ ràng cho ca đã biết (thông báo nói được phải làm gì), thêm `IntegrityError` làm lớp chặn cuối |
+
+Bốn test tái hiện, tất cả **đỏ trước**: hai test giữ dữ liệu form, một test vị trí thông báo lỗi, một
+test lớp chặn cuối của `xoa_chu_nuoi` (dựng một bảng phụ trỏ vào `owners` để đóng vai bảng sẽ thêm ở
+P5). Sau khi sửa: **402 passed**.
+
+Chỗ sửa vị trí thông báo lỗi suýt hỏng một thứ khác: dời khối `loi` vào trong form làm lỗi *"xóa chủ
+nuôi còn thú cưng"* cũng rơi vào khung "Thêm chủ nuôi" — sai chỗ. Phát hiện ngay khi đọc lại, tách
+thành hai biến.
+
+## 9. Còn lại, chưa sửa
+
+- **Thanh điều hướng vỡ ở cửa sổ hẹp (~800px):** các mục menu xuống hai dòng và tràn khỏi khung
+  cao 56px. Dự án nhắm màn hình để bàn nên chưa sửa; nếu cần chạy trên máy tính bảng thì phải làm.
+- Form thêm chủ nuôi ở trang chi tiết chủ nuôi (`owner_detail.html`) vẫn để thông báo lỗi ở đầu
+  trang, vì trang đó có hai nguồn lỗi khác nhau (thêm thú cưng, và xóa thú cưng/chủ nuôi).

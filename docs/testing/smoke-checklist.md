@@ -142,6 +142,18 @@ chức năng xóa mũi tiêm, mà dữ liệu mẫu luôn có người đến h�
 - [ ] Trên lưới lịch hẹn, link **Ghi hồ sơ** trông nổi hơn link thường; dấu `*` ở ô bắt buộc trong
       form ghi hồ sơ có **màu đỏ**
 
+### Sửa nốt các điểm nhỏ tồn đọng — cùng ngày 06/09
+
+- [ ] Trang **Lịch hẹn** ở cửa sổ khoảng 1000–1100px → bảng **không** tràn ngang, mọi cột đọc được
+      trên một dòng, form "Đặt lịch" xuống dưới bảng
+- [ ] Thêm chủ nuôi với họ tên chỉ có dấu cách → lỗi hiện **ngay trong khung "Thêm chủ nuôi"**, và
+      số điện thoại, email vừa gõ **vẫn còn** _(ô này thay cho ô cũ ở khối P2)_
+- [ ] Thêm thú cưng thiếu tên → lỗi hiện, và loài, giống, ngày sinh vừa gõ **vẫn còn**
+- [ ] Mở trang **Mực** → lịch sử chăm sóc có **hai** dòng, dòng mới nhất (05/09) nằm trên dòng cũ
+      (09/08) _(trước đây mỗi thú cưng chỉ có một hồ sơ nên không nhìn ra thứ tự)_
+- [ ] Xóa **Đỗ Thị Hằng** (còn thú cưng) → thông báo hiện ở **đầu trang danh sách**, không nằm lẫn
+      trong khung "Thêm chủ nuôi"
+
 ## P5 — Hóa đơn và thanh toán
 
 - [ ] Lập hóa đơn từ lịch đã hoàn thành → hóa đơn hiện với đúng dịch vụ và giá

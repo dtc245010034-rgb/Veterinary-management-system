@@ -31,7 +31,9 @@ def _trang_danh_sach(
     sdt_kiem_tra: str = "",
     bo_qua_id: int | None = None,
     loi: str | None = None,
+    loi_nhap: str | None = None,
     ma: int = 200,
+    da_nhap: dict | None = None,
 ):
     ket_qua = nv.tra_cuu(db, tu_khoa) if tu_khoa else None
     tat_ca = None if tu_khoa else nv.danh_sach_chu_nuoi(db)
@@ -50,7 +52,12 @@ def _trang_danh_sach(
                 else []
             ),
             "sdt_kiem_tra": sdt_kiem_tra,
+            # Hai chỗ khác nhau: `loi` là lỗi của cả trang (xóa chủ nuôi không được),
+            # `loi_nhap` là lỗi của form thêm và phải hiện ngay trong khung nhập.
             "loi": loi,
+            "loi_nhap": loi_nhap,
+            # Báo lỗi mà xóa sạch ô nhập thì người dùng phải gõ lại cả form.
+            "da_nhap": da_nhap or {},
         },
         status_code=ma,
     )
@@ -91,7 +98,15 @@ def them_chu_nuoi(
             ghi_chu=ghi_chu,
         )
     except LoiNghiepVu as loi:
-        return _trang_danh_sach(request, db, user, loi=str(loi), ma=status.HTTP_400_BAD_REQUEST)
+        return _trang_danh_sach(
+            request, db, user,
+            loi_nhap=str(loi),
+            ma=status.HTTP_400_BAD_REQUEST,
+            da_nhap={
+                "ho_ten": ho_ten, "so_dien_thoai": so_dien_thoai,
+                "email": email, "dia_chi": dia_chi, "ghi_chu": ghi_chu,
+            },
+        )
 
     # US-04: trùng số thì cảnh báo chứ không cấm. Khối cảnh báo có sẵn trong template từ
     # P2a nhưng chỉ hiện khi tự gõ `?sdt_kiem_tra=` — không nút nào sinh ra URL đó, nên
@@ -112,12 +127,13 @@ def trang_chi_tiet(
     user: User = Depends(nguoi_dung_hien_tai),
     db: Session = Depends(get_db),
     loi: str | None = None,
+    da_nhap: dict | None = None,
 ):
     chu_nuoi = nv.lay_chu_nuoi(db, chu_nuoi_id)
     return templates.TemplateResponse(
         request,
         "owner_detail.html",
-        {"user": user, "chu_nuoi": chu_nuoi, "loi": loi},
+        {"user": user, "chu_nuoi": chu_nuoi, "loi": loi, "da_nhap": da_nhap or {}},
         status_code=status.HTTP_400_BAD_REQUEST if loi else 200,
     )
 
@@ -164,7 +180,14 @@ def them_thu_cung(
             ghi_chu=ghi_chu,
         )
     except LoiNghiepVu as loi:
-        return trang_chi_tiet(request, chu_nuoi_id, user, db, loi=str(loi))
+        return trang_chi_tiet(
+            request, chu_nuoi_id, user, db,
+            loi=str(loi),
+            da_nhap={
+                "ten": ten, "loai": loai, "giong": giong, "gioi_tinh": gioi_tinh,
+                "ngay_sinh": ngay_sinh, "can_nang": can_nang, "ghi_chu": ghi_chu,
+            },
+        )
 
     return RedirectResponse(f"/owners/{chu_nuoi_id}", status_code=status.HTTP_303_SEE_OTHER)
 

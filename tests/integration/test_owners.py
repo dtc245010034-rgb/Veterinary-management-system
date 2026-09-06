@@ -289,3 +289,72 @@ def test_moi_vai_tro_deu_co_link_menu_toi_trang_chu_nuoi(client, seed_basic, use
     r = client.get("/services")
 
     assert 'href="/owners"' in r.text
+
+
+def test_form_chu_nuoi_giu_lai_du_lieu_da_nhap_khi_bao_loi(client, seed_basic):
+    """Cùng lỗi đã sửa cho form mũi tiêm ngày 06/09, còn sót ở hai form của P2a.
+
+    Bỏ trống họ tên thì mất luôn số điện thoại, email, địa chỉ vừa gõ.
+    """
+    client.post("/login", data={"username": "letan", "password": "matkhau123"})
+
+    r = client.post(
+        "/owners",
+        data={
+            "ho_ten": "",
+            "so_dien_thoai": "0906111222",
+            "email": "hoa@example.com",
+            "dia_chi": "12 Lê Lợi",
+            "ghi_chu": "Khách quen",
+        },
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 400
+    assert 'value="0906111222"' in r.text
+    assert 'value="hoa@example.com"' in r.text
+    assert 'value="12 Lê Lợi"' in r.text
+    assert 'value="Khách quen"' in r.text
+
+
+def test_loi_form_chu_nuoi_hien_ngay_trong_khung_nhap(client, seed_basic):
+    """Ô smoke P2 đòi lỗi hiện "ngay cạnh ô nhập".
+
+    Trước đây thông báo nằm phía trên danh sách ở cột trái, còn form ở cột phải — người
+    dùng gõ ở một chỗ, lỗi hiện ở chỗ khác.
+    """
+    client.post("/login", data={"username": "letan", "password": "matkhau123"})
+
+    r = client.post("/owners", data={"ho_ten": "", "so_dien_thoai": "0906111222"})
+
+    truoc_form = r.text.split('action="/owners"')[-1]
+    assert "Họ tên không được để trống." in truoc_form
+
+
+def test_form_thu_cung_giu_lai_du_lieu_da_nhap_khi_bao_loi(client, db, seed_basic, frozen_clock):
+    from app.models.owner import Owner
+
+    o = Owner(full_name="Lý Thu Hà", phone="0905112233")
+    db.add(o)
+    db.commit()
+
+    client.post("/login", data={"username": "letan", "password": "matkhau123"})
+
+    r = client.post(
+        f"/owners/{o.id}/pets",
+        data={
+            "ten": "",
+            "loai": "Mèo",
+            "giong": "Anh lông ngắn",
+            "gioi_tinh": "Cái",
+            "ngay_sinh": "2025-01-15",
+            "can_nang": "3.2",
+            "ghi_chu": "Sợ máy sấy",
+        },
+    )
+
+    assert r.status_code == 400
+    assert 'value="Mèo"' in r.text
+    assert 'value="Anh lông ngắn"' in r.text
+    assert 'value="2025-01-15"' in r.text
+    assert 'value="Sợ máy sấy"' in r.text

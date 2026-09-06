@@ -58,10 +58,17 @@ GOI_MAU = [
 ]
 
 
+# (chỉ số thú cưng, số ngày trước hôm nay, tình trạng, việc đã làm)
+# Mực (chỉ số 0) cố ý có HAI buổi cách nhau gần một tháng: ô smoke "lịch sử mới nhất lên
+# đầu" không kiểm được bằng mắt nếu mỗi thú cưng chỉ có đúng một hồ sơ.
 HO_SO_MAU = [
-    ("Da hơi khô ở lưng, tai sạch, răng có cao răng nhẹ.", "Tắm, sấy, vệ sinh tai, cắt móng"),
-    ("Lông rối vùng bụng, tâm lý hơi sợ máy sấy.", "Tắm, gỡ rối, sấy ở chế độ gió mát"),
+    (0, 1, "Da hơi khô ở lưng, tai sạch, răng có cao răng nhẹ.", "Tắm, sấy, vệ sinh tai, cắt móng"),
+    (1, 1, "Lông rối vùng bụng, tâm lý hơi sợ máy sấy.", "Tắm, gỡ rối, sấy ở chế độ gió mát"),
+    (0, 28, "Móng dài, tai có ít ráy. Cân nặng ổn định.", "Cắt móng, vệ sinh tai"),
 ]
+
+# Thú cưng có buổi đã qua nhưng CHƯA ghi hồ sơ, để bấm thử được nút "Ghi hồ sơ".
+CHUA_GHI_HO_SO = 2
 
 # (chỉ số thú cưng, tên vắc-xin, mũi thứ mấy, ngày tiêm cách hôm nay, hạn nhắc cách hôm nay)
 # Bộ này cố ý dựng sẵn đủ bốn trạng thái mà smoke checklist P4 chặng 2 cần nhìn thấy:
@@ -182,12 +189,12 @@ def main() -> None:
             thu_cung = list(db.scalars(select(Pet).order_by(Pet.id)))
             dich_vu = db.scalar(select(Service).where(Service.code == "TAM"))
 
-            for j, (tinh_trang, viec) in enumerate(HO_SO_MAU):
-                if len(thu_cung) <= j:
+            for j, (chi_so, cach_ngay, tinh_trang, viec) in enumerate(HO_SO_MAU):
+                if len(thu_cung) <= chi_so:
                     break
-                bat_dau = hom_qua + timedelta(hours=j)
+                bat_dau = hom_qua - timedelta(days=cach_ngay - 1) + timedelta(hours=j)
                 lich = Appointment(
-                    pet_id=thu_cung[j].id,
+                    pet_id=thu_cung[chi_so].id,
                     service_id=dich_vu.id,
                     staff_id=cham_soc[0].id,
                     start_at=bat_dau,
@@ -211,11 +218,11 @@ def main() -> None:
 
             # Một buổi đã qua nhưng CHƯA ghi hồ sơ. Không có bản ghi kiểu này thì không ai
             # bấm thử được nút "Ghi hồ sơ" — phải đợi một lịch hẹn trôi qua trong thực tế.
-            if len(thu_cung) > len(HO_SO_MAU):
+            if len(thu_cung) > CHUA_GHI_HO_SO:
                 bat_dau = hom_qua + timedelta(hours=len(HO_SO_MAU))
                 db.add(
                     Appointment(
-                        pet_id=thu_cung[len(HO_SO_MAU)].id,
+                        pet_id=thu_cung[CHUA_GHI_HO_SO].id,
                         service_id=dich_vu.id,
                         staff_id=cham_soc[0].id,
                         start_at=bat_dau,

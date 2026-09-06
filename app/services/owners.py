@@ -117,6 +117,7 @@ def xoa_chu_nuoi(db: Session, chu_nuoi_id: int) -> None:
     """
     o = lay_chu_nuoi(db, chu_nuoi_id)
 
+    # Phép kiểm rõ ràng cho ca đã biết, vì nó nói được người dùng phải làm gì tiếp.
     so_thu_cung = db.scalar(select(Pet).where(Pet.owner_id == o.id))
     if so_thu_cung is not None:
         raise LoiNghiepVu(
@@ -124,7 +125,16 @@ def xoa_chu_nuoi(db: Session, chu_nuoi_id: int) -> None:
         )
 
     db.delete(o)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Lớp chặn cuối cho những bảng chưa tồn tại lúc viết hàm này. `xoa_thu_cung` đã
+        # dính đúng lỗi đó một lần: chặn `appointments`, bỏ sót `vaccinations`, và người
+        # dùng nhận về trang 500. P5 thêm `invoices` trỏ vào `owners` là ca tiếp theo.
+        db.rollback()
+        raise LoiNghiepVu(
+            "Chủ nuôi này vẫn còn dữ liệu liên quan nên không xóa được."
+        )
 
 
 # --- Thú cưng -------------------------------------------------------------------

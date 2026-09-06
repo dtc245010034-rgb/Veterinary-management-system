@@ -386,3 +386,24 @@ def test_xoa_thu_cung_chi_co_ho_so_tiem_bi_chan_khong_phai_loi_500(db, frozen_cl
         nv.xoa_thu_cung(db, p.id)
 
     assert db.get(Pet, p.id) is not None
+
+
+def test_xoa_chu_nuoi_con_du_lieu_khac_tro_vao_van_bao_loi_nghiep_vu(db, frozen_clock):
+    """Lớp chặn cuối cho `xoa_chu_nuoi`, đặt trước khi P5 làm nó cần tới.
+
+    Phép kiểm rõ ràng ở trên chỉ biết bảng `pets`. P5 thêm `invoices` trỏ vào `owners` là
+    lỗi 500 của `xoa_thu_cung` lặp lại nguyên vẹn — bài học số 4 trong CLAUDE.md mục 9.
+    Ở đây giả lập bằng cách chèn thẳng một bản ghi tham chiếu mà phép kiểm không biết.
+    """
+    from sqlalchemy import text
+
+    o = nv.tao_chu_nuoi(db, ho_ten="Lý Thu Hà", so_dien_thoai="0905112233")
+    # Bảng phụ trỏ vào owners, đóng vai bảng sẽ thêm ở phase sau.
+    db.execute(text("CREATE TABLE tham_chieu_gia (owner_id INTEGER REFERENCES owners(id))"))
+    db.execute(text("INSERT INTO tham_chieu_gia (owner_id) VALUES (:x)"), {"x": o.id})
+    db.commit()
+
+    with pytest.raises(LoiNghiepVu):
+        nv.xoa_chu_nuoi(db, o.id)
+
+    assert nv.lay_chu_nuoi(db, o.id) is not None

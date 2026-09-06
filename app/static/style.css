@@ -152,6 +152,11 @@ tr:last-child td { border-bottom: 0; }
 .hai-cot { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
 @media (max-width: 820px) { .hai-cot { grid-template-columns: 1fr; } }
 
+/* Lưới lịch hẹn có 7 cột, riêng cột "Thao tác" chứa cả ô giờ, ô chọn nhân viên và hai
+   nút — nó cần chỗ hơn hẳn các bảng khác. Ở bề rộng dưới 1100px, cột form bên phải đẩy
+   bảng hẹp tới mức tràn ngang cả trang. Xếp dọc sớm hơn để bảng lấy trọn bề ngang. */
+@media (max-width: 1100px) { .hai-cot.cot-rong { grid-template-columns: 1fr; } }
+
 /* --- Thanh tìm kiếm --- */
 .thanh-tim { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
 .thanh-tim input { margin-top: 0; }
@@ -227,6 +232,8 @@ tr.dong-canh-bao td { background: #fffaf9; }
   text-decoration: none; border-bottom: 1px solid var(--chinh);
 }
 .chinh-nhe:hover { color: var(--chinh); }
+/* Xuống hai dòng thì khoảng giữa hai dòng không bấm được — bấm trượt là chuyện thật. */
+td.thao-tac .chinh-nhe { white-space: nowrap; }
 
 .loi p { margin: 0; }
 .goi-y { margin-top: 8px !important; }

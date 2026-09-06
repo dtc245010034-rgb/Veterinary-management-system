@@ -91,11 +91,14 @@
   {% if user.role in ('manager', 'receptionist') %}
   <form class="the" method="post" action="/owners">
     <h2>Thêm chủ nuôi</h2>
-    <label>Họ tên <input name="ho_ten" required></label>
-    <label>Số điện thoại <input name="so_dien_thoai" required></label>
-    <label>Email <input name="email" type="email"></label>
-    <label>Địa chỉ <input name="dia_chi"></label>
-    <label>Ghi chú <input name="ghi_chu"></label>
+    {# Thông báo lỗi nằm TRONG khung nhập chứ không ở đầu trang: form ở cột phải mà lỗi
+       hiện phía trên danh sách bên trái thì người dùng gõ một chỗ, lỗi hiện chỗ khác. #}
+    {% if loi_nhap %}<p class="loi" role="alert">{{ loi_nhap }}</p>{% endif %}
+    <label>Họ tên <input name="ho_ten" value="{{ da_nhap.ho_ten }}" required></label>
+    <label>Số điện thoại <input name="so_dien_thoai" value="{{ da_nhap.so_dien_thoai }}" required></label>
+    <label>Email <input name="email" type="email" value="{{ da_nhap.email }}"></label>
+    <label>Địa chỉ <input name="dia_chi" value="{{ da_nhap.dia_chi }}"></label>
+    <label>Ghi chú <input name="ghi_chu" value="{{ da_nhap.ghi_chu }}"></label>
     <button type="submit" class="chinh">Thêm chủ nuôi</button>
   </form>
   {% endif %}
