@@ -69,7 +69,19 @@ def them_mui_tiem(
         # Dựng lại đúng trang thú cưng kèm thông báo, không đẩy sang trang lỗi: người
         # dùng cần thấy lại form và những gì đã có để sửa.
         return trang_pets.trang_thu_cung(
-            request, thu_cung_id, user, db, loi=str(loi), ma=status.HTTP_400_BAD_REQUEST
+            request,
+            thu_cung_id,
+            user,
+            db,
+            loi=str(loi),
+            ma=status.HTTP_400_BAD_REQUEST,
+            da_nhap={
+                "ten_vac_xin": ten_vac_xin,
+                "so_mui": so_mui,
+                "ngay_tiem": ngay_tiem,
+                "han_nhac": han_nhac,
+                "ghi_chu": ghi_chu,
+            },
         )
 
     return RedirectResponse(f"/pets/{thu_cung_id}", status_code=status.HTTP_303_SEE_OTHER)

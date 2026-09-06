@@ -30,6 +30,7 @@ def trang_thu_cung(
     db: Session = Depends(get_db),
     loi: str | None = None,
     ma: int = 200,
+    da_nhap: dict | None = None,
 ):
     try:
         thu_cung = owners.lay_thu_cung(db, thu_cung_id)
@@ -47,6 +48,8 @@ def trang_thu_cung(
             # Chặn chọn ngày tương lai ngay ở trình duyệt; tầng services vẫn kiểm lại.
             "hom_nay": clock.now().date(),
             "loi": loi,
+            # Báo lỗi mà xóa sạch ô nhập thì người dùng phải gõ lại cả form.
+            "da_nhap": da_nhap or {},
         },
         status_code=ma,
     )

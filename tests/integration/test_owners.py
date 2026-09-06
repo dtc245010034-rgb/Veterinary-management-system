@@ -269,3 +269,23 @@ def _ma_chu_nuoi_dau_tien(client) -> int:
     ma = re.findall(r'/owners/(\d+)"', html)
     assert ma, "Không tìm thấy liên kết tới chủ nuôi nào trên trang danh sách"
     return int(ma[-1])
+
+
+@pytest.mark.parametrize("username", ["quanly", "letan", "chamsoc1"])
+def test_moi_vai_tro_deu_co_link_menu_toi_trang_chu_nuoi(client, seed_basic, username):
+    """Bảng phân quyền US-02 cho `caretaker` quyền **xem** chủ nuôi và thú cưng.
+
+    Lỗi thật, lần thứ hai cùng một dạng: trang mở được, phân quyền đúng, nhưng thanh điều
+    hướng không có link nên nhân viên chăm sóc phải tự gõ URL. Lần trước là link "Dịch vụ";
+    sửa xong chỉ sửa đúng dòng đó chứ không soát lại cả bảng phân quyền.
+
+    Lấy trang không phải trang chủ để chỉ thanh điều hướng dùng chung được tính.
+    """
+    r = client.post(
+        "/login", data={"username": username, "password": "matkhau123"}
+    )
+    assert r.status_code in (200, 303)
+
+    r = client.get("/services")
+
+    assert 'href="/owners"' in r.text

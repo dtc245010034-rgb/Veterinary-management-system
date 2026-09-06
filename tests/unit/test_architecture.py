@@ -176,3 +176,45 @@ def test_moi_ham_public_trong_services_deu_duoc_goi_thang_trong_test():
                 thieu.append(f"{tep.name}::{ham}")
 
     assert not thieu, "Hàm public chưa có test gọi thẳng:\n  " + "\n  ".join(thieu)
+
+
+def test_moi_class_dung_trong_template_deu_co_trong_css():
+    """Lỗi thật, ba lần trong cùng phase P4: `chinh-nhe`, `bat-buoc`, `dong-canh-bao`.
+
+    Cả ba được viết vào template với ý đồ tạo kiểu — link "Ghi hồ sơ" nổi hơn link thường,
+    dấu sao đỏ ở ô bắt buộc, dòng quá hạn có nền cảnh báo — nhưng không có quy tắc CSS nào
+    tương ứng. Trang vẫn dựng đúng, mọi test vẫn xanh, chỉ là ý đồ không xảy ra. Không nhìn
+    bằng mắt thì không ai biết.
+
+    Kiểm hai dạng: class viết cứng, và class có dấu gạch nối nằm trong chuỗi của biểu thức
+    Jinja (`class="{{ 'dong-canh-bao' if v.qua_han }}"`) — chính dạng thứ hai sinh ra lỗi
+    `dong-canh-bao`, nên phép kiểm bỏ nó thì bỏ đúng ca đã xảy ra. Dấu gạch nối là cách
+    phân biệt tên class với chuỗi so sánh thường (`'cancelled'`, `'manager'`).
+
+    Class ghép từ biến (`nhan-{{ a.status }}`) vẫn nằm ngoài tầm và phải nhìn bằng mắt.
+
+    NẾU TEST NÀY ĐỎ: thêm quy tắc CSS, hoặc bỏ class thừa khỏi template. Đừng xóa test.
+    """
+    css = _doc(GOC / "app" / "static" / "style.css")
+    co_trong_css = set(re.findall(r"\.([a-z][a-z0-9-]*)", css))
+
+    thieu = []
+    for tep in sorted((GOC / "app" / "templates").glob("*.html")):
+        noi_dung = _doc(tep)
+        ten_class = []
+
+        for khoi in re.findall(r'class="([^"]*)"', noi_dung):
+            ten_class += re.findall(r"'([a-z][a-z0-9]*(?:-[a-z0-9]+)+)'", khoi)
+            # Bỏ biểu thức Jinja rồi mới tách, nếu không sẽ nhặt cả `if`, `else`, `not`.
+            ten_class += re.sub(r"\{\{.*?\}\}|\{%.*?%\}", " ", khoi, flags=re.S).split()
+
+        for ten in ten_class:
+            # Bỏ mảnh còn lại của class ghép từ biến, ví dụ `nhan-` của `nhan-{{ x }}`.
+            if ten.startswith("-") or ten.endswith("-"):
+                continue
+            if ten not in co_trong_css:
+                thieu.append(f"{tep.name}: .{ten}")
+
+    assert not thieu, "Class dùng trong template nhưng không có trong style.css:\n  " + "\n  ".join(
+        sorted(set(thieu))
+    )

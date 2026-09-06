@@ -23,7 +23,7 @@
         <tr class="{{ 'dong-canh-bao' if v.qua_han }}">
           <td class="gio">
             {{ v.next_due_at.strftime("%d/%m/%Y") }}
-            {% if v.qua_han %}<span class="nhan nhan-cancelled">Quá hạn</span>{% endif %}
+            {% if v.qua_han %}<span class="nhan nhan-qua-han">Quá hạn</span>{% endif %}
           </td>
           <td><a href="/pets/{{ v.pet_id }}">{{ v.pet.name }}</a></td>
           <td><a href="/owners/{{ v.pet.owner_id }}">{{ v.pet.owner.full_name }}</a></td>

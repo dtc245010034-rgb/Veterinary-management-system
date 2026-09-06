@@ -186,7 +186,7 @@ Xem [`docs/ai-safety.md`](docs/ai-safety.md). Hai điều tuyệt đối:
 Chỉ ghi vào log phiên là **chưa đủ**: luật mục 6 chỉ bắt đọc log *gần nhất*, nên bài học viết ở log
 phiên này sẽ khuất tầm nhìn ngay khi có hai phiên nữa.
 
-## Danh sách (3/5 dòng)
+## Danh sách (4/5 dòng)
 
 1. **Test đỏ thì nghi test trước khi nghi code.** Ba lần lỗi nằm ở test hoặc script kiểm chứng chứ
    không ở code. Gốc chung: viết cứng giả định về dữ liệu thay vì đọc từ fixture. — *không tự động
@@ -197,6 +197,10 @@ phiên này sẽ khuất tầm nhìn ngay khi có hai phiên nữa.
    `test_moi_link_tuong_doi_trong_tai_lieu_deu_ton_tai` và `test_moi_file_app_va_tests_deu_co_trong_codebase_map`*
 3. **Test viết sau code xanh ngay không chứng minh gì.** Phải làm hỏng code có chủ đích và xác nhận
    đúng test tương ứng đỏ, rồi hoàn nguyên. — *không tự động hóa được*
+4. **Sửa một lỗi thì soát cả lớp lỗi, không chỉ ca vừa thấy.** Hai lần: thiếu link menu — sửa "Dịch
+   vụ" xong bỏ sót "Chủ nuôi"; chặn xóa thú cưng — chặn `appointments` xong bỏ sót `vaccinations`,
+   lỗi 500 quay lại nguyên vẹn. Hỏi "còn chỗ nào cùng dạng?" trước khi đóng. — *không tự động hóa
+   được*
 
 Ranh giới kiến trúc và bao phủ hàm public **đã rời khỏi danh sách này** vì tự động hóa được — xem
 `test_architecture.py`. Đó là kết quả mong muốn: danh sách càng ngắn nghĩa là càng nhiều bài học đã

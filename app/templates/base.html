@@ -13,8 +13,11 @@
 
   <nav>
     {# Menu hiện theo vai trò — bảng phân quyền trong docs/user-stories.md US-02 #}
+    {# Nhân viên chăm sóc có quyền XEM chủ nuôi và thú cưng (US-02) — cần link để tra
+       lịch sử con vật mình sắp chăm. Thiếu link là họ phải tự gõ URL, đúng lỗi đã gặp
+       một lần với "Dịch vụ". #}
+    <a href="/owners">Chủ nuôi</a>
     {% if user.role in ('manager', 'receptionist') %}
-      <a href="/owners">Chủ nuôi</a>
       <a href="/appointments">Lịch hẹn</a>
     {% endif %}
     {% if user.role == 'caretaker' %}

@@ -110,22 +110,37 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 > Dữ liệu mẫu đã dựng sẵn đủ bốn trạng thái cần nhìn: **Mun** quá hạn, **Đậu Đỏ** sắp tới,
 > **Bông** còn xa, **Mực** có hai mũi Dại nối tiếp nhau, **Sữa** chưa có mũi nào.
 
-- [ ] Mở **Tiêm phòng** từ thanh điều hướng bằng cả `quanly`, `letan`, `chamsoc1` → đều vào được
-- [ ] Danh sách đến hạn sắp theo hạn tăng dần, dòng của **Mun** có nhãn **Quá hạn** nhìn thấy rõ
-- [ ] **Bông** có hạn xa hơn 30 ngày → **không** xuất hiện trong danh sách
-- [ ] **Mực** có mũi Dại 1 đã quá hạn nhưng đã tiêm mũi 2 → **không** xuất hiện trong danh sách,
+- [x] Mở **Tiêm phòng** từ thanh điều hướng bằng cả `quanly`, `letan`, `chamsoc1` → đều vào được
+- [x] Danh sách đến hạn sắp theo hạn tăng dần, dòng của **Mun** có nhãn **Quá hạn** nhìn thấy rõ
+- [x] **Bông** có hạn xa hơn 30 ngày → **không** xuất hiện trong danh sách
+- [x] **Mực** có mũi Dại 1 đã quá hạn nhưng đã tiêm mũi 2 → **không** xuất hiện trong danh sách,
       mà mở trang của Mực thì hồ sơ tiêm vẫn thấy **đủ cả hai mũi**
-- [ ] Ghi mũi tiêm mới cho **Sữa** (đang chưa có mũi nào) → hiện ngay trong hồ sơ tiêm của Sữa
-- [ ] Nhập hạn nhắc sớm hơn ngày tiêm → thông báo lỗi đọc được, trang không vỡ, dữ liệu cũ còn nguyên
-- [ ] Chọn ngày tiêm ở tương lai → **trình duyệt chặn ngay**, không gửi đi được
+- [x] Ghi mũi tiêm mới cho **Sữa** (đang chưa có mũi nào) → hiện ngay trong hồ sơ tiêm của Sữa
+- [x] Nhập hạn nhắc sớm hơn ngày tiêm → thông báo lỗi đọc được, trang không vỡ, dữ liệu cũ còn nguyên
+- [x] Chọn ngày tiêm ở tương lai → **trình duyệt chặn ngay**, không gửi đi được
       <br>_Ô ngày tiêm có `max` là hôm nay. Phần chặn ở tầng máy chủ không bấm bằng trình duyệt
       được nên không đưa thành ô riêng — đã có TC-061 chứng minh._
-- [ ] Màn hình tiêm phòng có ghi rõ **lịch tiêm cụ thể do bác sĩ thú y quyết định**
-- [ ] Trang thú cưng hiện đủ **cả** lịch sử chăm sóc **lẫn** hồ sơ tiêm _(TC-020 hoãn từ P2)_
-- [ ] Trang của **Sữa** trước khi ghi mũi nào → khối hồ sơ tiêm có trạng thái rỗng rõ ràng
+- [x] Màn hình tiêm phòng có ghi rõ **lịch tiêm cụ thể do bác sĩ thú y quyết định**
+- [x] Trang thú cưng hiện đủ **cả** lịch sử chăm sóc **lẫn** hồ sơ tiêm _(TC-020 hoãn từ P2)_
+- [x] Trang của **Sữa** trước khi ghi mũi nào → khối hồ sơ tiêm có trạng thái rỗng rõ ràng
 
 _Trạng thái rỗng của **danh sách đến hạn** (TC-064) không dựng được bằng giao diện: không có
 chức năng xóa mũi tiêm, mà dữ liệu mẫu luôn có người đến hạn. Đã có TC-064 ở tầng integration._
+
+### Sau đợt sửa lỗi ngày 06/09
+
+> Năm lỗi tìm ra khi rà luồng bằng trình duyệt sau khi khối trên đã tick. Chi tiết:
+> [`reports/2026-09-06-ra-luong-P4-chang2.md`](reports/2026-09-06-ra-luong-P4-chang2.md).
+> Cần CSDL seed sạch: `python -m app.seed` sau khi xóa `petcare.db`.
+
+- [ ] Ghi một mũi tiêm cho **Sữa**, rồi mở trang **Lý Thu Hà** và bấm **Xóa** ở dòng của Sữa →
+      thông báo tiếng Việt trong khung đỏ, **không** phải màn hình đen "Internal Server Error"
+- [ ] Nhập hạn nhắc sớm hơn ngày tiêm → sau khi báo lỗi, **những gì đã gõ vẫn còn trong form**
+- [ ] Nhãn **Quá hạn** là viên thuốc **đỏ**, khác hẳn nhãn xám "Đã hủy" của lịch hẹn
+- [ ] Đăng nhập `chamsoc1` → thanh điều hướng có link **Chủ nuôi**; mở ra xem được nhưng **không**
+      có form thêm và **không** có nút Xóa _(US-02: nhân viên chăm sóc chỉ xem)_
+- [ ] Trên lưới lịch hẹn, link **Ghi hồ sơ** trông nổi hơn link thường; dấu `*` ở ô bắt buộc trong
+      form ghi hồ sơ có **màu đỏ**
 
 ## P5 — Hóa đơn và thanh toán
 

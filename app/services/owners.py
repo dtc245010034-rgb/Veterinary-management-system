@@ -8,9 +8,9 @@ from dataclasses import dataclass, field
 from datetime import date
 
 from sqlalchemy import or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.models.appointment import Appointment
 from app.models.owner import Owner
 from app.models.pet import Pet
 from app.services import clock
@@ -187,25 +187,30 @@ def lay_thu_cung(db: Session, thu_cung_id: int) -> Pet:
 
 
 def xoa_thu_cung(db: Session, thu_cung_id: int) -> None:
-    """Chặn khi thú cưng còn lịch hẹn hoặc hồ sơ chăm sóc.
+    """Chặn khi còn dữ liệu trỏ vào thú cưng này.
 
-    Cùng luật với `xoa_chu_nuoi`: khóa ngoại của SQLite cũng chặn, nhưng nó ném
-    IntegrityError và người dùng nhận về lỗi 500. Kiểm ở đây để trả thông báo đọc hiểu
-    được; khóa ngoại giữ vai trò lớp chặn cuối.
+    Để khóa ngoại quyết định thay vì tự liệt kê bảng. Bản trước hỏi đúng một câu — "còn
+    lịch hẹn không?" — nên khi P4 thêm bảng `vaccinations` cũng trỏ vào `pets`, thú cưng
+    chỉ có hồ sơ tiêm lọt qua phép chặn và người dùng nhận về trang đen "Internal Server
+    Error". Đó là lần thứ hai cùng một lỗi, vì cách chặn cũ bắt phải nhớ sửa hàm này mỗi
+    lần thêm bảng.
 
-    Lỗi này tồn tại từ P3 (chỉ có `appointments` trỏ vào) và nặng thêm ở P4 khi có thêm
-    `care_records`. Tìm ra khi rà luồng bằng tay sau chặng 1, không phải khi viết code.
+    Cách này chặn sẵn mọi bảng sẽ thêm ở P5–P7. Đổi lại, thông báo không nói được chính
+    xác loại dữ liệu nào đang giữ — chấp nhận, vì im lặng hỏng nặng hơn nói chung chung.
     """
     p = lay_thu_cung(db, thu_cung_id)
-
-    if db.scalar(select(Appointment).where(Appointment.pet_id == p.id)) is not None:
-        raise LoiNghiepVu(
-            f"“{p.name}” vẫn còn lịch hẹn hoặc hồ sơ chăm sóc nên không xóa được. "
-            "Hồ sơ chăm sóc là dữ liệu lịch sử, xóa đi thì không khôi phục được."
-        )
+    ten = p.name
 
     db.delete(p)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise LoiNghiepVu(
+            f"“{ten}” vẫn còn dữ liệu liên quan — lịch hẹn, hồ sơ chăm sóc hoặc hồ sơ "
+            "tiêm — nên không xóa được. Đó là dữ liệu lịch sử, xóa đi thì không khôi "
+            "phục được."
+        )
 
 
 def _kiem_ngay_sinh(ngay_sinh: date | None) -> date | None:

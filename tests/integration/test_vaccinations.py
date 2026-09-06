@@ -197,3 +197,43 @@ def test_trang_thu_cung_hien_ca_lich_su_cham_soc_lan_ho_so_tiem(client, nen):
     assert "Lịch sử chăm sóc" in r.text
     assert "Hồ sơ tiêm" in r.text
     assert "Dại" in r.text
+
+
+def test_xoa_thu_cung_chi_co_ho_so_tiem_ra_400_khong_phai_500(client, nen):
+    """Lỗi tìm ra khi rà luồng bằng trình duyệt: trang đen "Internal Server Error".
+
+    Router chỉ bắt `LoiNghiepVu`, nên khi tầng services để `IntegrityError` bay ra thì
+    người dùng nhận về trang 500 thô. Đây là ca đi qua đúng luồng bình thường: bấm "Xóa"
+    trên một thú cưng chỉ mới có hồ sơ tiêm.
+    """
+    dang_nhap(client, "letan")
+    ghi_mui(client, nen["mun"])
+
+    r = client.post(f"/pets/{nen['mun'].id}/xoa", follow_redirects=True)
+
+    assert r.status_code == 400
+    assert "không xóa được" in r.text
+
+
+def test_form_mui_tiem_giu_lai_du_lieu_da_nhap_khi_bao_loi(client, nen):
+    """Bắt lỗi rồi xóa sạch ô nhập thì người dùng phải gõ lại cả năm ô, gồm hai ô ngày.
+
+    Tìm ra khi rà luồng bằng trình duyệt: sai một ô ngày là mất toàn bộ phần đã nhập.
+    """
+    dang_nhap(client, "letan")
+
+    r = ghi_mui(
+        client,
+        nen["muc"],
+        ten_vac_xin="Cúm mèo bốn bệnh",
+        so_mui="3",
+        ngay_tiem=(HOM_NAY - timedelta(days=5)).isoformat(),
+        han_nhac=(HOM_NAY - timedelta(days=20)).isoformat(),
+        ghi_chu="Tiêm ở phòng khám An Khang",
+    )
+
+    assert r.status_code == 400
+    assert 'value="Cúm mèo bốn bệnh"' in r.text
+    assert 'value="3"' in r.text
+    assert f'value="{(HOM_NAY - timedelta(days=5)).isoformat()}"' in r.text
+    assert "Tiêm ở phòng khám An Khang" in r.text

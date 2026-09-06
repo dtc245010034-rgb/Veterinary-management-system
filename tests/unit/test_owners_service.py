@@ -361,3 +361,28 @@ def test_xoa_thu_cung_con_lich_hen_bi_chan_kem_thong_bao(db, frozen_clock):
 
     assert "lịch hẹn" in str(loi.value).lower()
     assert nv.lay_thu_cung(db, p.id) is not None
+
+
+def test_xoa_thu_cung_chi_co_ho_so_tiem_bi_chan_khong_phai_loi_500(db, frozen_clock):
+    """Lỗi mở lại ở P4 chặng 2, tìm ra khi rà luồng bằng trình duyệt.
+
+    Phép chặn cũ hỏi đúng một câu: "thú cưng này còn lịch hẹn không?". Bảng `vaccinations`
+    cũng trỏ vào `pets`, nên thú cưng chỉ có hồ sơ tiêm lọt qua phép chặn, rơi xuống khóa
+    ngoại, và người dùng nhận về trang đen "Internal Server Error".
+
+    Sửa bằng cách hỏi CSDL thay vì liệt kê bảng: bảng nào trỏ vào `pets` ở phase sau cũng
+    được chặn sẵn, không phải nhớ sửa lại hàm này.
+    """
+    from datetime import date
+
+    from app.models.vaccination import Vaccination
+
+    o = nv.tao_chu_nuoi(db, ho_ten="Lý Thu Hà", so_dien_thoai="0905112233")
+    p = nv.tao_thu_cung(db, o.id, ten="Sữa", loai="Mèo")
+    db.add(Vaccination(pet_id=p.id, vaccine_name="FVRCP", given_at=date(2026, 1, 1)))
+    db.commit()
+
+    with pytest.raises(LoiNghiepVu):
+        nv.xoa_thu_cung(db, p.id)
+
+    assert db.get(Pet, p.id) is not None

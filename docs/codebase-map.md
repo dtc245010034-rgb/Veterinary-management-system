@@ -107,7 +107,7 @@
 | `unit/test_text.py` | Chuẩn hóa chuỗi tiếng Việt, gồm bẫy chữ `đ` |
 | `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
 | `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa |
-| `unit/test_architecture.py` | **Canh ranh giới dự án**, không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, link tài liệu, `codebase-map` đủ file, hàm public có test gọi thẳng |
+| `unit/test_architecture.py` | **Canh ranh giới dự án**, không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, link tài liệu, `codebase-map` đủ file, hàm public có test gọi thẳng, class trong template có quy tắc CSS |
 | `unit/test_owners_service.py` | Nghiệp vụ chủ nuôi, thú cưng, tra cứu |
 | `unit/test_models_service.py` | Ràng buộc `services`, gói, và **kiểu tiền `Decimal`** |
 | `unit/test_catalog_service.py` | Nghiệp vụ dịch vụ, ngưng bán, gói |
