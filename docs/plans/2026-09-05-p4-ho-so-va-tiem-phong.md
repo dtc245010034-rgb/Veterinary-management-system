@@ -1,7 +1,6 @@
 # P4 — Hồ sơ chăm sóc và tiêm phòng
 
-> **Phase:** P4 · **Mốc:** KT2 — phase cuối của mốc này · **Duyệt ngày:** 2026-09-05 · **Trạng thái:** code xong,
-> chờ smoke chặng 2
+> **Phase:** P4 · **Mốc:** KT2 — phase cuối của mốc này · **Duyệt ngày:** 2026-09-05 · **Trạng thái:** hoàn tất
 >
 > Chia hai chặng như P3. **Khối smoke tách theo chặng ngay từ đầu** — áp dụng luật ở đầu
 > [`../testing/smoke-checklist.md`](../testing/smoke-checklist.md), lần này không đợi phạm rồi sửa.
@@ -154,8 +153,14 @@ tại không?*
 - [x] Ba sửa đổi tài liệu ở bước 0 hoàn tất **trước** khi viết code
 - [x] `codebase-map.md` cập nhật đúng thực tế (`test_architecture.py` sẽ tự bắt nếu quên)
 - [x] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật
-- [ ] Khối smoke P4 tách theo chặng, tick đủ trên trình duyệt thật
-- [ ] **Mốc KT2 hoàn tất**
+- [x] Khối smoke P4 tách theo chặng, tick đủ trên trình duyệt thật
+- [x] **Mốc KT2 hoàn tất**
+
+> Chốt ngày 06/09: khối P4 chặng 1 (10/10) và chặng 2 (10/10) đều đã tick. **Mười ô kiểm chứng sau
+> hai đợt sửa lỗi ngày 06/09 vẫn đang trống** — chúng nằm ngoài phạm vi P4, kiểm lại các chỗ vừa sửa
+> chứ không phải chức năng của phase.
+
+> **Trạng thái: hoàn tất.**
 
 ## Điều chỉnh so với kế hoạch gốc
 

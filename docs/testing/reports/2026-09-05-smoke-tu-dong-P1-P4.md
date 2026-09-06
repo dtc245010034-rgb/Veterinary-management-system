@@ -95,6 +95,10 @@ có link — hai vai trò kia phải tự gõ URL.
 
 ## 4. Ba điểm nhỏ, chưa sửa
 
+> **Cập nhật 06/09: cả ba đã sửa.** Xem
+> [`2026-09-06-ra-luong-P4-chang2.md`](2026-09-06-ra-luong-P4-chang2.md) mục 8. Giữ nguyên phần dưới
+> vì báo cáo là ảnh chụp tại thời điểm chạy, không viết lại theo hiện tại.
+
 - Thông báo lỗi form chủ nuôi hiện phía trên danh sách bên **trái**, cách xa ô nhập bên **phải**. Ô
   smoke đòi "ngay cạnh ô nhập". Sửa đúng cần đổi bố cục trang, để lại cho người dùng quyết định.
 - Dữ liệu mẫu chỉ cho mỗi thú cưng **một** hồ sơ nên ô "lịch sử mới nhất lên đầu" không kiểm được
