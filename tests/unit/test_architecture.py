@@ -218,3 +218,40 @@ def test_moi_class_dung_trong_template_deu_co_trong_css():
     assert not thieu, "Class dùng trong template nhưng không có trong style.css:\n  " + "\n  ".join(
         sorted(set(thieu))
     )
+
+
+# --- Trạng thái hóa đơn chỉ được quyết ở một chỗ ----------------------------------
+
+
+def test_chuoi_trang_thai_tien_chi_xuat_hien_o_model_va_service_hoa_don():
+    """Ba chuỗi `unpaid`, `partial`, `paid` chỉ được viết ở hai file — kế hoạch P5.
+
+    Cột `invoices.status` là bản cache của thứ suy được từ `payments`. Nó chỉ đúng chừng
+    nào mọi phép ghi đi qua `billing.ghi_nhan_thanh_toan()`. Một dòng `if hd.status ==
+    'paid'` trong router hay template là chỗ để logic tiền bạc âm thầm rẽ nhánh theo cột
+    cache thay vì theo số tiền thật; tệ hơn, một dòng gán `status = 'paid'` ở ngoài sẽ
+    làm sổ sách lệch mà không test nào đỏ.
+
+    `cancelled` KHÔNG nằm trong phép canh này vì nó cũng là trạng thái của lịch hẹn — cấm
+    nó ở mọi nơi thì phải mở ngoại lệ cho `appointments`, và một phép canh đầy ngoại lệ
+    thì không ai tin nữa.
+
+    NẾU TEST NÀY ĐỎ: dùng `hd.ten_trang_thai`, `hd.con_no`, `billing.trang_thai_tinh_lai()`
+    thay vì so chuỗi. Đừng xóa test.
+    """
+    duoc_phep = {"invoice.py", "billing.py"}
+    tep_can_quet = [
+        p
+        for p in list((GOC / "app").rglob("*.py")) + list((GOC / "app").rglob("*.html"))
+        if "__pycache__" not in p.parts and p.name not in duoc_phep
+    ]
+
+    vi_pham = []
+    for tep in sorted(tep_can_quet):
+        for chuoi in re.findall(r"""['"](unpaid|partial|paid)['"]""", _doc(tep)):
+            vi_pham.append(f"{tep.relative_to(GOC)}: '{chuoi}'")
+
+    assert not vi_pham, (
+        "Chuỗi trạng thái tiền chỉ được viết trong app/models/invoice.py và "
+        "app/services/billing.py:\n  " + "\n  ".join(sorted(set(vi_pham)))
+    )

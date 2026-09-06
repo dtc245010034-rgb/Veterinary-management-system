@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block tieu_de %}Hóa đơn #{{ hoa_don.id }}{% endblock %}
+
+{% block noi_dung %}
+<p class="duong-dan"><a href="/invoices">Hóa đơn</a> › #{{ hoa_don.id }}</p>
+<h1>Hóa đơn #{{ hoa_don.id }} <span class="nhan nhan-{{ hoa_don.status }}">{{ hoa_don.ten_trang_thai }}</span></h1>
+
+<div class="hai-cot">
+  <div>
+    <div class="the">
+      <h2>Thông tin</h2>
+      <dl class="thong-tin">
+        <dt>Chủ nuôi</dt>
+        <dd><a href="/owners/{{ hoa_don.owner_id }}">{{ hoa_don.owner.full_name }}</a></dd>
+        <dt>Ngày lập</dt><dd>{{ hoa_don.issued_at.strftime("%d/%m/%Y %H:%M") }}</dd>
+        <dt>Buổi chăm sóc</dt>
+        <dd>
+          {% if hoa_don.appointment %}
+            <a href="/pets/{{ hoa_don.appointment.pet_id }}">{{ hoa_don.appointment.pet.name }}</a>
+            — {{ hoa_don.appointment.start_at.strftime("%d/%m/%Y %H:%M") }}
+          {% else %}—{% endif %}
+        </dd>
+      </dl>
+    </div>
+
+    <h2>Nội dung</h2>
+    <table>
+      <thead>
+        <tr><th>Dịch vụ</th><th class="phai">Số lượng</th><th class="phai">Đơn giá</th><th class="phai">Thành tiền</th></tr>
+      </thead>
+      <tbody>
+      {% for d in hoa_don.dong %}
+        <tr>
+          <td>{{ d.description }}</td>
+          <td class="phai">{{ d.qty }}</td>
+          <td class="phai">{{ d.unit_price|tien }}</td>
+          <td class="phai">{{ d.amount|tien }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><th colspan="3" class="phai">Tổng tiền</th><td class="phai"><strong>{{ hoa_don.total_amount|tien }}</strong></td></tr>
+        <tr><th colspan="3" class="phai">Đã trả</th><td class="phai">{{ hoa_don.da_tra|tien }}</td></tr>
+        <tr><th colspan="3" class="phai">Còn nợ</th><td class="phai"><strong>{{ hoa_don.con_no|tien }}</strong></td></tr>
+      </tfoot>
+    </table>
+    {# Đơn giá là bản CHÉP tại thời điểm lập. Nói ra để người dùng không tưởng là hệ
+       thống hiển thị sai khi bảng giá đã đổi. #}
+    <p class="phu">Đơn giá được chốt tại thời điểm lập hóa đơn, đổi bảng giá sau đó không làm đổi hóa đơn này.</p>
+
+    <h2>Lịch sử thanh toán</h2>
+    {% if hoa_don.thanh_toan %}
+      <table>
+        <thead><tr><th>Thời điểm</th><th>Hình thức</th><th class="phai">Số tiền</th></tr></thead>
+        <tbody>
+        {% for p in hoa_don.thanh_toan %}
+          <tr>
+            <td class="gio">{{ p.paid_at.strftime("%d/%m/%Y %H:%M") }}</td>
+            <td>{{ p.ten_hinh_thuc }}</td>
+            <td class="phai">{{ p.amount|tien }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="the rong"><p>Chưa ghi nhận lần thanh toán nào.</p></div>
+    {% endif %}
+  </div>
+
+  <div>
+    {% if hoa_don.con_no > 0 and hoa_don.status != 'cancelled' %}
+      <form class="the" method="post" action="/invoices/{{ hoa_don.id }}/thanh-toan">
+        <h2>Ghi nhận thanh toán</h2>
+        {% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+        <label>Số tiền <span class="bat-buoc">*</span>
+          <input name="so_tien" inputmode="numeric" value="{{ da_nhap.so_tien }}"
+                 placeholder="{{ hoa_don.con_no|round|int }}" required>
+        </label>
+        <p class="nhan-nho phu">Còn nợ {{ hoa_don.con_no|tien }}.</p>
+        <label>Hình thức
+          <select name="hinh_thuc">
+            {% for ma, ten in hinh_thuc.items() %}
+              <option value="{{ ma }}" {{ 'selected' if da_nhap.hinh_thuc == ma }}>{{ ten }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit" class="chinh">Ghi nhận</button>
+      </form>
+    {% elif loi %}
+      <div class="the"><p class="loi" role="alert">{{ loi }}</p></div>
+    {% endif %}
+
+    {% if hoa_don.status != 'cancelled' and not hoa_don.thanh_toan %}
+      <form class="the" method="post" action="/invoices/{{ hoa_don.id }}/huy">
+        <h2>Hủy hóa đơn</h2>
+        <p class="phu">Chỉ hủy được hóa đơn chưa thu đồng nào. Đã thu rồi thì hệ thống
+          chưa làm nghiệp vụ hoàn tiền.</p>
+        <button type="submit" class="nguy-hiem">Hủy hóa đơn</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

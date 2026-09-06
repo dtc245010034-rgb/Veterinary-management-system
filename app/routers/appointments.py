@@ -16,7 +16,7 @@ from app.db import get_db
 from app.models.owner import Owner
 from app.models.pet import Pet
 from app.models.user import User
-from app.services import catalog, clock
+from app.services import billing, catalog, clock
 from app.services import scheduling as nv
 from app.services.errors import LoiNghiepVu
 from app.templates import templates
@@ -37,6 +37,7 @@ def _render(
     ma: int = 200,
     chi_cua_toi: bool = False,
 ):
+    danh_sach = nv.lich_theo_ngay(db, ngay, nhan_vien_id)
     return templates.TemplateResponse(
         request,
         "appointments.html",
@@ -44,7 +45,9 @@ def _render(
             "user": user,
             "ngay": ngay,
             "nhan_vien_id": nhan_vien_id,
-            "danh_sach": nv.lich_theo_ngay(db, ngay, nhan_vien_id),
+            "danh_sach": danh_sach,
+            # Lưới cần biết lịch nào đã có hóa đơn để chọn hiện nút "Lập" hay "Xem".
+            "hoa_don": billing.hoa_don_theo_lich(db, [a.id for a in danh_sach]),
             "thu_cung": _danh_sach_thu_cung(db),
             "dich_vu": catalog.danh_sach_dang_ban(db),
             "nhan_vien": _danh_sach_nhan_vien(db),
@@ -178,6 +181,31 @@ def huy_lich(
         return _bao_loi(request, db, user, ngay_chon, loi)
 
     return _ve_lich(ngay_chon)
+
+
+@router.post("/{lich_id}/hoa-don", response_class=HTMLResponse)
+def lap_hoa_don(
+    request: Request,
+    lich_id: int,
+    ngay: str = Form(""),
+    user: User = duoc_dat_lich,
+    db: Session = Depends(get_db),
+):
+    """Lập hóa đơn cho một lịch đã hoàn thành, từ nút trên lưới lịch — US-19.
+
+    Nằm ở router lịch hẹn chứ không phải router hóa đơn: khi bị từ chối, người dùng phải
+    quay lại đúng lưới ngày họ đang xem cùng thông báo, không phải một trang lạ.
+    """
+    ngay_chon = _doc_ngay(ngay)
+
+    try:
+        hoa_don = billing.lap_hoa_don(db, lich_id)
+    except LoiNghiepVu as loi:
+        return _bao_loi(request, db, user, ngay_chon, loi)
+
+    return RedirectResponse(
+        f"/invoices/{hoa_don.id}", status_code=status.HTTP_303_SEE_OTHER
+    )
 
 
 def _bao_loi(request: Request, db: Session, user: User, ngay: date, loi: LoiNghiepVu):

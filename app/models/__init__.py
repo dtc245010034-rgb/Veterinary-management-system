@@ -10,7 +10,9 @@ Import ở đây một lần để mọi nơi chỉ cần `import app.models`.
 
 from app.models.appointment import Appointment
 from app.models.care_record import CareRecord
+from app.models.invoice import Invoice, InvoiceItem
 from app.models.owner import Owner
+from app.models.payment import Payment
 from app.models.pet import Pet
 from app.models.service import Service
 from app.models.service_package import PackageItem, ServicePackage
@@ -20,7 +22,10 @@ from app.models.vaccination import Vaccination
 __all__ = [
     "Appointment",
     "CareRecord",
+    "Invoice",
+    "InvoiceItem",
     "Owner",
+    "Payment",
     "PackageItem",
     "Pet",
     "Service",

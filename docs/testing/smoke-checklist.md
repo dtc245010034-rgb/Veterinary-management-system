@@ -156,14 +156,31 @@ chức năng xóa mũi tiêm, mà dữ liệu mẫu luôn có người đến h�
 
 ## P5 — Hóa đơn và thanh toán
 
-- [ ] Lập hóa đơn từ lịch đã hoàn thành → hóa đơn hiện với đúng dịch vụ và giá
-- [ ] Lập hóa đơn từ lịch chưa hoàn thành → bị chặn
-- [ ] Lập hóa đơn lần hai cho cùng lịch → bị chặn
-- [ ] Ghi nhận trả một phần → trạng thái chuyển "trả một phần", số nợ hiện đúng
-- [ ] Ghi nhận trả nốt → trạng thái chuyển "đã thanh toán", nợ về 0
-- [ ] Ghi nhận số tiền vượt số phải trả → bị chặn
-- [ ] Thử hủy lịch đã có hóa đơn → bị chặn, thông báo nêu mã hóa đơn
+Dữ liệu mẫu đã dựng sẵn: một hóa đơn **đã thu đủ**, một hóa đơn **thu một phần**, và cố ý chừa một
+buổi đã hoàn thành **chưa lập hóa đơn** để bấm thử được nút.
+
+### Chặng 1 — hóa đơn và thanh toán
+
+- [ ] `letan` và `quanly` thấy link **Hóa đơn** trên thanh điều hướng
+- [ ] `chamsoc1` **không** thấy link đó; gõ thẳng `/invoices` → 403
+- [ ] Lưới lịch: dòng đã hoàn thành chưa có hóa đơn hiện nút **Lập hóa đơn**; dòng chưa xong thì không
+- [ ] Bấm **Lập hóa đơn** → nhảy thẳng sang trang hóa đơn, đúng thú cưng, đúng dịch vụ, đúng giá
+- [ ] Quay lại lưới lịch → dòng đó đã đổi thành **Xem hóa đơn**
+- [ ] Bấm lập lần hai cho cùng lịch (mở hai tab, bấm tab cũ) → bị chặn, thông báo nêu mã hóa đơn và **vẫn ở lưới lịch**
+- [ ] Ghi nhận trả một phần → trạng thái "Thu một phần", số còn nợ đúng bằng hiệu
+- [ ] Ghi nhận trả nốt → "Đã thu đủ", còn nợ 0, **form thu tiền biến mất**
+- [ ] Ghi nhận số tiền vượt số còn nợ → bị chặn, và **ô số tiền vẫn giữ nguyên số vừa gõ**
+- [ ] Gõ chữ vào ô số tiền → thông báo tiếng Việt, không phải trang lỗi
+- [ ] Hủy một hóa đơn chưa thu đồng nào → trạng thái "Đã hủy"
+- [ ] Hóa đơn đã thu một phần → **không còn nút hủy**
+- [ ] Danh sách `/invoices`: hóa đơn chưa thu xong nằm trên, đã hủy xuống cuối
+- [ ] Bốn nhãn trạng thái phân biệt được bằng mắt, không cùng một màu
 - [ ] `manager` đổi giá dịch vụ → mở lại hóa đơn cũ, **giá vẫn là giá lúc lập**
+
+### Chặng 2 — chặn hủy lịch đã có hóa đơn
+
+- [ ] Thử hủy lịch đã có hóa đơn → bị chặn, thông báo nêu mã hóa đơn
+- [ ] Hủy hóa đơn trước rồi hủy lịch → được chấp nhận
 
 ## P6 — Thống kê
 

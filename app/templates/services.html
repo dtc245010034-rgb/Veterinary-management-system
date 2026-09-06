@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 {% block tieu_de %}Dịch vụ và bảng giá{% endblock %}
 
-{% macro tien(so) %}{{ "{:,.0f}".format(so).replace(",", ".") }}đ{% endmacro %}
-
 {% block noi_dung %}
 <h1>Dịch vụ và bảng giá</h1>
 <p class="phu">Ngưng bán thay vì xóa, để lịch hẹn và hóa đơn cũ giữ nguyên dữ liệu.</p>
@@ -23,7 +21,7 @@
             <td><code>{{ s.code }}</code></td>
             <td>{{ s.name }}</td>
             <td>{{ s.duration_min }} phút</td>
-            <td class="phai">{{ tien(s.price) }}</td>
+            <td class="phai">{{ s.price|tien }}</td>
             <td>{% if s.is_active %}Đang bán{% else %}<span class="trang-thai-khoa">Đã ngưng bán</span>{% endif %}</td>
             <td>
               {% if user.role == 'manager' %}
@@ -63,15 +61,15 @@
 
           <ul class="thanh-phan">
             {% for it in g.items %}
-              <li>{{ it.service.name }} <span class="phu">× {{ it.quantity }}</span> <span class="phu">{{ tien(it.service.price * it.quantity) }}</span></li>
+              <li>{{ it.service.name }} <span class="phu">× {{ it.quantity }}</span> <span class="phu">{{ (it.service.price * it.quantity)|tien }}</span></li>
             {% endfor %}
           </ul>
 
           <dl class="thong-tin gia-goi">
-            <dt>Tổng giá lẻ</dt><dd>{{ tien(g.tong_gia_le) }}</dd>
-            <dt>Giá gói</dt><dd><strong>{{ tien(g.price) }}</strong></dd>
+            <dt>Tổng giá lẻ</dt><dd>{{ g.tong_gia_le|tien }}</dd>
+            <dt>Giá gói</dt><dd><strong>{{ g.price|tien }}</strong></dd>
             <dt>Tiết kiệm</dt>
-            <dd class="{{ 'tiet-kiem' if g.tiet_kiem > 0 else 'dat-hon' }}">{{ tien(g.tiet_kiem) }}</dd>
+            <dd class="{{ 'tiet-kiem' if g.tiet_kiem > 0 else 'dat-hon' }}">{{ g.tiet_kiem|tien }}</dd>
           </dl>
         </div>
       {% endfor %}
@@ -101,7 +99,7 @@
         <p class="phu nhan-nho">Nhập số lượt cho dịch vụ muốn đưa vào gói, để trống nếu không dùng.</p>
         {% for s in dang_ban %}
           <label class="dong-thanh-phan">
-            <span>{{ s.name }} <span class="phu">{{ tien(s.price) }}</span></span>
+            <span>{{ s.name }} <span class="phu">{{ s.price|tien }}</span></span>
             <input type="hidden" name="dich_vu_id" value="{{ s.id }}">
             <input name="so_luong" type="number" min="0" placeholder="0">
           </label>

@@ -111,15 +111,15 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-065 | US-19 | Lập hóa đơn từ lịch `done` → `unpaid`, đơn giá chốt tại thời điểm lập | U | | ⬜ |
-| TC-066 | US-19 | Tổng tiền bằng tổng `qty * unit_price` các dòng | U | | ⬜ |
-| TC-067 | US-19 | Lập hóa đơn từ lịch chưa `done` → từ chối | U | | ⬜ |
-| TC-068 | US-19 | Lập hóa đơn lần hai cho cùng lịch → từ chối | U | | ⬜ |
-| TC-069 | US-20 | Trả đủ → trạng thái `paid` | U | | ⬜ |
-| TC-070 | US-20 | Trả một phần → `partial`, còn nợ đúng số | U | | ⬜ |
-| TC-071 | US-20 | Trả nốt phần còn lại → `paid`, nợ bằng 0 | U | | ⬜ |
-| TC-072 | US-20 | Trả vượt số phải trả → từ chối | U | | ⬜ |
-| TC-073 | US-20 | Số tiền ≤ 0 → từ chối | U | | ⬜ |
+| TC-065 | US-19 | Lập hóa đơn từ lịch `done` → `unpaid`, đơn giá chốt tại thời điểm lập | U | `tests/unit/test_billing_service.py`, `tests/integration/test_invoices.py` | ✅ |
+| TC-066 | US-19 | `total_amount` bằng `qty × unit_price` của dòng dịch vụ, và **không đọc lại `services.price` khi hiển thị** — đổi giá dịch vụ không làm đổi hóa đơn cũ | U | `tests/unit/test_billing_service.py` | ✅ |
+| TC-067 | US-19 | Lập hóa đơn từ lịch chưa `done` → từ chối | U | `tests/unit/test_billing_service.py`, `tests/integration/test_invoices.py` | ✅ |
+| TC-068 | US-19 | Lập hóa đơn lần hai cho cùng lịch → từ chối | U | `tests/unit/test_billing_service.py`, `tests/integration/test_invoices.py` | ✅ |
+| TC-069 | US-20 | Trả đủ → trạng thái `paid` | U | `tests/unit/test_billing_service.py`, `tests/integration/test_invoices.py` | ✅ |
+| TC-070 | US-20 | Trả một phần → `partial`, còn nợ đúng số | U | `tests/unit/test_billing_service.py`, `tests/integration/test_invoices.py` | ✅ |
+| TC-071 | US-20 | Trả nốt phần còn lại → `paid`, nợ bằng 0 | U | `tests/unit/test_billing_service.py` | ✅ |
+| TC-072 | US-20 | Trả vượt số phải trả → từ chối | U | `tests/unit/test_billing_service.py`, `tests/integration/test_invoices.py` | ✅ |
+| TC-073 | US-20 | Số tiền ≤ 0 → từ chối | U | `tests/unit/test_billing_service.py` | ✅ |
 | TC-074 | US-21 | Hủy lịch đã có hóa đơn → chặn, nêu mã hóa đơn | U | | ⬜ |
 | TC-075 | US-21 | Hóa đơn đã `cancelled` → hủy lịch được chấp nhận | U | | ⬜ |
 

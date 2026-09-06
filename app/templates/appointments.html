@@ -49,6 +49,18 @@
             <td class="thao-tac">
               {% if a.status == 'done' %}
                 <a href="/appointments/{{ a.id }}/ho-so">Xem hồ sơ</a>
+                {# Hóa đơn chỉ lập được từ lịch đã hoàn thành — US-19. `caretaker` không
+                   có quyền nào ở mục hóa đơn nên không thấy cả hai nút. #}
+                {% if user.role in ('manager', 'receptionist') %}
+                  {% if hoa_don.get(a.id) %}
+                    <a class="chinh-nhe" href="/invoices/{{ hoa_don[a.id].id }}">Xem hóa đơn</a>
+                  {% else %}
+                    <form method="post" action="/appointments/{{ a.id }}/hoa-don">
+                      <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">
+                      <button type="submit">Lập hóa đơn</button>
+                    </form>
+                  {% endif %}
+                {% endif %}
               {% elif a.status in ('booked', 'rescheduled')
                       and a.start_at <= bay_gio
                       and (user.role == 'manager' or a.staff_id == user.id) %}

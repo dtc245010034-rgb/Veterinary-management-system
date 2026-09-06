@@ -20,10 +20,11 @@ from app.models.owner import Owner
 from app.models.pet import Pet
 from app.models.service import Service
 from app.models.service_package import PackageItem, ServicePackage
+from app.models.invoice import Invoice
 from app.models.user import User
 from app.models.vaccination import Vaccination
 from app.security import hash_password
-from app.services import clock
+from app.services import billing, clock
 
 MAT_KHAU_MAC_DINH = "matkhau123"
 
@@ -82,6 +83,13 @@ MUI_TIEM_MAU = [
     (2, "FVRCP", 1, -60, 12),
     (3, "Dại", 1, -10, 355),
 ]
+
+
+# Phần đã trả của hóa đơn lập cho từng buổi đã hoàn thành, theo thứ tự lịch hẹn.
+# `None` nghĩa là KHÔNG lập hóa đơn — cố ý chừa lại một buổi để bấm thử được nút
+# "Lập hóa đơn", giống cách CHUA_GHI_HO_SO chừa chỗ cho nút "Ghi hồ sơ".
+# Tỷ lệ chứ không phải số tiền, để đổi bảng giá mẫu không làm hỏng dữ liệu seed.
+PHAN_DA_TRA = [Decimal("1"), Decimal("0.4"), None]
 
 
 def main() -> None:
@@ -251,11 +259,29 @@ def main() -> None:
                 )
                 mui_tiem_moi += 1
 
+        # Hóa đơn mẫu đi qua đúng app/services/billing.py chứ không dựng model bằng tay:
+        # trạng thái hóa đơn chỉ được quyết ở một chỗ, và seed cũng không phải ngoại lệ.
+        hoa_don_moi = 0
+        if db.scalar(select(Invoice)) is None:
+            da_xong = list(
+                db.scalars(
+                    select(Appointment)
+                    .where(Appointment.status == "done")
+                    .order_by(Appointment.id)
+                )
+            )
+            for lich, phan in zip(da_xong, PHAN_DA_TRA):
+                if phan is None:
+                    continue
+                hd = billing.lap_hoa_don(db, lich.id)
+                billing.ghi_nhan_thanh_toan(db, hd.id, hd.total_amount * phan, "cash")
+                hoa_don_moi += 1
+
         db.commit()
 
     print(f"Đã thêm {them_moi} tài khoản, {chu_nuoi_moi} chủ nuôi, {thu_cung_moi} thú cưng, "
           f"{dich_vu_moi} dịch vụ, {goi_moi} gói, {lich_moi} lịch hẹn, "
-          f"{ho_so_moi} hồ sơ chăm sóc, {mui_tiem_moi} mũi tiêm.")
+          f"{ho_so_moi} hồ sơ chăm sóc, {mui_tiem_moi} mũi tiêm, {hoa_don_moi} hóa đơn.")
     print(f"Mật khẩu chung của mọi tài khoản: {MAT_KHAU_MAC_DINH}\n")
     for username, full_name, role in TAI_KHOAN_MAU:
         print(f"  {username:10} {role:14} {full_name}")

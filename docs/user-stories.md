@@ -213,6 +213,13 @@ tham gia kiểm tra trùng.
 - Given một lịch chưa `done`, When lập hóa đơn, Then bị từ chối.
 - Given một lịch đã có hóa đơn, When lập hóa đơn lần hai, Then bị từ chối.
 
+> **Ghi chú phạm vi P5, ngày 2026-09-06.** Ở P5 mỗi hóa đơn lập từ đúng một lịch hẹn nên bảng
+> `invoice_items` **luôn chỉ có một dòng**: tiêu chí "tổng bằng tổng các dòng" đúng nhưng cộng đúng
+> một số hạng, không kiểm được phép cộng nhiều số hạng. Tiêu chí giữ nguyên vì nó vẫn là luật đúng;
+> TC-066 thì viết lại cho khớp thứ kiểm được thật — `total_amount` bằng `qty × unit_price` của dòng
+> dịch vụ, và không đọc lại `services.price` khi hiển thị. Lý do giữ bảng: xem quyết định 8 trong
+> [`plans/2026-09-06-p5-hoa-don-va-thanh-toan.md`](plans/2026-09-06-p5-hoa-don-va-thanh-toan.md).
+
 ### US-20 — Ghi nhận thanh toán
 **Là** lễ tân, **tôi muốn** ghi nhận tiền khách trả, kể cả trả một phần, **để** theo dõi công nợ.
 

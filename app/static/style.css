@@ -218,6 +218,17 @@ td.gio { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 5
 .nhan-cancelled { background: #f1f3f5; color: var(--chu-phu); }
 .nhan-done { background: #eaf0fb; color: #1f4a8c; }
 
+/* --- Hóa đơn --- */
+/* Ba nhãn này ghép từ biến (`nhan-{{ hd.status }}`) nên phép canh class trong
+   test_architecture.py không nhìn thấy — phải giữ đủ ba bằng mắt. Màu đi theo việc phải
+   làm: chưa thu là việc đang chờ (hổ phách), thu một phần là đang dở (xanh dương), thu
+   đủ là xong (xanh lá). Đã hủy dùng chung `.nhan-cancelled` ở trên. */
+.nhan-unpaid { background: #fff4e5; color: #93370d; }
+.nhan-partial { background: #eaf0fb; color: #1f4a8c; }
+.nhan-paid { background: #e8f3ee; color: var(--chinh-dam); }
+
+tfoot th, tfoot td { border-top: 1px solid var(--vien); font-weight: 500; }
+
 /* Quá hạn tiêm là việc PHẢI làm, không phải việc đã bỏ. Trước đây dùng chung kiểu với
    "Đã hủy" — nền xám nhạt, chữ mờ — tức là làm nhòe đi đúng thứ cần nổi lên. */
 .nhan-qua-han { background: var(--loi-nen); color: var(--loi); font-weight: 500; }

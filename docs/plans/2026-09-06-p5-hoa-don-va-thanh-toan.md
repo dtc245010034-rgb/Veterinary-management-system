@@ -1,6 +1,6 @@
 # P5 — Hóa đơn và thanh toán
 
-> **Phase:** P5 · **Mốc:** KT3 — phase đầu của mốc này · **Duyệt ngày:** 2026-09-06 · **Trạng thái:** chưa bắt đầu
+> **Phase:** P5 · **Mốc:** KT3 — phase đầu của mốc này · **Duyệt ngày:** 2026-09-06 · **Trạng thái:** chặng 1 xong, chặng 2 chưa bắt đầu
 >
 > Chia hai chặng như P3, P4. Khối smoke tách theo chặng **trước khi** đưa người dùng tick.
 > Theo [`../roadmap.md`](../roadmap.md). Quy ước: [`README.md`](README.md).
@@ -19,19 +19,19 @@ và AI"*).
 
 ### Sửa tài liệu trước — code phải khớp spec, không phải ngược lại
 
-- [ ] 0. `test-cases.md` TC-066 — viết lại cho đúng thứ kiểm được thật ở P5 (xem quyết định 8)
+- [x] 0. `test-cases.md` TC-066 — viết lại cho đúng thứ kiểm được thật ở P5 (xem quyết định 8)
 
 ### Chặng 1 — Hóa đơn và thanh toán (dừng lại sau chặng này)
 
-- [ ] 1. Ba model `invoices`, `invoice_items`, `payments` + ràng buộc CSDL
-- [ ] 2. `app/services/billing.py`: `lap_hoa_don`, `ghi_nhan_thanh_toan`, `huy_hoa_don`,
+- [x] 1. Ba model `invoices`, `invoice_items`, `payments` + ràng buộc CSDL
+- [x] 2. `app/services/billing.py`: `lap_hoa_don`, `ghi_nhan_thanh_toan`, `huy_hoa_don`,
       `trang_thai_tinh_lai`, `danh_sach`, `lay_hoa_don` — TC-065 → TC-073
-- [ ] 3. Phép canh thứ 8 trong `test_architecture.py`: chuỗi trạng thái hóa đơn chỉ xuất hiện trong
+- [x] 3. Phép canh thứ 8 trong `test_architecture.py`: chuỗi trạng thái hóa đơn chỉ xuất hiện trong
       `models/invoice.py` và `services/billing.py`
-- [ ] 4. Router + trang `/invoices` (danh sách) và `/invoices/{id}` (chi tiết + form thu tiền)
-- [ ] 5. Nút "Lập hóa đơn" / "Xem hóa đơn" trên lưới lịch hẹn; link menu cho `manager` và
+- [x] 4. Router + trang `/invoices` (danh sách) và `/invoices/{id}` (chi tiết + form thu tiền)
+- [x] 5. Nút "Lập hóa đơn" / "Xem hóa đơn" trên lưới lịch hẹn; link menu cho `manager` và
       `receptionist`; `tien()` thành filter dùng chung
-- [ ] 6. Dữ liệu mẫu trong `app/seed.py`, báo cáo chặng 1, commit, **dừng cho người dùng xem**
+- [x] 6. Dữ liệu mẫu trong `app/seed.py`, báo cáo chặng 1, commit, **dừng cho người dùng xem**
 
 ### Chặng 2 — Chặn hủy lịch đã có hóa đơn, và e2e
 
@@ -136,6 +136,18 @@ Vì sao giữ bảng:
 
 Hiện nằm trong `services.html`; P5 cần nó ở 2–3 template nữa. Đăng ký một lần trong
 `app/templates.py` thay vì chép đi chép lại.
+
+> **Sửa lúc thực hiện, 06/09 — chặng 1.** Ràng buộc UNIQUE trên `appointment_id` kéo theo một hệ
+> quả kế hoạch chưa nói: mỗi lịch hẹn chỉ có **đúng một hóa đơn trong suốt đời nó, kể cả hóa đơn đã
+> hủy**. Hủy nhầm thì không lập lại được; đường đi tiếp là hủy luôn lịch hẹn rồi đặt lại. Giữ ràng
+> buộc vì nó là thứ duy nhất chặn được hai request cùng lúc. Điều bắt buộc phải làm là để nó lộ ra
+> tử tế — có test riêng cho việc lập lại ra `LoiNghiepVu` nêu mã hóa đơn cũ, không phải màn hình đen.
+
+> **Sửa lúc thực hiện, 06/09 — quyết định 4+6, lớp bảo vệ thứ 4.** Phép canh chỉ nhận **ba** chuỗi
+> `unpaid`, `partial`, `paid`, không nhận `cancelled`: chuỗi đó cũng là trạng thái lịch hẹn và đã
+> nằm ở bốn file khác, canh cả bốn thì phải mở bốn ngoại lệ và phép canh mất giá trị. Ba chuỗi tiền
+> vừa là phần không nhập nhằng vừa là phần nguy hiểm — gán sai `cancelled` thì nhìn thấy ngay, gán
+> sai `paid` thì sổ sách lệch trong im lặng.
 
 ## Ràng buộc CSDL
 

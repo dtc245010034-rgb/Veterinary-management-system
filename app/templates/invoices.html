@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block tieu_de %}Hóa đơn{% endblock %}
+
+{% block noi_dung %}
+<h1>Hóa đơn</h1>
+<p class="phu">Hóa đơn chưa thu xong nằm trên đầu.</p>
+
+{% if danh_sach %}
+  <table>
+    <thead>
+      <tr>
+        <th>Mã</th><th>Ngày lập</th><th>Chủ nuôi</th><th>Buổi chăm sóc</th>
+        <th class="phai">Tổng tiền</th><th class="phai">Còn nợ</th><th>Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for hd in danh_sach %}
+      <tr class="{{ 'dong-mo' if hd.status == 'cancelled' }}">
+        <td><a href="/invoices/{{ hd.id }}">#{{ hd.id }}</a></td>
+        <td class="gio">{{ hd.issued_at.strftime("%d/%m/%Y") }}</td>
+        <td><a href="/owners/{{ hd.owner_id }}">{{ hd.owner.full_name }}</a></td>
+        <td>
+          {% if hd.appointment %}
+            {{ hd.appointment.pet.name }} — {{ hd.appointment.service.name }}
+            <span class="phu">{{ hd.appointment.start_at.strftime("%d/%m %H:%M") }}</span>
+          {% else %}—{% endif %}
+        </td>
+        <td class="phai">{{ hd.total_amount|tien }}</td>
+        <td class="phai">{{ hd.con_no|tien }}</td>
+        <td><span class="nhan nhan-{{ hd.status }}">{{ hd.ten_trang_thai }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="the rong">
+    <p>Chưa có hóa đơn nào.</p>
+    <p class="phu">Hóa đơn được lập từ một buổi chăm sóc đã hoàn thành — mở
+      <a href="/appointments">Lịch hẹn</a> và bấm <strong>Lập hóa đơn</strong> ở dòng đã ghi hồ sơ.</p>
+  </div>
+{% endif %}
+{% endblock %}
