@@ -105,6 +105,31 @@ def test_url_khong_khop_route_nao_van_hien_trang_loi_co_bo_cuc(client, seed_basi
     assert "detail" not in r.text
 
 
+def test_trang_loi_404_khong_hien_chu_tieng_anh_cua_framework(client, seed_basic):
+    """Trang 404 có bố cục rồi, nhưng dòng mô tả vẫn là "Not Found" của Starlette.
+
+    Người dùng gặp trang này qua link **Thống kê** trong menu quản lý (trang thuộc P6,
+    chưa dựng). CLAUDE.md mục 5: thông báo hiển thị cho người dùng viết bằng tiếng Việt.
+    Ca 403 không dính vì thông điệp do chính dự án viết.
+    """
+    dang_nhap(client, "quanly")
+
+    r = client.get("/khong-co-trang-nay")
+
+    assert "Not Found" not in r.text
+    assert "Đường dẫn này không tồn tại" in r.text
+
+
+def test_trang_loi_403_van_giu_nguyen_thong_diep_cua_du_an(client, seed_basic):
+    """Ca biên: chỉ thay chữ mặc định của framework, không nuốt thông điệp mình viết."""
+    dang_nhap(client, "letan")
+
+    r = client.get("/users")
+
+    assert r.status_code == 403
+    assert "Bạn không có quyền" in r.text
+
+
 @pytest.mark.parametrize("username", ["quanly", "letan", "chamsoc1"])
 def test_moi_vai_tro_deu_co_link_menu_toi_bang_gia_dich_vu(client, seed_basic, username):
     """Bảng phân quyền US-02 cho cả ba vai trò quyền xem dịch vụ.

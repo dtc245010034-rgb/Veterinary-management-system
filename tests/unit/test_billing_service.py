@@ -321,9 +321,13 @@ def test_lap_lai_hoa_don_sau_khi_huy_bi_tu_choi_ro_rang_khong_phai_loi_500(db, n
     """Giới hạn đã biết của P5, được kiểm để nó lộ ra tử tế thay vì thành lỗi 500.
 
     `invoices.appointment_id` là UNIQUE nên mỗi lịch hẹn chỉ có đúng một hóa đơn trong
-    suốt đời nó, kể cả hóa đơn đã hủy. Hủy nhầm thì không lập lại được — đường đi tiếp
-    theo là hủy luôn lịch hẹn (US-21) rồi đặt lại. Điều phải chặn ở đây là để ràng buộc
-    CSDL bắn IntegrityError thành màn hình đen, đúng lớp lỗi đã gặp khi xóa thú cưng.
+    suốt đời nó, kể cả hóa đơn đã hủy. Điều phải chặn trước hết là để ràng buộc CSDL bắn
+    IntegrityError thành màn hình đen, đúng lớp lỗi đã gặp khi xóa thú cưng.
+
+    Nhưng nêu được mã hóa đơn cũ vẫn chưa đủ: người dùng đứng ở lưới lịch đọc xong không
+    biết làm gì tiếp. Đường đi tiếp theo KHÔNG phải hủy lịch hẹn — chặng 2 đã chứng minh
+    lịch đã hoàn thành thì không hủy được — mà là đặt một lịch mới. Trang hóa đơn đã hủy
+    nói đúng câu đó từ chặng 1; thông báo ở đây thì chưa, nên vẫn là ngõ cụt câm.
     """
     lich = lich_xong(db, nen)
     hd = nv.lap_hoa_don(db, lich.id)
@@ -333,6 +337,24 @@ def test_lap_lai_hoa_don_sau_khi_huy_bi_tu_choi_ro_rang_khong_phai_loi_500(db, n
         nv.lap_hoa_don(db, lich.id)
 
     assert f"#{hd.id}" in str(loi.value)
+    assert "đặt một lịch mới" in str(loi.value)
+
+
+def test_lap_lai_hoa_don_khi_hoa_don_cu_con_hieu_luc_khong_bay_dat_lich_moi(db, nen):
+    """Ca biên của test trên: hóa đơn cũ CHƯA hủy thì bước tiếp theo khác hẳn.
+
+    Ở đây hóa đơn cũ vẫn dùng được — việc phải làm là mở nó ra, không phải đặt lịch mới.
+    Bày nhầm câu đó sẽ đẻ ra lịch rác. Test này giữ cho lời khuyên bám theo trạng thái
+    hóa đơn chứ không nói bừa một câu cho cả hai ca.
+    """
+    lich = lich_xong(db, nen)
+    hd = nv.lap_hoa_don(db, lich.id)
+
+    with pytest.raises(LoiNghiepVu) as loi:
+        nv.lap_hoa_don(db, lich.id)
+
+    assert f"#{hd.id}" in str(loi.value)
+    assert "đặt một lịch mới" not in str(loi.value)
 
 
 # --- Truy vấn --------------------------------------------------------------------

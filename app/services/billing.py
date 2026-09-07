@@ -55,9 +55,19 @@ def lap_hoa_don(db: Session, lich_id: int, ghi_chu: str | None = None) -> Invoic
     # ở đây mới nói được cho người dùng biết hóa đơn cũ nằm ở đâu.
     cu = db.scalar(select(Invoice).where(Invoice.appointment_id == lich.id))
     if cu is not None:
+        # Hóa đơn cũ còn hiệu lực thì việc phải làm là mở nó ra, và lưới lịch đã có sẵn
+        # nút "Xem hóa đơn". Hóa đơn cũ đã hủy thì không còn đường nào đi tiếp trong màn
+        # hình này, nên phải nói ra bước kế — nếu không, người dùng đứng trước một câu từ
+        # chối không lối thoát, đúng thứ đã sửa cho trang hóa đơn ở chặng 1.
+        buoc_ke = ""
+        if cu.status == "cancelled":
+            buoc_ke = (
+                " Cần thu tiền cho buổi này thì đặt một lịch mới rồi lập hóa đơn cho lịch "
+                "đó; buổi cũ vẫn giữ nguyên trong sổ."
+            )
         raise LoiNghiepVu(
             f"Lịch này đã có hóa đơn #{cu.id} ({cu.ten_trang_thai.lower()}). "
-            "Mỗi lịch hẹn chỉ một hóa đơn."
+            f"Mỗi lịch hẹn chỉ một hóa đơn.{buoc_ke}"
         )
 
     dich_vu = lich.service

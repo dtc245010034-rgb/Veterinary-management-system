@@ -194,17 +194,30 @@ Tám lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-07-ra-luong-P5-c
 ### Chặng 2 — chặn hủy lịch đã có hóa đơn
 
 > Lưới lịch **không hiện nút Hủy** cho lịch đã hoàn thành, mà lịch có hóa đơn thì luôn đã hoàn
-> thành — nên phải dựng lại đúng cảnh tab cũ: mở lưới lịch ở **tab A** khi lịch còn "Đã đặt" (nút
-> **Hủy** còn đó), sang **tab B** ghi hồ sơ rồi lập hóa đơn cho chính lịch đó, quay về tab A bấm
-> **Hủy**.
+> thành — nên phải dựng lại cảnh **tab cũ**:
+>
+> 1. Mở lưới lịch ở **tab A** khi lịch còn "Đã đặt" — nút **Hủy** còn đó.
+> 2. Sang **tab B**: ghi hồ sơ cho chính lịch đó rồi bấm **Lập hóa đơn**.
+> 3. Về tab A, gõ lý do và bấm **Hủy**.
+> 4. Sau khi bị chặn, bấm **Back** của trình duyệt là trang cũ hiện lại nguyên vẹn — dùng nó cho các
+>    ô sau, không cần mở thêm tab.
 >
 > Ô thứ hai đổi so với bản viết ở KT1 — xem ghi chú phạm vi dưới US-21 trong
 > [`../user-stories.md`](../user-stories.md): hóa đơn chỉ lập từ lịch đã hoàn thành, mà lịch đã
 > hoàn thành thì không hủy được, kể cả sau khi hủy hóa đơn.
 
 - [ ] Bấm **Hủy** ở tab A khi lịch đã có hóa đơn → bị chặn, thông báo **nêu mã hóa đơn**, vẫn ở lưới lịch
-- [ ] Hủy hóa đơn đó rồi bấm **Hủy** lại ở tab A → vẫn bị chặn, nhưng thông báo lần này nói về **trạng thái lịch** ("Hoàn thành") và không nhắc hóa đơn nữa
+- [ ] Hủy hóa đơn đó rồi bấm **Back** và bấm **Hủy** lại → vẫn bị chặn, nhưng thông báo lần này nói về **trạng thái lịch** ("Hoàn thành") và không nhắc hóa đơn nữa
 - [ ] Trang hóa đơn đã hủy **không** còn bảo "hãy hủy luôn lịch hẹn"; nó nói buổi chăm sóc vẫn nằm trong sổ ở trạng thái hoàn thành
+
+### Sau đợt rà bằng trình duyệt ngày 08/09 — cùng chặng 2
+
+Hai lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-08-ra-luong-P5-chang2.md`](reports/2026-09-08-ra-luong-P5-chang2.md).
+
+- [ ] Hủy một hóa đơn chưa thu, rồi từ tab cũ bấm **Lập hóa đơn** lại cho đúng lịch đó → thông báo nêu mã hóa đơn cũ **và** bảo đặt một lịch mới
+- [ ] Cũng thao tác đó nhưng hóa đơn cũ **chưa hủy** → thông báo **không** xui đặt lịch mới (mở hóa đơn cũ ra là xong)
+- [ ] Bấm link **Thống kê** trên thanh điều hướng → trang 404 **toàn tiếng Việt**, không còn chữ "Not Found"
+- [ ] Đăng nhập `letan`, gõ thẳng `/users` → trang 403 vẫn giữ câu tiếng Việt của dự án, không bị thay bằng câu chung
 
 ## P6 — Thống kê
 

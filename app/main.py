@@ -5,6 +5,7 @@ tiếng Việt thay vì JSON thô.
 """
 
 from contextlib import asynccontextmanager
+from http import HTTPStatus
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -57,6 +58,16 @@ async def xu_ly_chua_dang_nhap(request: Request, exc: ChuaDangNhap):
     return RedirectResponse("/login", status_code=status.HTTP_303_SEE_OTHER)
 
 
+# Starlette điền `detail` bằng cụm tiếng Anh mặc định của mã lỗi ("Not Found") khi URL
+# không khớp route nào — và người dùng gặp đúng câu đó qua link Thống kê trong menu quản
+# lý. CLAUDE.md mục 5: chữ hiển thị cho người dùng phải là tiếng Việt. Chỉ thay khi
+# `detail` đúng bằng cụm mặc định; thông điệp do dự án tự viết thì giữ nguyên.
+MO_TA_LOI_MAC_DINH = {
+    status.HTTP_403_FORBIDDEN: "Bạn không có quyền truy cập chức năng này.",
+    status.HTTP_404_NOT_FOUND: "Đường dẫn này không tồn tại, hoặc mục bạn tìm đã bị xóa.",
+}
+
+
 # Đăng ký trên lớp của Starlette chứ KHÔNG phải fastapi.HTTPException: URL không khớp
 # route nào ném lớp cha, mà handler đăng ký ở lớp con không bắt được lớp cha. Vì vậy
 # `/stats` — một link có sẵn trong menu quản lý — từng trả `{"detail":"Not Found"}` thô.
@@ -68,10 +79,14 @@ async def xu_ly_loi_http(request: Request, exc: LoiHTTPStarlette):
     TC-007 yêu cầu người dùng gõ thẳng URL bị chặn phải thấy trang báo lỗi tử tế.
     """
     if exc.status_code in (status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND):
+        thong_diep = exc.detail
+        if thong_diep == HTTPStatus(exc.status_code).phrase:
+            thong_diep = MO_TA_LOI_MAC_DINH[exc.status_code]
+
         return templates.TemplateResponse(
             request,
             "error.html",
-            {"ma_loi": exc.status_code, "thong_diep": exc.detail},
+            {"ma_loi": exc.status_code, "thong_diep": thong_diep},
             status_code=exc.status_code,
         )
 
