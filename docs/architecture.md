@@ -104,19 +104,19 @@ sequenceDiagram
 
     LT->>R: POST /appointments (pet_id, service_id, staff_id, start_at)
     R->>R: kiểm tra vai trò receptionist hoặc manager
-    R->>S: create_appointment(db, ...)
+    R->>S: dat_lich(db, ...)
     S->>DB: đọc services.duration_min
     S->>S: end_at = start_at + duration_min
     S->>DB: tìm lịch giao nhau theo staff_id (bỏ cancelled)
     S->>DB: tìm lịch giao nhau theo pet_id (bỏ cancelled)
     alt Có lịch giao nhau
         S->>DB: lấy các khung trống trong ngày
-        S-->>R: ConflictError(khung trống gợi ý)
+        S-->>R: TrungLich(khung trống gợi ý)
         R-->>LT: 400 + "Nhân viên đã bận khung giờ này" + gợi ý
     else Không trùng
         S->>DB: INSERT appointments (status = booked)
         S-->>R: Appointment
-        R-->>LT: 201 + chi tiết lịch
+        R-->>LT: 303 về lưới lịch ngày đó
     end
 ```
 
@@ -133,33 +133,40 @@ sequenceDiagram
     participant B as services/billing.py
     participant DB as SQLite
 
-    LT->>R: POST /invoices (appointment_id)
-    R->>B: create_invoice(db, appointment_id)
+    LT->>R: POST /appointments/{id}/hoa-don
+    R->>B: lap_hoa_don(db, lich_id)
     B->>DB: đọc appointment + service
     alt status khác done, hoặc đã có hóa đơn
-        B-->>R: BusinessError
-        R-->>LT: 400 + lý do
+        B-->>R: LoiNghiepVu
+        R-->>LT: 400 + lý do, ngay trên lưới lịch
     else Hợp lệ
         B->>DB: INSERT invoice_items (chép description + unit_price hiện tại)
-        B->>DB: INSERT invoice (total = tổng amount, status = unpaid)
+        B->>DB: INSERT invoices (total = tổng amount, status = unpaid)
         B-->>R: Invoice
-        R-->>LT: 201
+        R-->>LT: 303 sang /invoices/{id}
     end
 
-    LT->>R: POST /invoices/{id}/payments (amount)
-    R->>B: record_payment(db, invoice_id, amount)
+    LT->>R: POST /invoices/{id}/thanh-toan (so_tien, hinh_thuc)
+    R->>B: ghi_nhan_thanh_toan(db, hoa_don_id, so_tien, hinh_thuc)
     B->>DB: tổng payments đã có
-    alt đã trả + amount > total_amount
-        B-->>R: BusinessError("Vượt số phải trả")
+    alt số tiền > số còn nợ, hoặc <= 0, hoặc hóa đơn đã hủy
+        B-->>R: LoiNghiepVu
+        R-->>LT: 400, form giữ nguyên số đã nhập
     else
-        B->>DB: INSERT payment
-        B->>DB: UPDATE invoice.status = paid nếu đủ, ngược lại partial
-        B-->>R: Invoice đã cập nhật
+        B->>DB: INSERT payments
+        B->>DB: UPDATE invoices.status theo trang_thai_tinh_lai()
+        B-->>R: Payment
+        R-->>LT: 303 về /invoices/{id}
     end
 ```
 
 Đơn giá được **chép** vào `invoice_items.unit_price` chứ không tham chiếu `services.price`. Nhờ vậy
 đổi bảng giá không làm sai hóa đơn cũ (US-07).
+
+Việc **lập** hóa đơn nằm ở `routers/appointments.py` chứ không ở `routers/invoices.py`: nó xuất phát
+từ một dòng trên lưới lịch hẹn, và khi bị từ chối thì phải quay về đúng lưới ngày đó kèm thông báo.
+Cột `invoices.status` chỉ được ghi ở `services/billing.py` — có phép canh trong
+`tests/unit/test_architecture.py` giữ luật đó.
 
 ## Luồng 3 — AI tóm tắt hồ sơ chăm sóc
 

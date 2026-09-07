@@ -133,25 +133,25 @@ chức năng xóa mũi tiêm, mà dữ liệu mẫu luôn có người đến h�
 > [`reports/2026-09-06-ra-luong-P4-chang2.md`](reports/2026-09-06-ra-luong-P4-chang2.md).
 > Cần CSDL seed sạch: `python -m app.seed` sau khi xóa `petcare.db`.
 
-- [ ] Ghi một mũi tiêm cho **Sữa**, rồi mở trang **Lý Thu Hà** và bấm **Xóa** ở dòng của Sữa →
+- [x] Ghi một mũi tiêm cho **Sữa**, rồi mở trang **Lý Thu Hà** và bấm **Xóa** ở dòng của Sữa →
       thông báo tiếng Việt trong khung đỏ, **không** phải màn hình đen "Internal Server Error"
-- [ ] Nhập hạn nhắc sớm hơn ngày tiêm → sau khi báo lỗi, **những gì đã gõ vẫn còn trong form**
-- [ ] Nhãn **Quá hạn** là viên thuốc **đỏ**, khác hẳn nhãn xám "Đã hủy" của lịch hẹn
-- [ ] Đăng nhập `chamsoc1` → thanh điều hướng có link **Chủ nuôi**; mở ra xem được nhưng **không**
+- [x] Nhập hạn nhắc sớm hơn ngày tiêm → sau khi báo lỗi, **những gì đã gõ vẫn còn trong form**
+- [x] Nhãn **Quá hạn** là viên thuốc **đỏ**, khác hẳn nhãn xám "Đã hủy" của lịch hẹn
+- [x] Đăng nhập `chamsoc1` → thanh điều hướng có link **Chủ nuôi**; mở ra xem được nhưng **không**
       có form thêm và **không** có nút Xóa _(US-02: nhân viên chăm sóc chỉ xem)_
-- [ ] Trên lưới lịch hẹn, link **Ghi hồ sơ** trông nổi hơn link thường; dấu `*` ở ô bắt buộc trong
+- [x] Trên lưới lịch hẹn, link **Ghi hồ sơ** trông nổi hơn link thường; dấu `*` ở ô bắt buộc trong
       form ghi hồ sơ có **màu đỏ**
 
 ### Sửa nốt các điểm nhỏ tồn đọng — cùng ngày 06/09
 
-- [ ] Trang **Lịch hẹn** ở cửa sổ khoảng 1000–1100px → bảng **không** tràn ngang, mọi cột đọc được
+- [x] Trang **Lịch hẹn** ở cửa sổ khoảng 1000–1100px → bảng **không** tràn ngang, mọi cột đọc được
       trên một dòng, form "Đặt lịch" xuống dưới bảng
-- [ ] Thêm chủ nuôi với họ tên chỉ có dấu cách → lỗi hiện **ngay trong khung "Thêm chủ nuôi"**, và
+- [x] Thêm chủ nuôi với họ tên chỉ có dấu cách → lỗi hiện **ngay trong khung "Thêm chủ nuôi"**, và
       số điện thoại, email vừa gõ **vẫn còn** _(ô này thay cho ô cũ ở khối P2)_
-- [ ] Thêm thú cưng thiếu tên → lỗi hiện, và loài, giống, ngày sinh vừa gõ **vẫn còn**
-- [ ] Mở trang **Mực** → lịch sử chăm sóc có **hai** dòng, dòng mới nhất (05/09) nằm trên dòng cũ
+- [x] Thêm thú cưng thiếu tên → lỗi hiện, và loài, giống, ngày sinh vừa gõ **vẫn còn**
+- [x] Mở trang **Mực** → lịch sử chăm sóc có **hai** dòng, dòng mới nhất (05/09) nằm trên dòng cũ
       (09/08) _(trước đây mỗi thú cưng chỉ có một hồ sơ nên không nhìn ra thứ tự)_
-- [ ] Xóa **Đỗ Thị Hằng** (còn thú cưng) → thông báo hiện ở **đầu trang danh sách**, không nằm lẫn
+- [x] Xóa **Đỗ Thị Hằng** (còn thú cưng) → thông báo hiện ở **đầu trang danh sách**, không nằm lẫn
       trong khung "Thêm chủ nuôi"
 
 ## P5 — Hóa đơn và thanh toán
@@ -161,35 +161,35 @@ buổi đã hoàn thành **chưa lập hóa đơn** để bấm thử được n
 
 ### Chặng 1 — hóa đơn và thanh toán
 
-- [ ] `letan` và `quanly` thấy link **Hóa đơn** trên thanh điều hướng
-- [ ] `chamsoc1` **không** thấy link đó; gõ thẳng `/invoices` → 403
-- [ ] Lưới lịch: dòng đã hoàn thành chưa có hóa đơn hiện nút **Lập hóa đơn**; dòng chưa xong thì không
-- [ ] Bấm **Lập hóa đơn** → nhảy thẳng sang trang hóa đơn, đúng thú cưng, đúng dịch vụ, đúng giá
-- [ ] Quay lại lưới lịch → dòng đó đã đổi thành **Xem hóa đơn**
-- [ ] Bấm lập lần hai cho cùng lịch (mở hai tab, bấm tab cũ) → bị chặn, thông báo nêu mã hóa đơn và **vẫn ở lưới lịch**
-- [ ] Ghi nhận trả một phần → trạng thái "Thu một phần", số còn nợ đúng bằng hiệu
-- [ ] Ghi nhận trả nốt → "Đã thu đủ", còn nợ 0, **form thu tiền biến mất**
-- [ ] Ghi nhận số tiền vượt số còn nợ → bị chặn, và **ô số tiền vẫn giữ nguyên số vừa gõ**
-- [ ] Gõ chữ vào ô số tiền → thông báo tiếng Việt, không phải trang lỗi
-- [ ] Hủy một hóa đơn chưa thu đồng nào → trạng thái "Đã hủy"
-- [ ] Hóa đơn đã thu một phần → **không còn nút hủy**
-- [ ] Danh sách `/invoices`: hóa đơn chưa thu xong nằm trên, đã hủy xuống cuối
-- [ ] Bốn nhãn trạng thái phân biệt được bằng mắt, không cùng một màu
-- [ ] `manager` đổi giá dịch vụ → mở lại hóa đơn cũ, **giá vẫn là giá lúc lập**
+- [x] `letan` và `quanly` thấy link **Hóa đơn** trên thanh điều hướng
+- [x] `chamsoc1` **không** thấy link đó; gõ thẳng `/invoices` → 403
+- [x] Lưới lịch: dòng đã hoàn thành chưa có hóa đơn hiện nút **Lập hóa đơn**; dòng chưa xong thì không
+- [x] Bấm **Lập hóa đơn** → nhảy thẳng sang trang hóa đơn, đúng thú cưng, đúng dịch vụ, đúng giá
+- [x] Quay lại lưới lịch → dòng đó đã đổi thành **Xem hóa đơn**
+- [x] Bấm lập lần hai cho cùng lịch (mở hai tab, bấm tab cũ) → bị chặn, thông báo nêu mã hóa đơn và **vẫn ở lưới lịch**
+- [x] Ghi nhận trả một phần → trạng thái "Thu một phần", số còn nợ đúng bằng hiệu
+- [x] Ghi nhận trả nốt → "Đã thu đủ", còn nợ 0, **form thu tiền biến mất**
+- [x] Ghi nhận số tiền vượt số còn nợ → bị chặn, và **ô số tiền vẫn giữ nguyên số vừa gõ**
+- [x] Gõ chữ vào ô số tiền → thông báo tiếng Việt, không phải trang lỗi
+- [x] Hủy một hóa đơn chưa thu đồng nào → trạng thái "Đã hủy"
+- [x] Hóa đơn đã thu một phần → **không còn nút hủy**
+- [x] Danh sách `/invoices`: hóa đơn chưa thu xong nằm trên, đã hủy xuống cuối
+- [x] Bốn nhãn trạng thái phân biệt được bằng mắt, không cùng một màu
+- [x] `manager` đổi giá dịch vụ → mở lại hóa đơn cũ, **giá vẫn là giá lúc lập**
 
 ### Sau đợt rà bằng trình duyệt ngày 07/09 — cùng chặng 1
 
 Tám lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-07-ra-luong-P5-chang1.md`](reports/2026-09-07-ra-luong-P5-chang1.md).
 
-- [ ] Trang chủ của `quanly` và `letan` có thẻ **Hóa đơn**; của `chamsoc1` thì không
-- [ ] Bảng giá có ô đổi giá trên từng dòng; `letan` mở trang này **không** thấy ô đó
-- [ ] Đổi giá một dịch vụ đang có mô tả → lưu xong mô tả **vẫn còn** (mở lại form thêm/xem lại)
-- [ ] Trả tiền vượt số nợ → thông báo **không** chứa chữ "P5" hay mã phase nào
-- [ ] Hóa đơn đã hủy: cột "Còn nợ" ở cả danh sách lẫn trang chi tiết đều là **0đ**
-- [ ] Lưới lịch của buổi có hóa đơn đã hủy ghi **"Hóa đơn đã hủy"**, không phải "Xem hóa đơn"
-- [ ] Trang hóa đơn đã hủy có khung nói rõ vì sao không lập lại được và phải làm gì
-- [ ] "Xem hồ sơ" và "Xem hóa đơn" trên cùng một dòng **rời nhau**, bấm không trượt
-- [ ] Thu hẹp cửa sổ còn khoảng 1000px với vai trò `quanly` → thanh điều hướng xuống dòng gọn, chữ trong từng mục không bị bẻ đôi
+- [x] Trang chủ của `quanly` và `letan` có thẻ **Hóa đơn**; của `chamsoc1` thì không
+- [x] Bảng giá có ô đổi giá trên từng dòng; `letan` mở trang này **không** thấy ô đó
+- [x] Đổi giá một dịch vụ đang có mô tả → lưu xong mô tả **vẫn còn** (mở lại form thêm/xem lại)
+- [x] Trả tiền vượt số nợ → thông báo **không** chứa chữ "P5" hay mã phase nào
+- [x] Hóa đơn đã hủy: cột "Còn nợ" ở cả danh sách lẫn trang chi tiết đều là **0đ**
+- [x] Lưới lịch của buổi có hóa đơn đã hủy ghi **"Hóa đơn đã hủy"**, không phải "Xem hóa đơn"
+- [x] Trang hóa đơn đã hủy có khung nói rõ vì sao không lập lại được và phải làm gì
+- [x] "Xem hồ sơ" và "Xem hóa đơn" trên cùng một dòng **rời nhau**, bấm không trượt
+- [x] Thu hẹp cửa sổ còn khoảng 1000px với vai trò `quanly` → thanh điều hướng xuống dòng gọn, chữ trong từng mục không bị bẻ đôi
 
 ### Chặng 2 — chặn hủy lịch đã có hóa đơn
 
