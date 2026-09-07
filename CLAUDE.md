@@ -196,7 +196,9 @@ phiên này sẽ khuất tầm nhìn ngay khi có hai phiên nữa.
    trách nhiệm của agent, không phải người tick. — *canh một phần bởi
    `test_moi_link_tuong_doi_trong_tai_lieu_deu_ton_tai` và `test_moi_file_app_va_tests_deu_co_trong_codebase_map`*
 3. **Test viết sau code xanh ngay không chứng minh gì.** Phải làm hỏng code có chủ đích và xác nhận
-   đúng test tương ứng đỏ, rồi hoàn nguyên. — *không tự động hóa được*
+   đúng test tương ứng đỏ, rồi hoàn nguyên — và **khẳng định đột biến đã thật sự vào file**: repo
+   trộn LF với CRLF, chuỗi tìm-thay viết theo kiểu xuống dòng LF sẽ không khớp, và kết quả đọc ra
+   là "test không bắt được lỗi" trong khi code còn nguyên vẹn. — *không tự động hóa được*
 4. **Sửa một lỗi thì soát cả lớp lỗi, không chỉ ca vừa thấy.** Hai lần: thiếu link menu — sửa "Dịch
    vụ" xong bỏ sót "Chủ nuôi"; chặn xóa thú cưng — chặn `appointments` xong bỏ sót `vaccinations`,
    lỗi 500 quay lại nguyên vẹn. Hỏi "còn chỗ nào cùng dạng?" trước khi đóng. — *không tự động hóa

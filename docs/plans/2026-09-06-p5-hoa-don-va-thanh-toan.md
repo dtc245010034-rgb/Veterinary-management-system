@@ -1,6 +1,6 @@
 # P5 — Hóa đơn và thanh toán
 
-> **Phase:** P5 · **Mốc:** KT3 — phase đầu của mốc này · **Duyệt ngày:** 2026-09-06 · **Trạng thái:** chặng 1 xong, chặng 2 chưa bắt đầu
+> **Phase:** P5 · **Mốc:** KT3 — phase đầu của mốc này · **Duyệt ngày:** 2026-09-06 · **Trạng thái:** chặng 1 xong, chặng 2 xong phần code — chờ tick smoke
 >
 > Chia hai chặng như P3, P4. Khối smoke tách theo chặng **trước khi** đưa người dùng tick.
 > Theo [`../roadmap.md`](../roadmap.md). Quy ước: [`README.md`](README.md).
@@ -35,11 +35,11 @@ và AI"*).
 
 ### Chặng 2 — Chặn hủy lịch đã có hóa đơn, và e2e
 
-- [ ] 7. `scheduling.huy_lich` chặn khi lịch còn hóa đơn chưa hủy, thông báo nêu mã hóa đơn —
+- [x] 7. `scheduling.huy_lich` chặn khi lịch còn hóa đơn chưa hủy, thông báo nêu mã hóa đơn —
       TC-074, TC-075
-- [ ] 8. Nối bước 7→9 vào `tests/e2e/test_full_flow.py` → TC-101 lên **9/11 bước**
-- [ ] 9. Cập nhật `codebase-map.md`, `test-cases.md`, `erd.md` nếu lệch, log phiên
-- [ ] 10. Báo cáo P5 đầy đủ, khối smoke tách theo chặng, commit
+- [x] 8. Nối bước 7→9 vào `tests/e2e/test_full_flow.py` → TC-101 lên **9/11 bước**
+- [x] 9. Cập nhật `codebase-map.md`, `test-cases.md`, `erd.md` nếu lệch, log phiên
+- [x] 10. Báo cáo P5 đầy đủ, khối smoke tách theo chặng, commit
 
 ## Chín quyết định
 
@@ -143,6 +143,22 @@ Hiện nằm trong `services.html`; P5 cần nó ở 2–3 template nữa. Đăn
 > buộc vì nó là thứ duy nhất chặn được hai request cùng lúc. Điều bắt buộc phải làm là để nó lộ ra
 > tử tế — có test riêng cho việc lập lại ra `LoiNghiepVu` nêu mã hóa đơn cũ, không phải màn hình đen.
 
+> **Sửa lúc thực hiện, 07/09 — chặng 2, quyết định 7 và US-21.** Bước 7 không làm được đúng như
+> viết. Quyết định 1 (*hóa đơn chỉ lập từ lịch `done`*) cộng với luật cũ ở P3 (*`done` là cửa một
+> chiều, không hủy được*) khiến **TC-075 không thể đúng**: lịch có hóa đơn thì luôn `done`, nên hủy
+> hóa đơn xong vẫn không hủy lịch được. Chạy thử để chắc, không suy luận suông — cả hai lần đều ra
+> `Lịch ở trạng thái "Hoàn thành" nên không hủy được.`
+>
+> Người dùng chọn **sửa spec, giữ luật**: cho hủy lịch `done` sẽ để lại hồ sơ chăm sóc nói buổi đã
+> diễn ra gắn với một lịch nói không diễn ra, và kéo theo cách đếm lượt dịch vụ ở P6 — phình phạm vi
+> cho một ca hiếm. US-21, TC-075 và khối smoke chặng 2 được viết lại cho khớp thứ hệ thống bảo đảm
+> thật: **hai lớp chặn độc lập**, lớp hóa đơn nhả ra khi hóa đơn bị hủy, lớp trạng thái vẫn giữ.
+>
+> Phép kiểm hóa đơn vẫn được thêm, và chạy **trước** phép kiểm trạng thái — thứ nó thêm vào là
+> *thông báo*: nêu mã hóa đơn thay vì chỉ nói lịch đã hoàn thành. Kèm theo, khung "Hóa đơn này đã
+> hủy" viết hôm 07/09 đang bảo người dùng *"hãy hủy luôn lịch hẹn"* — việc hệ thống luôn từ chối.
+> Đã sửa, và có test kiểm cả hai vế trong cùng một ca.
+
 > **Sửa lúc thực hiện, 06/09 — quyết định 4+6, lớp bảo vệ thứ 4.** Phép canh chỉ nhận **ba** chuỗi
 > `unpaid`, `partial`, `paid`, không nhận `cancelled`: chuỗi đó cũng là trạng thái lịch hẹn và đã
 > nằm ở bốn file khác, canh cả bốn thì phải mở bốn ngoại lệ và phép canh mất giá trị. Ba chuỗi tiền
@@ -166,13 +182,14 @@ Hiện nằm trong `services.html`; P5 cần nó ở 2–3 template nữa. Đăn
 
 ## Definition of Done
 
-- [ ] TC-065 → TC-075 chuyển ✅ (11 ca)
-- [ ] Tổng `payments` không bao giờ vượt `total_amount`, có test ca biên trả **đúng bằng** số nợ
-- [ ] Cột `status` khớp `trang_thai_tinh_lai()` ở **từng bước** của chuỗi chuyển trạng thái
-- [ ] TC-101 lên **9/11 bước**; kịch bản e2e vẫn đi bằng link và nút, không tự dựng URL
-- [ ] `pytest` toàn bộ xanh, không skip; tầng unit vẫn dưới ngưỡng xem lại 20s
-- [ ] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật + kết quả đột biến
-- [ ] Khối smoke P5 tách theo chặng, tick đủ trên trình duyệt thật
+- [x] TC-065 → TC-075 chuyển ✅ (11 ca) — và đóng nốt TC-026, TC-031 treo từ P2
+- [x] Tổng `payments` không bao giờ vượt `total_amount`, có test ca biên trả **đúng bằng** số nợ
+- [x] Cột `status` khớp `trang_thai_tinh_lai()` ở **từng bước** của chuỗi chuyển trạng thái
+- [x] TC-101 lên **9/11 bước**; kịch bản e2e vẫn đi bằng link và nút, không tự dựng URL
+- [~] `pytest` toàn bộ xanh, không skip (470 ca) — nhưng tầng unit 23,2s, **trên** ngưỡng xem lại
+      20s. Đã kiểm chứng là của máy chứ không của test mới; đo lại ở P6 trên máy rảnh
+- [x] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật + kết quả đột biến
+- [ ] Khối smoke P5 tách theo chặng ✅, tick đủ trên trình duyệt thật — **3 ô chặng 2 đang chờ người dùng**
 
 ## Ngoài phạm vi
 

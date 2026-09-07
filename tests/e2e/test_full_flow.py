@@ -1,4 +1,4 @@
-"""Kịch bản xuyên suốt — TC-101, bước 1 → 6 của docs/testing/test-strategy.md mục 6.
+"""Kịch bản xuyên suốt — TC-101, bước 1 → 9 của docs/testing/test-strategy.md mục 6.
 
 Khác mọi tầng test khác ở một điểm quyết định: **test này không được tự dựng URL.**
 Nó bắt đầu ở "/" rồi chỉ đi tiếp bằng link và nút có thật trong HTML vừa nhận, và gửi
@@ -10,8 +10,8 @@ bấm. Nặng nhất là lỗi ô `<select>` không có option nào `selected` �
 option đầu tiên, nên bấm "Đổi" mà không sửa gì lại chuyển lịch sang tên người khác. Test
 tự dựng `data={...}` không bao giờ chạm tới lỗi đó, vì nó không gửi thứ trình duyệt gửi.
 
-Bước 7 → 11 (hóa đơn, thanh toán, AI, thống kê) nối tiếp ở P5, P6, P7. Vì vậy TC-101
-đang là 🟡 chứ không phải ✅.
+Bước 10 → 11 (AI tóm tắt, thống kê) nối tiếp ở P6 và P7. Vì vậy TC-101 vẫn là 🟡 chứ
+chưa phải ✅.
 """
 
 import re
@@ -410,9 +410,33 @@ def test_tu_dat_lich_den_ho_so_cham_soc(trinh_duyet, nen_e2e):
         assert "Da sạch, không phát hiện ve" in tb.van_ban
         assert f"{GIO_DOI:%d/%m/%Y %H:%M}" in tb.van_ban
 
-        # 7. Lịch đã hoàn thành thì lễ tân không còn đổi hay hủy được nữa.
+        # Lịch đã hoàn thành thì lễ tân không còn đổi hay hủy được nữa.
         tb.gui("Đăng xuất")
         tb.gui("Đăng nhập", username=nen_e2e["le_tan"], password=MAT_KHAU_MAU)
         tb.bam("Lịch hẹn")
         assert "Hoàn thành" in tb.van_ban
         assert "Đổi" not in tb.nut and "Hủy" not in tb.nut
+
+        # 7. Lập hóa đơn từ chính dòng lịch vừa hoàn thành.
+        tb.gui("Lập hóa đơn")
+        assert tb.ma == 200
+        assert "/invoices/" in tb.duong_dan
+        assert nen_e2e["ten_dich_vu"] in tb.van_ban
+        assert "150.000đ" in tb.van_ban
+        assert "Chưa thu" in tb.van_ban
+
+        # 8. Khách trả trước một phần. Hình thức chọn theo nhãn nhìn thấy.
+        tb.gui("Ghi nhận", so_tien="50000", hinh_thuc="Chuyển khoản")
+        assert tb.ma == 200
+        assert "Thu một phần" in tb.van_ban
+        assert "Còn nợ 100.000đ" in tb.van_ban
+
+        # 9. Trả nốt phần còn lại thì hóa đơn đóng, form thu tiền biến mất.
+        tb.gui("Ghi nhận", so_tien="100000", hinh_thuc="Tiền mặt")
+        assert tb.ma == 200
+        assert "Đã thu đủ" in tb.van_ban
+        assert "Ghi nhận" not in tb.nut
+
+        # Và nó phải hiện đúng trạng thái đó ở danh sách hóa đơn.
+        tb.bam("Hóa đơn")
+        assert "Đã thu đủ" in tb.van_ban

@@ -26,6 +26,11 @@ TEN_TRANG_THAI = {
     "cancelled": "Đã hủy",
 }
 
+# Hóa đơn còn ràng buộc sổ sách — dùng ở scheduling.py khi chặn hủy lịch (US-21).
+# Đặt ở đây thay vì viết thẳng chuỗi bên đó: chuỗi trạng thái tiền chỉ sống trong file
+# này và billing.py, xem ghi chú đầu file.
+TRANG_THAI_CON_HIEU_LUC = ("unpaid", "partial", "paid")
+
 
 class Invoice(Base):
     __tablename__ = "invoices"

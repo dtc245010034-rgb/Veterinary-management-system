@@ -180,9 +180,9 @@ bắt được cả lỗi ở tầng lưu trữ:
 4. ✅ Thử đặt lịch trùng → phải bị từ chối
 5. ✅ Đổi lịch sang khung trống → thành công
 6. ✅ Đăng nhập vai trò nhân viên chăm sóc → ghi hồ sơ chăm sóc → lịch chuyển `done`
-7. ⬜ Đăng nhập lễ tân → lập hóa đơn *(P5)*
-8. ⬜ Ghi nhận thanh toán một phần → trạng thái `partial` *(P5)*
-9. ⬜ Ghi nhận nốt phần còn lại → trạng thái `paid` *(P5)*
+7. ✅ Đăng nhập lễ tân → lập hóa đơn *(P5)*
+8. ✅ Ghi nhận thanh toán một phần → trạng thái `partial` *(P5)*
+9. ✅ Ghi nhận nốt phần còn lại → trạng thái `paid` *(P5)*
 10. ⬜ Gọi AI tóm tắt hồ sơ → có nội dung và có `DISCLAIMER` *(P7)*
 11. ⬜ Đăng nhập quản lý → xem thống kê → doanh thu khớp số đã thu *(P6)*
 

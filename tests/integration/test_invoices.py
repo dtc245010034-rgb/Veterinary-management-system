@@ -220,6 +220,29 @@ def test_hoa_don_da_thu_du_thi_khong_con_form_thu_tien(client, db, nen):
     assert "Ghi nhận thanh toán" not in trang.text
 
 
+def test_hoa_don_cu_van_hien_du_khi_dich_vu_da_ngung_ban(client, db, nen):
+    """TC-031.
+
+    Không có mutation nào giết được test này ở P5: không dòng code nào lọc dịch vụ theo
+    `is_active` khi hiển thị hóa đơn, nên nó xanh nhờ chính quyết định chép `description`
+    và `unit_price` vào dòng hóa đơn. Giữ lại vì đó đúng là chỗ dễ hỏng ở phase sau —
+    thống kê doanh thu (P6) mà join sang `services` và lọc dịch vụ đang bán sẽ làm hóa đơn
+    cũ biến mất khỏi sổ, âm thầm.
+    """
+    lich = lich_xong(db, nen)
+    dang_nhap(client, "letan")
+    ma = lap_hd(client, lich)
+
+    nen["dv"].is_active = False
+    db.commit()
+
+    trang = client.get(ma)
+
+    assert trang.status_code == 200
+    assert "Tắm và sấy" in trang.text
+    assert "150.000đ" in trang.text
+
+
 # --- Hủy hóa đơn -----------------------------------------------------------------
 
 
@@ -363,3 +386,41 @@ def test_trang_hoa_don_da_huy_noi_ro_buoc_tiep_theo(client, db, nen):
     trang = client.get(ma)
 
     assert "không lập lại được" in trang.text
+
+
+def test_huy_lich_khi_con_hoa_don_hien_ma_hoa_don_cho_le_tan(client, db, nen):
+    """TC-074 ở tầng HTTP.
+
+    Lưới lịch không hiện nút Hủy cho lịch đã xong, nên ca này tới từ một tab cũ mở sẵn
+    hoặc từ POST gọi thẳng. Ẩn nút là chưa đủ — máy chủ phải chặn thật, và phải nói ra
+    hóa đơn nào đang giữ buổi đó lại.
+    """
+    lich = lich_xong(db, nen)
+    dang_nhap(client, "letan")
+    ma = lap_hd(client, lich)
+
+    r = client.post(
+        f"/appointments/{lich.id}/huy", data={"ngay": NGAY, "ly_do": "Khách báo bận"}
+    )
+
+    assert r.status_code == 400
+    assert ma.rsplit("/", 1)[-1] in r.text
+
+
+def test_trang_hoa_don_da_huy_khong_bay_cach_lam_ma_he_thong_tu_choi(client, db, nen):
+    """Khung hướng dẫn từng bảo “hãy hủy luôn lịch hẹn” — việc hệ thống luôn từ chối.
+
+    Kiểm cả hai vế trong một ca, vì tách ra thì mỗi vế đều xanh mà lời khuyên vẫn sai:
+    máy chủ thật sự từ chối hủy lịch đã xong, và trang hóa đơn không bày cách làm đó.
+    """
+    lich = lich_xong(db, nen)
+    dang_nhap(client, "letan")
+    ma = lap_hd(client, lich)
+    client.post(f"{ma}/huy")
+
+    r = client.post(
+        f"/appointments/{lich.id}/huy", data={"ngay": NGAY, "ly_do": "Buổi không diễn ra"}
+    )
+
+    assert r.status_code == 400
+    assert "hủy luôn lịch hẹn" not in client.get(ma).text

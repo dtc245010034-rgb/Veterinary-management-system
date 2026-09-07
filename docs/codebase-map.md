@@ -75,9 +75,9 @@
 | `services/owners.py` | Nghiệp vụ chủ nuôi và thú cưng: tạo, sửa, xóa, tra cứu |
 | `services/catalog.py` | Nghiệp vụ dịch vụ và gói. `danh_sach_dang_ban()` là danh sách P3 và P5 sẽ dùng |
 | `services/care_records.py` | Nghiệp vụ hồ sơ chăm sóc. Thao tác **duy nhất** đưa lịch hẹn về `done` |
-| `services/scheduling.py` | **Quy tắc chống trùng lịch**, đặt/đổi/hủy lịch, gợi ý khung trống. Khoảng nửa mở `[start, end)` |
+| `services/scheduling.py` | **Quy tắc chống trùng lịch**, đặt/đổi/hủy lịch, gợi ý khung trống. Khoảng nửa mở `[start, end)`. Hủy lịch còn chặn khi lịch đang có hóa đơn chưa hủy (US-21) — biết model `Invoice`, không gọi sang `billing.py` |
 | `services/vaccinations.py` | Nghiệp vụ tiêm phòng: ghi mũi, hồ sơ tiêm, danh sách đến hạn. Chỉ tính mũi mới nhất của mỗi loại vắc-xin |
-| `models/invoice.py` | Bảng `invoices` và `invoice_items`. `unit_price` và `description` **chép** lúc lập, không tham chiếu `services`; property `da_tra`, `con_no` |
+| `models/invoice.py` | Bảng `invoices` và `invoice_items`. Hằng `TRANG_THAI_CON_HIEU_LUC` cho `scheduling.py` dùng khi chặn hủy lịch. `unit_price` và `description` **chép** lúc lập, không tham chiếu `services`; property `da_tra`, `con_no` |
 | `models/payment.py` | Bảng `payments` — từng lần khách trả; CHECK `amount > 0` |
 | `services/billing.py` | Nghiệp vụ hóa đơn: lập, thu tiền, hủy. Đường **duy nhất** ghi `payments` và trạng thái hóa đơn |
 | `routers/auth.py` | `/login`, `/logout`, `/` |
@@ -123,7 +123,7 @@
 | `unit/test_care_records_service.py` | Nghiệp vụ hồ sơ chăm sóc, lịch sử, ba trường suy từ lịch hẹn |
 | `unit/test_vaccinations_service.py` | Nghiệp vụ tiêm phòng, ranh giới ngày, luật "chỉ tính mũi mới nhất" (TC-059→062) |
 | `unit/test_billing_service.py` | Nghiệp vụ hóa đơn và thanh toán, gồm ca đổi giá dịch vụ không làm đổi hóa đơn cũ (TC-065→073) |
-| `unit/test_scheduling.py` | **6 ca biên trùng lịch**, gợi ý khung trống, đổi lịch (TC-044→047), hủy lịch (TC-048, TC-049) |
+| `unit/test_scheduling.py` | **6 ca biên trùng lịch**, gợi ý khung trống, đổi lịch (TC-044→047), hủy lịch (TC-048, TC-049), chặn hủy lịch còn hóa đơn (TC-074, TC-075) |
 | `integration/test_auth.py` | Đăng nhập (TC-001→004) |
 | `integration/test_users.py` | Phân quyền và quản lý tài khoản (TC-007, 008, 010→012) |
 | `integration/test_owners.py` | Chủ nuôi, thú cưng, tra cứu qua HTTP (TC-013→023) |
@@ -132,7 +132,7 @@
 | `integration/test_vaccinations.py` | Ghi mũi tiêm, danh sách đến hạn, link menu, khuyến cáo bác sĩ (TC-059, TC-063, TC-064, TC-020) |
 | `integration/test_invoices.py` | Hóa đơn qua HTTP: nút trên lưới lịch, thu tiền, hủy, phân quyền (TC-065, TC-068→070, TC-072) |
 | `integration/test_appointments.py` | Đặt/đổi/hủy lịch qua HTTP, lịch theo vai trò (TC-035, TC-043, TC-050→052, TC-009) |
-| `e2e/test_full_flow.py` | **Kịch bản xuyên suốt TC-101 bước 1→6** trên CSDL file thật, đi bằng link và nút lấy từ HTML — không tự dựng URL. Chứa `TrinhDuyet`, trình duyệt tí hon gửi form đúng như trình duyệt |
+| `e2e/test_full_flow.py` | **Kịch bản xuyên suốt TC-101 bước 1→9** trên CSDL file thật, đi bằng link và nút lấy từ HTML — không tự dựng URL. Chứa `TrinhDuyet`, trình duyệt tí hon gửi form đúng như trình duyệt |
 
 ### Cấu hình
 

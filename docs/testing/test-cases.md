@@ -52,12 +52,12 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 |---|---|---|---|---|---|
 | TC-024 | US-07 | Thêm dịch vụ hợp lệ → xuất hiện khi đặt lịch | I | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py`, `tests/integration/test_appointments.py` | ✅ |
 | TC-025 | US-07 | Giá âm hoặc thời lượng ≤ 0 → bị từ chối | U | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` | ✅ |
-| TC-026 | US-07 | Đổi giá dịch vụ → hóa đơn cũ giữ nguyên giá | U | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — đổi giá xong; hóa đơn cũ giữ giá chờ **P5** | 🟡 |
-| TC-027 | US-08 | Tạo gói 3 dịch vụ → hiện khi lập hóa đơn | I | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — tạo gói xong; hiện khi lập hóa đơn chờ **P5** | 🟡 |
+| TC-026 | US-07 | Đổi giá dịch vụ → hóa đơn cũ giữ nguyên giá | U | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py`, `test_billing_service.py::test_doi_gia_dich_vu_khong_lam_doi_hoa_don_cu` | ✅ |
+| TC-027 | US-08 | Tạo gói 3 dịch vụ → hiện khi lập hóa đơn | I | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — tạo gói xong; **P5 không làm hóa đơn bán gói** (ngoài phạm vi kế hoạch P5), nên nửa sau chưa có nơi kiểm | 🟡 |
 | TC-028 | US-08 | Chi tiết gói hiện thành phần và tổng giá lẻ để so sánh | I | `tests/unit/test_models_service.py`, `tests/integration/test_services.py` | ✅ |
 | TC-029 | US-08 | Gói không có thành phần → không lưu được | U | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` | ✅ |
 | TC-030 | US-09 | Ngưng bán dịch vụ → biến mất khỏi danh sách đặt lịch mới | I | `tests/unit/test_catalog_service.py`, `tests/unit/test_scheduling.py`, `tests/integration/test_appointments.py` | ✅ |
-| TC-031 | US-09 | Hóa đơn cũ chứa dịch vụ đã ngưng bán vẫn hiển thị đủ | I | — chờ **P5**, cần hóa đơn để kiểm | 🟡 |
+| TC-031 | US-09 | Hóa đơn cũ chứa dịch vụ đã ngưng bán vẫn hiển thị đủ | I | `test_invoices.py::test_hoa_don_cu_van_hien_du_khi_dich_vu_da_ngung_ban` | ✅ |
 
 ## D. Lịch hẹn — phase P3 · **đề bài yêu cầu đích danh có test**
 
@@ -120,8 +120,8 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 | TC-071 | US-20 | Trả nốt phần còn lại → `paid`, nợ bằng 0 | U | `tests/unit/test_billing_service.py` | ✅ |
 | TC-072 | US-20 | Trả vượt số phải trả → từ chối | U | `tests/unit/test_billing_service.py`, `tests/integration/test_invoices.py` | ✅ |
 | TC-073 | US-20 | Số tiền ≤ 0 → từ chối | U | `tests/unit/test_billing_service.py` | ✅ |
-| TC-074 | US-21 | Hủy lịch đã có hóa đơn → chặn, nêu mã hóa đơn | U | | ⬜ |
-| TC-075 | US-21 | Hóa đơn đã `cancelled` → hủy lịch được chấp nhận | U | | ⬜ |
+| TC-074 | US-21 | Hủy lịch đã có hóa đơn → chặn, nêu mã hóa đơn | U | `tests/unit/test_scheduling.py`, `tests/integration/test_invoices.py` | ✅ |
+| TC-075 | US-21 | Hóa đơn đã `cancelled` → lớp chặn hóa đơn nhả ra, lịch bị chặn bởi chính trạng thái nó | U | `tests/unit/test_scheduling.py`, `tests/integration/test_invoices.py` | ✅ |
 
 ## H. Thống kê — phase P6
 
@@ -176,7 +176,7 @@ Toàn bộ chạy với `FakeProvider`. Mã `G-xx` tham chiếu bộ ca trong [`
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | 🟡 bước 1→6 |
+| TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | 🟡 bước 1→9 |
 | TC-102 | nhiều | Checklist bấm tay theo [`smoke-checklist.md`](smoke-checklist.md) | thủ công | — | ⬜ |
 
 TC-101 kéo lên sớm từ P5 (kế hoạch: [`../plans/2026-09-05-e2e-xuyen-suot.md`](../plans/2026-09-05-e2e-xuyen-suot.md)).

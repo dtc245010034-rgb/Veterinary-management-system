@@ -16,10 +16,12 @@ from decimal import Decimal
 
 import pytest
 
+from app.models.appointment import TEN_TRANG_THAI
 from app.models.owner import Owner
 from app.models.pet import Pet
 from app.models.service import Service
 from app.models.user import User
+from app.services import billing, care_records, clock
 from app.services import scheduling as nv
 from app.services.errors import LoiNghiepVu
 
@@ -463,6 +465,55 @@ def test_huy_lich_da_huy_bi_tu_choi(db, nen):
 
     with pytest.raises(LoiNghiepVu):
         nv.huy_lich(db, a.id, "Hủy lần nữa")
+
+
+# --- Hủy lịch khi đã có hóa đơn (US-21) -------------------------------------------
+#
+# Hai lớp chặn độc lập chồng lên nhau, và ở P5 lớp nào cũng đủ chặn một mình:
+#
+#   lớp hóa đơn    — lịch còn hóa đơn chưa hủy thì không hủy lịch được
+#   lớp trạng thái — lịch `done` thì không hủy được, có hóa đơn hay không
+#
+# Lịch có hóa đơn thì luôn `done` (hóa đơn chỉ lập từ lịch `done`, và `done` là cửa một
+# chiều), nên riêng ở P5 lớp trạng thái đã chặn sẵn mọi ca của lớp hóa đơn. Cái lớp hóa
+# đơn thêm vào là **thông báo**: nêu mã hóa đơn để lễ tân biết phải hủy hóa đơn trước.
+# Vì vậy hai test dưới đây kiểm đúng thứ phân biệt được hai lớp — nội dung thông báo —
+# chứ không kiểm "có ném lỗi không": kiểm ném lỗi thì bỏ phép kiểm hóa đơn đi vẫn xanh.
+
+
+def lich_da_lap_hoa_don(db, nen):
+    """Một lịch đã xong và đã có hóa đơn, đi qua đúng luồng thật của ứng dụng."""
+    a = dat(db, nen, gio(9))
+    with clock.freeze(a.end_at):
+        care_records.ghi_ho_so(db, a.id, nguoi_ghi_id=nen["nv1"].id, tinh_trang="Da sạch.")
+    return a, billing.lap_hoa_don(db, a.id)
+
+
+def test_huy_lich_con_hoa_don_thi_thong_bao_neu_ma_hoa_don(db, nen):
+    """TC-074."""
+    a, hd = lich_da_lap_hoa_don(db, nen)
+
+    with pytest.raises(LoiNghiepVu) as loi:
+        nv.huy_lich(db, a.id, "Khách báo bận")
+
+    assert f"#{hd.id}" in str(loi.value)
+    assert a.status == "done"
+
+
+def test_huy_hoa_don_roi_thi_ly_do_chan_khong_con_la_hoa_don(db, nen):
+    """TC-075: lớp hóa đơn nhả ra, lớp trạng thái vẫn giữ.
+
+    Ca biên của TC-074: chứng minh phép kiểm bám vào TRẠNG THÁI của hóa đơn chứ không
+    phải vào việc có tồn tại bản ghi hóa đơn hay không.
+    """
+    a, hd = lich_da_lap_hoa_don(db, nen)
+    billing.huy_hoa_don(db, hd.id)
+
+    with pytest.raises(LoiNghiepVu) as loi:
+        nv.huy_lich(db, a.id, "Khách báo bận")
+
+    assert f"#{hd.id}" not in str(loi.value)
+    assert TEN_TRANG_THAI["done"] in str(loi.value)
 
 
 # --- Gọi thẳng hai hàm nền --------------------------------------------------------

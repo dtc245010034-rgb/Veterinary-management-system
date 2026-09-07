@@ -28,6 +28,8 @@ from app.models.appointment import (
     TRANG_THAI_CON_HIEU_LUC,
     Appointment,
 )
+from app.models.invoice import TRANG_THAI_CON_HIEU_LUC as HOA_DON_CON_HIEU_LUC
+from app.models.invoice import Invoice
 from app.models.pet import Pet
 from app.models.service import Service
 from app.models.user import User
@@ -266,13 +268,42 @@ def doi_lich(
     return lich
 
 
+def _chan_neu_con_hoa_don(db: Session, lich: Appointment) -> None:
+    """US-21 — TC-074, TC-075.
+
+    Chạy TRƯỚC phép kiểm trạng thái, và đó là toàn bộ giá trị của hàm này. Ở P5 lịch đã
+    có hóa đơn thì luôn `done` (hóa đơn chỉ lập từ lịch `done`, và `done` là cửa một
+    chiều), nên phép kiểm trạng thái đằng sau cũng chặn được mọi ca ở đây — nhưng bằng
+    câu "Lịch ở trạng thái Hoàn thành nên không hủy được", không nói gì về hóa đơn. Lễ
+    tân đọc xong vẫn không biết tiền của buổi đó đang nằm ở đâu.
+
+    Đặt ở `scheduling` chứ không gọi sang `billing`: hai service phụ thuộc chéo nhau thì
+    lần sau không tách ra được. Ở đây chỉ cần biết model `Invoice`, giống cách file này
+    đã biết `Appointment` — xem quyết định 7 trong kế hoạch P5.
+    """
+    hd = db.scalar(
+        select(Invoice)
+        .where(Invoice.appointment_id == lich.id, Invoice.status.in_(HOA_DON_CON_HIEU_LUC))
+        .order_by(Invoice.id)
+    )
+    if hd is None:
+        return
+
+    raise LoiNghiepVu(
+        f"Lịch này đã có hóa đơn #{hd.id} ({hd.ten_trang_thai.lower()}) nên không hủy được. "
+        "Hủy hóa đơn ở trang hóa đơn trước; buổi chăm sóc đã ghi nhận hoàn thành thì vẫn "
+        "giữ nguyên trong sổ."
+    )
+
+
 def huy_lich(db: Session, lich_id: int, ly_do: str) -> Appointment:
-    """Hủy lịch kèm lý do. TC-048, TC-049.
+    """Hủy lịch kèm lý do. TC-048, TC-049, TC-074, TC-075.
 
     Lý do là bắt buộc: khung giờ bị giải phóng mà không ai biết vì sao thì sau này
     không truy nguyên được, và thống kê ở P6 không phân biệt được khách hủy với lỗi vận hành.
     """
     lich = lay_lich(db, lich_id)
+    _chan_neu_con_hoa_don(db, lich)
     _chan_neu_khong_sua_duoc(lich, "hủy")
 
     ly_do = (ly_do or "").strip()

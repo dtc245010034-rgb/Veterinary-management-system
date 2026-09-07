@@ -193,8 +193,18 @@ Tám lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-07-ra-luong-P5-c
 
 ### Chặng 2 — chặn hủy lịch đã có hóa đơn
 
-- [ ] Thử hủy lịch đã có hóa đơn → bị chặn, thông báo nêu mã hóa đơn
-- [ ] Hủy hóa đơn trước rồi hủy lịch → được chấp nhận
+> Lưới lịch **không hiện nút Hủy** cho lịch đã hoàn thành, mà lịch có hóa đơn thì luôn đã hoàn
+> thành — nên phải dựng lại đúng cảnh tab cũ: mở lưới lịch ở **tab A** khi lịch còn "Đã đặt" (nút
+> **Hủy** còn đó), sang **tab B** ghi hồ sơ rồi lập hóa đơn cho chính lịch đó, quay về tab A bấm
+> **Hủy**.
+>
+> Ô thứ hai đổi so với bản viết ở KT1 — xem ghi chú phạm vi dưới US-21 trong
+> [`../user-stories.md`](../user-stories.md): hóa đơn chỉ lập từ lịch đã hoàn thành, mà lịch đã
+> hoàn thành thì không hủy được, kể cả sau khi hủy hóa đơn.
+
+- [ ] Bấm **Hủy** ở tab A khi lịch đã có hóa đơn → bị chặn, thông báo **nêu mã hóa đơn**, vẫn ở lưới lịch
+- [ ] Hủy hóa đơn đó rồi bấm **Hủy** lại ở tab A → vẫn bị chặn, nhưng thông báo lần này nói về **trạng thái lịch** ("Hoàn thành") và không nhắc hóa đơn nữa
+- [ ] Trang hóa đơn đã hủy **không** còn bảo "hãy hủy luôn lịch hẹn"; nó nói buổi chăm sóc vẫn nằm trong sổ ở trạng thái hoàn thành
 
 ## P6 — Thống kê
 
