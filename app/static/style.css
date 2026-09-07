@@ -26,17 +26,22 @@ body {
   display: flex;
   align-items: center;
   gap: 24px;
-  padding: 0 24px;
-  height: 56px;
+  padding: 8px 24px;
+  /* min-height chứ không phải height cố định: menu của quản lý có 7 mục, cửa sổ hẹp hơn
+     ~1040px là chữ trong từng mục tự xuống dòng và thanh trông như vỡ. Cho phép cả thanh
+     xuống dòng thì mỗi mục vẫn nguyên chữ. Màn rộng nhìn y hệt trước. */
+  min-height: 56px;
+  flex-wrap: wrap;
   background: var(--the);
   border-bottom: 1px solid var(--vien);
 }
 
 .thuong-hieu { font-weight: 600; text-decoration: none; color: var(--chu); }
 
-.thanh-dieu-huong nav { display: flex; gap: 18px; flex: 1; }
+.thanh-dieu-huong nav { display: flex; gap: 18px; flex: 1; flex-wrap: wrap; row-gap: 4px; }
 .thanh-dieu-huong nav a {
   color: var(--chu-phu);
+  white-space: nowrap;
   text-decoration: none;
   padding: 4px 0;
   border-bottom: 2px solid transparent;
@@ -217,6 +222,13 @@ td.gio { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 5
 .nhan-rescheduled { background: #fff4e5; color: #93370d; }
 .nhan-cancelled { background: #f1f3f5; color: var(--chu-phu); }
 .nhan-done { background: #eaf0fb; color: #1f4a8c; }
+
+/* Ô đổi giá ngay trên dòng bảng giá. */
+.doi-gia { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+.doi-gia input { margin-top: 0; width: 78px; padding: 5px 6px; }
+
+/* Hai link hành động cạnh nhau thì phải rời nhau ra, nếu không chúng đọc như một chữ. */
+td.thao-tac a + a { margin-left: 12px; }
 
 /* --- Hóa đơn --- */
 /* Ba nhãn này ghép từ biến (`nhan-{{ hd.status }}`) nên phép canh class trong

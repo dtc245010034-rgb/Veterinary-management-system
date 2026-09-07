@@ -25,6 +25,17 @@
             <td>{% if s.is_active %}Đang bán{% else %}<span class="trang-thai-khoa">Đã ngưng bán</span>{% endif %}</td>
             <td>
               {% if user.role == 'manager' %}
+                {# Ô đổi giá nằm ngay trên dòng, cùng lối với ô đổi giờ ở lưới lịch hẹn.
+                   Ba ô ẩn giữ nguyên tên, thời lượng, mô tả: route /sua ghi đè cả bốn
+                   trường, thiếu ô nào là trường đó bị xóa trắng. #}
+                <form class="doi-gia" method="post" action="/services/{{ s.id }}/sua">
+                  <input type="hidden" name="ten" value="{{ s.name }}">
+                  <input type="hidden" name="thoi_luong_phut" value="{{ s.duration_min }}">
+                  <input type="hidden" name="mo_ta" value="{{ s.description or '' }}">
+                  <input name="gia" inputmode="numeric" value="{{ s.price|round|int }}"
+                         aria-label="Giá của {{ s.name }}">
+                  <button type="submit">Lưu</button>
+                </form>
                 {% if s.is_active %}
                   <form method="post" action="/services/{{ s.id }}/ngung-ban"><button class="lien-ket">Ngưng bán</button></form>
                 {% else %}

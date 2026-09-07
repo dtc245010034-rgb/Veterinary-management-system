@@ -113,7 +113,7 @@ def ghi_nhan_thanh_toan(
     if so_tien > hd.con_no:
         raise LoiNghiepVu(
             f"Số tiền vượt quá số còn nợ của hóa đơn ({_so(hd.con_no)}đ). "
-            "P5 chưa làm nghiệp vụ hoàn tiền."
+            "Cửa hàng chưa dùng chức năng hoàn tiền trên hệ thống."
         )
 
     p = Payment(amount=so_tien, method=hinh_thuc)

@@ -300,3 +300,66 @@ def test_mo_hoa_don_khong_ton_tai_ra_404_khong_phai_500(client, nen):
 
     assert r.status_code == 404
     assert "Không tìm thấy hóa đơn" in r.text
+
+
+# --- Lỗi tìm ra khi rà bằng trình duyệt ngày 07/09 -------------------------------
+
+
+def _khoi_the(html: str) -> str:
+    """Phần lưới thẻ trên trang chủ, không tính thanh điều hướng.
+
+    Thanh điều hướng cũng chứa `/invoices` nên assert trên cả trang sẽ xanh ngay cả khi
+    trang chủ thiếu thẻ — đúng loại test xanh mà không chứng minh gì.
+    """
+    dau = html.index('<div class="luoi-the">')
+    return html[dau : html.index("</div>", dau)]
+
+
+def test_trang_chu_co_the_hoa_don_cho_quan_ly_va_le_tan(client, nen):
+    """Thêm link menu mà quên trang chủ là lặp lại đúng lớp lỗi đã gặp ở P4."""
+    for tai_khoan in ("quanly", "letan"):
+        dang_nhap(client, tai_khoan)
+        assert "/invoices" in _khoi_the(client.get("/").text), tai_khoan
+
+
+def test_trang_chu_khong_co_the_hoa_don_cho_nhan_vien_cham_soc(client, nen):
+    dang_nhap(client, "chamsoc1")
+
+    assert "/invoices" not in _khoi_the(client.get("/").text)
+
+
+def test_hoa_don_da_huy_khong_con_no_dong_nao(client, db, nen):
+    """Hóa đơn đã hủy mà vẫn hiện "còn nợ 150.000đ" là con số sẽ bị đi đòi nhầm."""
+    lich = lich_xong(db, nen)
+    dang_nhap(client, "letan")
+    ma = lap_hd(client, lich)
+    client.post(f"{ma}/huy")
+
+    trang = client.get(ma)
+    danh_sach = client.get("/invoices")
+
+    assert "150.000đ" not in trang.text.split("Còn nợ")[1][:80]
+    assert "Đã hủy" in danh_sach.text
+
+
+def test_luoi_lich_noi_ro_hoa_don_da_bi_huy(client, db, nen):
+    """Bấm "Xem hóa đơn" rồi mới biết nó đã hủy, và không lập lại được, là ngõ cụt câm."""
+    lich = lich_xong(db, nen)
+    dang_nhap(client, "letan")
+    ma = lap_hd(client, lich)
+    client.post(f"{ma}/huy")
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert "Hóa đơn đã hủy" in r.text
+
+
+def test_trang_hoa_don_da_huy_noi_ro_buoc_tiep_theo(client, db, nen):
+    lich = lich_xong(db, nen)
+    dang_nhap(client, "letan")
+    ma = lap_hd(client, lich)
+    client.post(f"{ma}/huy")
+
+    trang = client.get(ma)
+
+    assert "không lập lại được" in trang.text

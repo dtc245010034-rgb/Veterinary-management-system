@@ -78,6 +78,15 @@ class Invoice(Base):
 
     @property
     def con_no(self) -> Decimal:
+        """Số tiền khách còn phải trả. Hóa đơn đã hủy thì không nợ ai đồng nào.
+
+        Không trừ thẳng `total_amount - da_tra` cho mọi trường hợp: hóa đơn đã hủy luôn
+        chưa thu đồng nào (huy_hoa_don từ chối khi đã có thanh toán), nên phép trừ sẽ ra
+        đúng bằng tổng tiền và màn hình hiện "còn nợ 150.000đ" trên một hóa đơn đã bỏ.
+        Số tiền gốc vẫn tra được ở `total_amount`.
+        """
+        if self.status == "cancelled":
+            return Decimal("0")
         return self.total_amount - self.da_tra
 
     @property

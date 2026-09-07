@@ -88,8 +88,10 @@ MUI_TIEM_MAU = [
 # Phần đã trả của hóa đơn lập cho từng buổi đã hoàn thành, theo thứ tự lịch hẹn.
 # `None` nghĩa là KHÔNG lập hóa đơn — cố ý chừa lại một buổi để bấm thử được nút
 # "Lập hóa đơn", giống cách CHUA_GHI_HO_SO chừa chỗ cho nút "Ghi hồ sơ".
+# Buổi được chừa phải là buổi HÔM QUA chứ không phải buổi cách đây một tháng: lưới lịch
+# mở theo ngày, để nút ở ngày xa thì người kiểm thử không tìm thấy nó.
 # Tỷ lệ chứ không phải số tiền, để đổi bảng giá mẫu không làm hỏng dữ liệu seed.
-PHAN_DA_TRA = [Decimal("1"), Decimal("0.4"), None]
+PHAN_DA_TRA = [Decimal("1"), None, Decimal("0.4")]
 
 
 def main() -> None:

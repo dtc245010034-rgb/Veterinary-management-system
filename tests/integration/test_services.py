@@ -6,7 +6,12 @@ Logic đã kiểm kỹ ở tests/unit/test_catalog_service.py. Ở đây chỉ k
 phân quyền, mã trạng thái, và thông báo có thật sự hiện ra cho người dùng đọc.
 """
 
+import re
+from decimal import Decimal
+
 import pytest
+
+from app.models.service import Service
 
 
 def dang_nhap(client, username, password="matkhau123"):
@@ -15,10 +20,10 @@ def dang_nhap(client, username, password="matkhau123"):
     return client
 
 
-def them_dich_vu(client, ma="TAM", ten="Tắm cho chó", gia="150000", phut="45"):
+def them_dich_vu(client, ma="TAM", ten="Tắm cho chó", gia="150000", phut="45", mo_ta=""):
     return client.post(
         "/services",
-        data={"ma": ma, "ten": ten, "gia": gia, "thoi_luong_phut": phut},
+        data={"ma": ma, "ten": ten, "gia": gia, "thoi_luong_phut": phut, "mo_ta": mo_ta},
         follow_redirects=True,
     )
 
@@ -98,6 +103,61 @@ def test_ma_trung_hien_loi_neu_ro_ma_nao(client, seed_basic):
 
     assert r.status_code == 400
     assert "TAM" in r.text
+
+
+def test_trang_dich_vu_co_form_sua_gia(client, seed_basic):
+    """Route `/services/{id}/sua` có từ P2b nhưng KHÔNG có form nào trỏ tới nó.
+
+    Hậu quả: quản lý không đổi được giá bằng chuột, dù US-07 nói "cập nhật giá". Ô smoke
+    quan trọng nhất của P5 — "đổi giá rồi mở lại hóa đơn cũ" — cũng không bấm được.
+    Cùng lớp lỗi với "route có nhưng thiếu link menu" đã gặp ở P4: test cũ gọi thẳng POST
+    nên không ai phát hiện giao diện thiếu.
+    """
+    dang_nhap(client, "quanly")
+    them_dich_vu(client, gia="150000")
+    ma = _ma_dich_vu_dau_tien(client)
+
+    r = client.get("/services")
+
+    assert f'action="/services/{ma}/sua"' in r.text
+
+
+def _truong_cua_form(html: str, action: str) -> dict[str, str]:
+    """Đọc mọi ô input của đúng một form — gửi y như trình duyệt gửi.
+
+    Tự gõ tay danh sách trường trong test sẽ bỏ qua đúng thứ cần kiểm: trường nào form
+    QUÊN gửi thì route /sua ghi đè bằng rỗng.
+    """
+    khoi = html[html.index(f'action="{action}"') :]
+    khoi = khoi[: khoi.index("</form>")]
+    return dict(re.findall(r'name="([^"]+)"[^>]*value="([^"]*)"', khoi))
+
+
+def test_luu_gia_khong_lam_mat_mo_ta_dich_vu(client, db, seed_basic):
+    """Route /sua ghi đè cả bốn trường, nên form chỉ gửi giá là xóa trắng mô tả."""
+    dang_nhap(client, "quanly")
+    them_dich_vu(client, gia="150000", mo_ta="Tắm nước ấm, sấy khô.")
+    ma = _ma_dich_vu_dau_tien(client)
+
+    truong = _truong_cua_form(client.get("/services").text, f"/services/{ma}/sua")
+    truong["gia"] = "180000"
+    client.post(f"/services/{ma}/sua", data=truong, follow_redirects=True)
+
+    s = db.get(Service, ma)
+    assert s.price == Decimal("180000")
+    assert s.description == "Tắm nước ấm, sấy khô."
+
+
+def test_le_tan_khong_thay_form_sua_gia(client, seed_basic):
+    """Ca biên: US-02 cho lễ tân quyền XEM bảng giá, không có quyền sửa."""
+    dang_nhap(client, "quanly")
+    them_dich_vu(client, gia="150000")
+    ma = _ma_dich_vu_dau_tien(client)
+    dang_nhap(client, "letan")
+
+    r = client.get("/services")
+
+    assert f'action="/services/{ma}/sua"' not in r.text
 
 
 def test_doi_gia_dich_vu(client, seed_basic):

@@ -295,6 +295,20 @@ def test_huy_hoa_don_da_co_thanh_toan_bi_chan(db, nen):
     assert hd.status == "partial"
 
 
+def test_hoa_don_da_huy_thi_so_no_ve_khong(db, nen):
+    """Hóa đơn đã hủy không còn nợ ai đồng nào.
+
+    Để nguyên `con_no` bằng tổng tiền thì màn hình danh sách hiện "còn nợ 150.000đ" trên
+    một hóa đơn đã bỏ — con số đó sẽ bị đi đòi, và ở P6 nó sẽ chui vào báo cáo công nợ.
+    """
+    hd = nv.lap_hoa_don(db, lich_xong(db, nen).id)
+
+    nv.huy_hoa_don(db, hd.id)
+
+    assert hd.con_no == Decimal("0")
+    assert hd.total_amount == GIA_GOC  # số tiền gốc vẫn tra cứu được
+
+
 def test_huy_hoa_don_lan_hai_bi_chan(db, nen):
     hd = nv.lap_hoa_don(db, lich_xong(db, nen).id)
     nv.huy_hoa_don(db, hd.id)

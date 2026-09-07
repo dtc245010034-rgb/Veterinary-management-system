@@ -90,6 +90,15 @@
       <div class="the"><p class="loi" role="alert">{{ loi }}</p></div>
     {% endif %}
 
+    {% if hoa_don.status == 'cancelled' %}
+      <div class="the">
+        <h2>Hóa đơn này đã hủy</h2>
+        <p class="phu">Mỗi lịch hẹn chỉ gắn được một hóa đơn, nên buổi chăm sóc này
+          <strong>không lập lại được</strong> hóa đơn mới. Nếu buổi đó không diễn ra, hãy
+          hủy luôn lịch hẹn; nếu có diễn ra, hãy đặt lại một lịch mới rồi lập hóa đơn cho nó.</p>
+      </div>
+    {% endif %}
+
     {% if hoa_don.status != 'cancelled' and not hoa_don.thanh_toan %}
       <form class="the" method="post" action="/invoices/{{ hoa_don.id }}/huy">
         <h2>Hủy hóa đơn</h2>

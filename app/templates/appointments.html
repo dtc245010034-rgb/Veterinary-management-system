@@ -53,7 +53,10 @@
                    có quyền nào ở mục hóa đơn nên không thấy cả hai nút. #}
                 {% if user.role in ('manager', 'receptionist') %}
                   {% if hoa_don.get(a.id) %}
-                    <a class="chinh-nhe" href="/invoices/{{ hoa_don[a.id].id }}">Xem hóa đơn</a>
+                    {# Hóa đơn đã hủy vẫn giữ chỗ của lịch này (appointment_id là UNIQUE)
+                       nên nói thẳng trạng thái ở đây; bấm vào mới biết là ngõ cụt câm. #}
+                    <a class="chinh-nhe" href="/invoices/{{ hoa_don[a.id].id }}">{{
+                       "Hóa đơn đã hủy" if hoa_don[a.id].status == 'cancelled' else "Xem hóa đơn" }}</a>
                   {% else %}
                     <form method="post" action="/appointments/{{ a.id }}/hoa-don">
                       <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">

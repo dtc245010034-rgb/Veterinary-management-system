@@ -14,6 +14,9 @@
     <a class="the the-lien-ket" href="/appointments/cua-toi"><h2>Lịch của tôi</h2><p>Công việc được phân hôm nay</p></a>
   {% endif %}
   <a class="the the-lien-ket" href="/vaccinations"><h2>Tiêm phòng</h2><p>Thú cưng sắp và đã quá hạn</p></a>
+  {% if user.role in ('manager', 'receptionist') %}
+    <a class="the the-lien-ket" href="/invoices"><h2>Hóa đơn</h2><p>Lập hóa đơn, ghi nhận thanh toán</p></a>
+  {% endif %}
   {% if user.role == 'manager' %}
     <a class="the the-lien-ket" href="/services"><h2>Dịch vụ</h2><p>Bảng giá và gói dịch vụ</p></a>
     <a class="the the-lien-ket" href="/stats"><h2>Thống kê</h2><p>Lượt dịch vụ, doanh thu</p></a>

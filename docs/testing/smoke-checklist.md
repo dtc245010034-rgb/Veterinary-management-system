@@ -177,6 +177,20 @@ buổi đã hoàn thành **chưa lập hóa đơn** để bấm thử được n
 - [ ] Bốn nhãn trạng thái phân biệt được bằng mắt, không cùng một màu
 - [ ] `manager` đổi giá dịch vụ → mở lại hóa đơn cũ, **giá vẫn là giá lúc lập**
 
+### Sau đợt rà bằng trình duyệt ngày 07/09 — cùng chặng 1
+
+Tám lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-07-ra-luong-P5-chang1.md`](reports/2026-09-07-ra-luong-P5-chang1.md).
+
+- [ ] Trang chủ của `quanly` và `letan` có thẻ **Hóa đơn**; của `chamsoc1` thì không
+- [ ] Bảng giá có ô đổi giá trên từng dòng; `letan` mở trang này **không** thấy ô đó
+- [ ] Đổi giá một dịch vụ đang có mô tả → lưu xong mô tả **vẫn còn** (mở lại form thêm/xem lại)
+- [ ] Trả tiền vượt số nợ → thông báo **không** chứa chữ "P5" hay mã phase nào
+- [ ] Hóa đơn đã hủy: cột "Còn nợ" ở cả danh sách lẫn trang chi tiết đều là **0đ**
+- [ ] Lưới lịch của buổi có hóa đơn đã hủy ghi **"Hóa đơn đã hủy"**, không phải "Xem hóa đơn"
+- [ ] Trang hóa đơn đã hủy có khung nói rõ vì sao không lập lại được và phải làm gì
+- [ ] "Xem hồ sơ" và "Xem hóa đơn" trên cùng một dòng **rời nhau**, bấm không trượt
+- [ ] Thu hẹp cửa sổ còn khoảng 1000px với vai trò `quanly` → thanh điều hướng xuống dòng gọn, chữ trong từng mục không bị bẻ đôi
+
 ### Chặng 2 — chặn hủy lịch đã có hóa đơn
 
 - [ ] Thử hủy lịch đã có hóa đơn → bị chặn, thông báo nêu mã hóa đơn

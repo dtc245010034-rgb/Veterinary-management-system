@@ -255,3 +255,75 @@ def test_chuoi_trang_thai_tien_chi_xuat_hien_o_model_va_service_hoa_don():
         "Chuỗi trạng thái tiền chỉ được viết trong app/models/invoice.py và "
         "app/services/billing.py:\n  " + "\n  ".join(sorted(set(vi_pham)))
     )
+
+
+def _doi_so_cua(ma_nguon: str, mo_dau: str) -> list[str]:
+    """Cắt phần trong ngoặc của từng lời gọi `mo_dau`, có đếm ngoặc lồng nhau.
+
+    Không dùng regex kiểu `\\(.*?\\)`: thông báo lỗi thường có f-string gọi hàm bên trong
+    (`{_so(hd.con_no)}`), và regex sẽ dừng ở dấu đóng ngoặc ĐẦU TIÊN — tức bỏ sót đúng
+    phần chữ nằm sau nó, đúng ca đã sinh ra phép canh này.
+    """
+    ket_qua = []
+    i = ma_nguon.find(mo_dau)
+    while i != -1:
+        j, sau = i + len(mo_dau), 1
+        while j < len(ma_nguon) and sau:
+            sau += (ma_nguon[j] == "(") - (ma_nguon[j] == ")")
+            j += 1
+        ket_qua.append(ma_nguon[i + len(mo_dau) : j - 1])
+        i = ma_nguon.find(mo_dau, j)
+    return ket_qua
+
+
+def test_thong_bao_loi_nghiep_vu_khong_lot_ma_phase_ra_ngoai():
+    """Thông điệp `LoiNghiepVu` hiện thẳng cho người dùng — CLAUDE.md mục 5.
+
+    Lỗi thật: P5 viết "Số tiền vượt quá số còn nợ (90.000đ). P5 chưa làm nghiệp vụ hoàn
+    tiền." Lễ tân đọc câu đó không biết "P5" là gì; đó là từ vựng của người làm dự án,
+    không phải của người dùng cửa hàng.
+
+    Chỉ quét chuỗi bên trong `LoiNghiepVu(...)`, không quét docstring hay comment — nói
+    về phase trong tài liệu nội bộ là đúng chỗ.
+
+    NẾU TEST NÀY ĐỎ: viết lại thông báo theo lời người dùng ("hệ thống chưa làm..."),
+    đừng xóa test.
+    """
+    vi_pham = []
+    for tep in FILE_SERVICE + FILE_ROUTER:
+        for loi in _doi_so_cua(_doc(tep), "LoiNghiepVu("):
+            ma_phase = re.findall(r"\bP[0-9]\b", loi)
+            if ma_phase:
+                vi_pham.append(f"{tep.name}: {'/'.join(ma_phase)}")
+
+    assert not vi_pham, (
+        "Thông báo lỗi cho người dùng có mã phase của dự án:\n  " + "\n  ".join(vi_pham)
+    )
+
+
+def test_moi_link_tren_thanh_dieu_huong_deu_co_the_tren_trang_chu():
+    """Trang chủ là màn hình đầu tiên sau đăng nhập — nó phải liệt kê đủ chức năng.
+
+    Lỗi thật, lặp lần thứ ba của cùng một lớp: P5 thêm link "Hóa đơn" vào thanh điều
+    hướng nhưng quên thẻ trên trang chủ, y như P2b thêm trang dịch vụ mà quên link menu
+    cho hai vai trò, và P4 quên link "Chủ nuôi" cho nhân viên chăm sóc. CLAUDE.md mục 9
+    dòng 4 nói "sửa một lỗi thì soát cả lớp lỗi"; phép canh này biến câu đó thành máy.
+
+    Chỉ so danh sách đường dẫn, KHÔNG so điều kiện vai trò — vai trò phải kiểm bằng test
+    integration vì nó phụ thuộc dữ liệu đăng nhập.
+
+    NẾU TEST NÀY ĐỎ: thêm thẻ vào home.html, hoặc bỏ link khỏi thanh điều hướng.
+    """
+    thanh = _doc(GOC / "app" / "templates" / "base.html")
+    trang_chu = _doc(GOC / "app" / "templates" / "home.html")
+
+    khoi_nav = thanh[thanh.index("<nav>") : thanh.index("</nav>")]
+    thieu = [
+        href
+        for href in re.findall(r'href="(/[^"]*)"', khoi_nav)
+        if f'href="{href}"' not in trang_chu
+    ]
+
+    assert not thieu, (
+        "Có trong thanh điều hướng nhưng thiếu thẻ trên trang chủ: " + ", ".join(thieu)
+    )
