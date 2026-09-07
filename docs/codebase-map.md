@@ -4,7 +4,7 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-05 (phase P3 chặng 1) · **Trạng thái:** đặt lịch và chống trùng lịch chạy được; đổi/hủy lịch ở chặng 2
+**Cập nhật lần cuối:** 2026-09-08 (hết phase P5) · **Trạng thái:** P0→P5 xong — chủ nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn và thanh toán đều chạy được. Tiếp theo: **P6 thống kê**. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
 
 ---
 
@@ -32,21 +32,21 @@
 
 | File | Vai trò |
 |---|---|
-| `user-stories.md` | 28 user story, 98 tiêu chí Given/When/Then, bảng đối chiếu với đề bài |
+| `user-stories.md` | 28 user story, 99 tiêu chí Given/When/Then, bảng đối chiếu với đề bài |
 | `erd.md` | 13 bảng, sơ đồ Mermaid, mô tả cột và ràng buộc |
 | `architecture.md` | Cây thư mục, ranh giới ba lớp, 3 sequence diagram, cách xử lý lỗi |
 | `ai-safety.md` | System prompt 3 tính năng, `DISCLAIMER`, 20 ca guardrail G-01→G-20 |
 | `codebase-map.md` | File này |
 | `roadmap.md` | Lộ trình P0→P8 gắn với mốc KT1/KT2/KT3/cuối kỳ, kèm Definition of Done |
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
-| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 5: P0, P1, P2a, P2b, P3 |
+| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 9: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc |
 | `sessions/README.md` | Quy ước log phiên làm việc |
-| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 5 |
+| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 8 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
 | `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 102 test case |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
 | `testing/reports/README.md` | Mẫu báo cáo kiểm thử cuối phase |
-| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 5: P1, P2a, P2b, P3 chặng 1, P3 chặng 2 |
+| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 15: mỗi phase một file, cộng bốn báo cáo rà luồng bằng trình duyệt và một báo cáo trả nợ |
 
 ### Ứng dụng (`app/`) — từ P1
 
@@ -58,7 +58,7 @@
 | `security.py` | `hash_password()`, `verify_password()` — bcrypt trực tiếp, không qua passlib |
 | `auth.py` | Session cookie, `nguoi_dung_hien_tai`, `yeu_cau_vai_tro()`, ngoại lệ `ChuaDangNhap` |
 | `templates.py` | Cấu hình Jinja2 dùng chung, và filter `tien` (`{{ so|tien }}`) |
-| `seed.py` | 4 tài khoản, 3 chủ nuôi, 5 thú cưng, 5 dịch vụ, 2 gói, 4 lịch hẹn ngày mai. Chạy `python -m app.seed`, không sinh trùng |
+| `seed.py` | 4 tài khoản, 3 chủ nuôi, 5 thú cưng, 5 dịch vụ, 2 gói, 5 lịch hẹn, 3 hồ sơ chăm sóc, 5 mũi tiêm, 2 hóa đơn. Hóa đơn dựng **qua `billing.py`** chứ không gán trạng thái tay. Chạy `python -m app.seed`, không sinh trùng |
 | `models/__init__.py` | Gom mọi model — `create_all` chỉ tạo bảng đã được import |
 | `models/user.py` | Bảng `users` + hằng `VAI_TRO`, `TEN_VAI_TRO` |
 | `models/owner.py` | Bảng `owners`. `search_name` tự đồng bộ qua `@validates` |
@@ -113,7 +113,7 @@
 | `unit/test_text.py` | Chuẩn hóa chuỗi tiếng Việt, gồm bẫy chữ `đ` |
 | `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
 | `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa |
-| `unit/test_architecture.py` | **Canh ranh giới dự án**, không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, link tài liệu, `codebase-map` đủ file, hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ |
+| `unit/test_architecture.py` | **Canh ranh giới dự án**, không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, link tài liệu, `codebase-map` đủ file, hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật |
 | `unit/test_owners_service.py` | Nghiệp vụ chủ nuôi, thú cưng, tra cứu |
 | `unit/test_models_service.py` | Ràng buộc `services`, gói, và **kiểu tiền `Decimal`** |
 | `unit/test_catalog_service.py` | Nghiệp vụ dịch vụ, ngưng bán, gói |

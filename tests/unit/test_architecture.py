@@ -327,3 +327,72 @@ def test_moi_link_tren_thanh_dieu_huong_deu_co_the_tren_trang_chu():
     assert not thieu, (
         "Có trong thanh điều hướng nhưng thiếu thẻ trên trang chủ: " + ", ".join(thieu)
     )
+
+
+def test_dong_trang_thai_trong_readme_khop_phase_moi_nhat():
+    """README nói dự án đang ở phase nào — và nó lệch suốt bốn phase liền.
+
+    Lỗi thật: dòng "Trạng thái: **P1 xong**" viết ngày làm P1 và không ai sửa cho tới khi
+    P5 xong. README là thứ người chấm và phiên agent mới đọc trước tiên, nên nó lệch là
+    lệch ở chỗ đắt nhất. Lần thứ tư của lớp lỗi "tài liệu mô tả thứ không đúng với code"
+    — US-18, TC-066, sơ đồ trong architecture.md, giờ tới README.
+
+    Neo vào tên file báo cáo mới nhất trong docs/testing/reports/ vì đó là thứ luật DoD
+    bắt phải sinh ra ở mỗi phase, nên nó không tự trôi. So bằng mã phase, không so ngày:
+    một phase có thể có nhiều báo cáo.
+
+    NẾU TEST NÀY ĐỎ: sửa dòng Trạng thái trong README cho khớp phase vừa xong.
+    """
+    bao_cao = sorted((GOC / "docs" / "testing" / "reports").glob("20*.md"))
+    assert bao_cao, "Không có báo cáo nào trong docs/testing/reports/"
+
+    phase = re.findall(r"P[0-9]", bao_cao[-1].name)
+    assert phase, f"Tên báo cáo mới nhất không nêu phase: {bao_cao[-1].name}"
+
+    dong = [d for d in _doc(GOC / "README.md").splitlines() if "Trạng thái:" in d]
+    assert len(dong) == 1, f"README phải có đúng một dòng Trạng thái, đang có {len(dong)}"
+
+    assert phase[-1] in dong[0], (
+        f"README nói {dong[0].strip()!r} nhưng báo cáo mới nhất là của {phase[-1]} "
+        f"({bao_cao[-1].name})"
+    )
+
+
+def test_so_luong_ghi_trong_codebase_map_khop_so_file_that():
+    """`codebase-map.md` đếm số kế hoạch, số log phiên, số báo cáo — và đếm sai.
+
+    Lỗi thật: bản đồ nói "Hiện có 5" kế hoạch trong khi có 9, "5" báo cáo trong khi có
+    15, và dòng "Cập nhật lần cuối" dừng ở P3 suốt tới hết P5. Đây là file CLAUDE.md mục
+    6 bắt agent đọc **đầu tiên** mỗi phiên, nên nó lệch là phiên sau làm việc trên thông
+    tin sai — đúng thứ cả dự án dựng ra để chống.
+
+    Phép canh sẵn có chỉ soát file trong `app/` và `tests/`; ba con số này nằm ở phần mô
+    tả `docs/` nên không ai canh.
+
+    NẾU TEST NÀY ĐỎ: sửa con số trong bản đồ, và nhân tiện đọc lại dòng "Cập nhật lần
+    cuối" xem còn đúng không.
+    """
+    thu_muc = {
+        "`plans/": GOC / "docs" / "plans",
+        "`sessions/": GOC / "docs" / "sessions",
+        "`testing/reports/": GOC / "docs" / "testing" / "reports",
+    }
+    lech = []
+    da_soat = []
+
+    for dong in _doc(GOC / "docs" / "codebase-map.md").splitlines():
+        for dau, duong_dan in thu_muc.items():
+            if not dong.startswith("| " + dau):
+                continue
+            ghi = re.search(r"Hiện có (\d+)", dong)
+            if ghi is None:
+                continue
+            da_soat.append(dau)
+            that = len(list(duong_dan.glob("20*.md")))
+            if int(ghi.group(1)) != that:
+                lech.append(f"{dau.strip('`')} bản đồ ghi {ghi.group(1)}, thực tế {that}")
+
+    # Không tìm thấy dòng nào cũng là hỏng: hai lần trước, một phép canh mới xanh vì
+    # regex của nó không khớp gì cả chứ không phải vì code đúng.
+    assert len(da_soat) == 3, f"Chỉ soát được {da_soat}, bản đồ đã đổi cách viết ba dòng đó?"
+    assert len(lech) == 0, "codebase-map.md dem sai:" + "".join('\n  ' + d for d in lech)

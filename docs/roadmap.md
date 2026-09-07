@@ -24,6 +24,26 @@ model rồi mới làm router". Phase nào cũng để lại một hệ thống 
 | **P7** | 3 tính năng AI + guardrail | KT3 | US-24→28 | TC-082→100 | 20 ca guardrail xanh; chạy tay với Gemini thật |
 | **P8** | README, báo cáo, slide, rà dữ liệu cá nhân | Cuối kỳ | — | TC-102 | Ma trận test không còn ô ⬜ |
 
+## Tiến độ
+
+Cập nhật khi đóng mỗi phase. Đây là chỗ **duy nhất** ghi trạng thái từng phase — README chỉ nói phase
+mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ không lệch nhau.
+
+| Phase | Trạng thái | Ngày | Báo cáo kiểm thử |
+|---|---|---|---|
+| P0 | ✅ xong | 04/09 | — (mốc tài liệu, xem kế hoạch KT1) |
+| P1 | ✅ xong | 04/09 | [`2026-09-04-P1.md`](testing/reports/2026-09-04-P1.md) |
+| P2 | ✅ xong | 04–05/09 | [`2026-09-04-P2a.md`](testing/reports/2026-09-04-P2a.md), [`2026-09-05-P2b.md`](testing/reports/2026-09-05-P2b.md) |
+| P3 | ✅ xong | 05/09 | [`P3-chang1`](testing/reports/2026-09-05-P3-chang1.md), [`P3-chang2`](testing/reports/2026-09-05-P3-chang2.md) |
+| P4 | ✅ xong | 05–06/09 | [`P4-chang1`](testing/reports/2026-09-05-P4-chang1.md), [`P4-chang2`](testing/reports/2026-09-05-P4-chang2.md), [`rà luồng`](testing/reports/2026-09-06-ra-luong-P4-chang2.md) |
+| P5 | ✅ xong | 06–08/09 | [`P5-chang1`](testing/reports/2026-09-06-P5-chang1.md), [`rà luồng chặng 1`](testing/reports/2026-09-07-ra-luong-P5-chang1.md), [`P5-chang2`](testing/reports/2026-09-07-P5-chang2.md), [`rà luồng chặng 2`](testing/reports/2026-09-08-ra-luong-P5-chang2.md) |
+| **P6** | ⬜ **làm tiếp ở đây** | — | — |
+| P7 | ⬜ chưa làm | — | — |
+| P8 | ⬜ chưa làm | — | — |
+
+Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡 · 27 ⬜** trên 102 ca, smoke
+**97 ô đã tick / 29 ô còn lại đều thuộc P6–P8**, ERD **12/13 bảng** đã dựng (còn `ai_logs` của P7).
+
 ---
 
 ## Chi tiết từng phase
@@ -99,7 +119,25 @@ HTML, không tự dựng URL — áp dụng cho phần nối thêm.
 `services/stats.py`: lượt dịch vụ, doanh thu, khách quay lại. Doanh thu tính trên `payments` (tiền
 thực nhận), không tính trên `invoices` — đây là chỗ dễ nhầm nhất của phase.
 
-**DoD:** TC-076→081 xanh; regression xanh.
+**Sáu việc P5 để lại cho P6** (gom từ báo cáo và log phiên, đọc trước khi lập kế hoạch):
+
+1. **Dữ liệu mẫu ghi mọi hóa đơn và thanh toán vào đúng ngày chạy `seed.py`**, kể cả hóa đơn của buổi
+   cách đây một tháng. Không sửa thì "doanh thu theo khoảng thời gian" **không smoke test được** —
+   mọi đồng tiền rơi vào một ngày. Cho seed lùi `issued_at` và `paid_at` về sát buổi chăm sóc.
+2. **Link "Thống kê" trong menu quản lý trỏ tới `/stats` chưa tồn tại → 404.** Lỗi có từ P1, đóng
+   cùng lúc với việc dựng trang.
+3. **TC-006** (`caretaker` mở trang thống kê → 403) đang ⬜ vì hoãn từ P1 — dựng trang xong là làm
+   được ngay.
+4. **Hóa đơn đã hủy phải bị loại khỏi mọi con số.** `Invoice.con_no` đã trả 0 cho hóa đơn đã hủy,
+   nhưng `total_amount` thì không đổi — đừng cộng nhầm nó vào công nợ.
+5. **Đừng join sang `services` rồi lọc `is_active`** khi tính doanh thu theo dịch vụ: hóa đơn cũ của
+   dịch vụ đã ngưng bán sẽ biến mất khỏi sổ, âm thầm. Dòng hóa đơn đã chép sẵn `description` và
+   `unit_price` — dùng chúng. Có test giữ chỗ này: `test_hoa_don_cu_van_hien_du_khi_dich_vu_da_ngung_ban`.
+6. **Đo lại thời gian tầng unit trên máy rảnh** trước khi quyết có cắt test hay không. Hiện 26s, trên
+   ngưỡng xem lại 20s, nhưng cùng bộ test cũ đo lại cũng chậm gần gấp đôi lần đo đầu.
+
+**DoD:** TC-076→081 xanh; TC-006 xanh; kịch bản e2e nối **bước 11** (quản lý xem thống kê, doanh
+thu khớp số đã thu) → TC-101 còn thiếu đúng bước 10 của P7; regression xanh.
 
 ### P7 — Tích hợp AI · KT3 · **phase khó nhất phần AI**
 

@@ -6,8 +6,10 @@ chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham 
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P1 xong** — đăng nhập và phân quyền 3 vai trò chạy được.
-Lộ trình đầy đủ: [`docs/roadmap.md`](docs/roadmap.md).
+Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P5 xong** — quản lý chủ nuôi, thú cưng, dịch
+vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn và thanh toán đều chạy được.
+Còn P6 thống kê, P7 tích hợp AI, P8 hoàn thiện — xem tiến độ từng phase trong
+[`docs/roadmap.md`](docs/roadmap.md).
 
 ## Công nghệ
 
@@ -52,10 +54,10 @@ tính năng AI sẽ trả lời cố định thay vì gọi API thật.
 ## Cách chạy test
 
 ```bash
-pytest tests/unit            # ~6s   — chạy mỗi lần sửa code
-pytest tests/integration     # ~28s  — chạy cuối mỗi phiên làm việc
-pytest                       # ~32s  — chạy trước mỗi commit (hồi quy)
-pytest tests/e2e             # có từ P5 — chạy cuối mỗi phase
+pytest tests/unit            # 316 ca, ~27s  — chạy mỗi lần sửa code
+pytest tests/integration     # 158 ca, ~39s  — chạy cuối mỗi phiên làm việc
+pytest tests/e2e             #   1 ca,  ~6s  — kịch bản xuyên suốt, chạy cuối mỗi phase
+pytest                       # 475 ca, ~68s  — chạy trước mỗi commit (hồi quy)
 ```
 
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).
@@ -65,8 +67,8 @@ Kết quả từng phase: [`docs/testing/reports/`](docs/testing/reports/).
 
 | File | Nội dung |
 |---|---|
-| [`docs/user-stories.md`](docs/user-stories.md) | 28 user story, 98 tiêu chí chấp nhận Given/When/Then |
-| [`docs/erd.md`](docs/erd.md) | 13 bảng, sơ đồ quan hệ, mô tả cột và ràng buộc |
+| [`docs/user-stories.md`](docs/user-stories.md) | 28 user story, 99 tiêu chí chấp nhận Given/When/Then |
+| [`docs/erd.md`](docs/erd.md) | 13 bảng, sơ đồ quan hệ, mô tả cột và ràng buộc — 12 bảng đã dựng, còn `ai_logs` của P7 |
 | [`docs/architecture.md`](docs/architecture.md) | Ba lớp, ranh giới, luồng dữ liệu, cách xử lý lỗi |
 | [`docs/ai-safety.md`](docs/ai-safety.md) | System prompt, guardrail, 20 ca kiểm thử an toàn AI |
 | [`docs/roadmap.md`](docs/roadmap.md) | Lộ trình P0–P8 gắn với mốc KT1/KT2/KT3/cuối kỳ |

@@ -206,18 +206,18 @@ Tám lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-07-ra-luong-P5-c
 > [`../user-stories.md`](../user-stories.md): hóa đơn chỉ lập từ lịch đã hoàn thành, mà lịch đã
 > hoàn thành thì không hủy được, kể cả sau khi hủy hóa đơn.
 
-- [ ] Bấm **Hủy** ở tab A khi lịch đã có hóa đơn → bị chặn, thông báo **nêu mã hóa đơn**, vẫn ở lưới lịch
-- [ ] Hủy hóa đơn đó rồi bấm **Back** và bấm **Hủy** lại → vẫn bị chặn, nhưng thông báo lần này nói về **trạng thái lịch** ("Hoàn thành") và không nhắc hóa đơn nữa
-- [ ] Trang hóa đơn đã hủy **không** còn bảo "hãy hủy luôn lịch hẹn"; nó nói buổi chăm sóc vẫn nằm trong sổ ở trạng thái hoàn thành
+- [x] Bấm **Hủy** ở tab A khi lịch đã có hóa đơn → bị chặn, thông báo **nêu mã hóa đơn**, vẫn ở lưới lịch
+- [x] Hủy hóa đơn đó rồi bấm **Back** và bấm **Hủy** lại → vẫn bị chặn, nhưng thông báo lần này nói về **trạng thái lịch** ("Hoàn thành") và không nhắc hóa đơn nữa
+- [x] Trang hóa đơn đã hủy **không** còn bảo "hãy hủy luôn lịch hẹn"; nó nói buổi chăm sóc vẫn nằm trong sổ ở trạng thái hoàn thành
 
 ### Sau đợt rà bằng trình duyệt ngày 08/09 — cùng chặng 2
 
 Hai lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-08-ra-luong-P5-chang2.md`](reports/2026-09-08-ra-luong-P5-chang2.md).
 
-- [ ] Hủy một hóa đơn chưa thu, rồi từ tab cũ bấm **Lập hóa đơn** lại cho đúng lịch đó → thông báo nêu mã hóa đơn cũ **và** bảo đặt một lịch mới
-- [ ] Cũng thao tác đó nhưng hóa đơn cũ **chưa hủy** → thông báo **không** xui đặt lịch mới (mở hóa đơn cũ ra là xong)
-- [ ] Bấm link **Thống kê** trên thanh điều hướng → trang 404 **toàn tiếng Việt**, không còn chữ "Not Found"
-- [ ] Đăng nhập `letan`, gõ thẳng `/users` → trang 403 vẫn giữ câu tiếng Việt của dự án, không bị thay bằng câu chung
+- [x] Hủy một hóa đơn chưa thu, rồi từ tab cũ bấm **Lập hóa đơn** lại cho đúng lịch đó → thông báo nêu mã hóa đơn cũ **và** bảo đặt một lịch mới
+- [x] Cũng thao tác đó nhưng hóa đơn cũ **chưa hủy** → thông báo **không** xui đặt lịch mới (mở hóa đơn cũ ra là xong)
+- [x] Bấm link **Thống kê** trên thanh điều hướng → trang 404 **toàn tiếng Việt**, không còn chữ "Not Found"
+- [x] Đăng nhập `letan`, gõ thẳng `/users` → trang 403 vẫn giữ câu tiếng Việt của dự án, không bị thay bằng câu chung
 
 ## P6 — Thống kê
 

@@ -1,6 +1,6 @@
 # P5 — Hóa đơn và thanh toán
 
-> **Phase:** P5 · **Mốc:** KT3 — phase đầu của mốc này · **Duyệt ngày:** 2026-09-06 · **Trạng thái:** chặng 1 xong, chặng 2 xong phần code — chờ tick smoke
+> **Phase:** P5 · **Mốc:** KT3 — phase đầu của mốc này · **Duyệt ngày:** 2026-09-06 · **Trạng thái:** ✅ ĐÓNG 08/09 — cả hai chặng xong, smoke tick đủ, 1 ô DoD còn [~] về ngân sách thời gian
 >
 > Chia hai chặng như P3, P4. Khối smoke tách theo chặng **trước khi** đưa người dùng tick.
 > Theo [`../roadmap.md`](../roadmap.md). Quy ước: [`README.md`](README.md).
@@ -186,10 +186,11 @@ Hiện nằm trong `services.html`; P5 cần nó ở 2–3 template nữa. Đăn
 - [x] Tổng `payments` không bao giờ vượt `total_amount`, có test ca biên trả **đúng bằng** số nợ
 - [x] Cột `status` khớp `trang_thai_tinh_lai()` ở **từng bước** của chuỗi chuyển trạng thái
 - [x] TC-101 lên **9/11 bước**; kịch bản e2e vẫn đi bằng link và nút, không tự dựng URL
-- [~] `pytest` toàn bộ xanh, không skip (470 ca) — nhưng tầng unit 23,2s, **trên** ngưỡng xem lại
+- [~] `pytest` toàn bộ xanh, không skip (473 ca) — nhưng tầng unit 23–26s, **trên** ngưỡng xem lại
       20s. Đã kiểm chứng là của máy chứ không của test mới; đo lại ở P6 trên máy rảnh
 - [x] Báo cáo trong [`../testing/reports/`](../testing/reports/) có output pytest thật + kết quả đột biến
-- [ ] Khối smoke P5 tách theo chặng ✅, tick đủ trên trình duyệt thật — **3 ô chặng 2 đang chờ người dùng**
+- [x] Khối smoke P5 tách theo chặng, tick đủ trên trình duyệt thật — **31 ô của P5 đã tick hết**
+      (15 chặng 1 + 9 rà 07/09 + 3 chặng 2 + 4 rà 08/09)
 
 ## Ngoài phạm vi
 
