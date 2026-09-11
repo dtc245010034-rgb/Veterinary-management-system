@@ -46,7 +46,7 @@
 | `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 102 test case — 80 ✅ · 2 🟡 · 20 ⬜ sau P6 |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
 | `testing/reports/README.md` | Mẫu báo cáo kiểm thử cuối phase |
-| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 16: mỗi phase một file, cộng bốn báo cáo rà luồng bằng trình duyệt và một báo cáo trả nợ |
+| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 17: mỗi phase một file, cộng năm báo cáo rà luồng bằng trình duyệt và một báo cáo trả nợ |
 
 ### Ứng dụng (`app/`) — từ P1
 
@@ -80,7 +80,7 @@
 | `models/invoice.py` | Bảng `invoices` và `invoice_items`. Hằng `TRANG_THAI_CON_HIEU_LUC` cho `scheduling.py` dùng khi chặn hủy lịch. `unit_price` và `description` **chép** lúc lập, không tham chiếu `services`; property `da_tra`, `con_no` |
 | `models/payment.py` | Bảng `payments` — từng lần khách trả; CHECK `amount > 0` |
 | `services/billing.py` | Nghiệp vụ hóa đơn: lập, thu tiền, hủy. Đường **duy nhất** ghi `payments` và trạng thái hóa đơn |
-| `services/stats.py` | Thống kê theo kỳ: `thong_ke()`, `ky_mac_dinh()`. Ba mốc ngày cố ý khác nhau — lượt và khách theo ngày hẹn (mọi lịch chưa hủy), doanh thu theo ngày thu (`payments`), chưa thu theo ngày lập. Tính trong Python để dùng lại `Invoice.con_no`; **không** lọc dịch vụ đã ngưng bán |
+| `services/stats.py` | Thống kê theo kỳ: `thong_ke()`, `ky_mac_dinh(den_ngay)`. Ba mốc ngày cố ý khác nhau — lượt và khách theo ngày hẹn (mọi lịch chưa hủy), doanh thu theo ngày thu (`payments`), chưa thu theo ngày lập. Tính trong Python để dùng lại `Invoice.con_no`; **không** lọc dịch vụ đã ngưng bán |
 | `routers/auth.py` | `/login`, `/logout`, `/` |
 | `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager`. Chỉ HTTP, nghiệp vụ ở `services/users.py` |
 | `routers/owners.py` | `/owners`, `/owners/{id}`, `/owners/{id}/pets`, `/pets/{id}/xoa` |
@@ -89,7 +89,7 @@
 | `routers/pets.py` | `/pets/{id}` — trang chi tiết thú cưng, gộp lịch sử chăm sóc và hồ sơ tiêm (TC-020) |
 | `routers/vaccinations.py` | `/vaccinations` danh sách đến hạn; `/pets/{id}/vaccinations` ghi mũi tiêm |
 | `routers/invoices.py` | `/invoices` danh sách, `/invoices/{id}` chi tiết, thu tiền, hủy hóa đơn. Cả router chặn `caretaker` |
-| `routers/stats.py` | `/stats?tu_ngay=&den_ngay=` — cả router chỉ `manager` (TC-006). Ô ngày trống → kỳ mặc định; ngày sai dạng → trang báo lỗi 400 tiếng Việt, giữ ngày đã nhập |
+| `routers/stats.py` | `/stats?tu_ngay=&den_ngay=` — cả router chỉ `manager` (TC-006). Ô ngày trống → kỳ mặc định, tính lùi từ "Đến ngày" nếu đã chọn; ngày sai dạng → trang báo lỗi 400 tiếng Việt, giữ ngày đã nhập |
 | `routers/appointments.py` | `/appointments` lưới lịch + đặt/đổi/hủy; `/appointments/cua-toi` lịch riêng của nhân viên chăm sóc |
 | `templates/base.html` | Bố cục chung, menu hiện theo vai trò |
 | `templates/login.html` · `home.html` · `users.html` · `error.html` | Các trang từ P1 |

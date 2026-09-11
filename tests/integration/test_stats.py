@@ -115,6 +115,21 @@ def test_ngay_bat_dau_sau_ngay_ket_thuc_bao_loi_va_giu_ngay_da_nhap(client, nen)
     assert 'value="2026-03-12"' in r.text and 'value="2026-03-01"' in r.text
 
 
+def test_bo_trong_tu_ngay_lay_30_ngay_ket_thuc_o_den_ngay(client, nen):
+    """Lỗi thật, rà bằng trình duyệt 11/09: xóa trống "Từ ngày", chọn "Đến ngày" năm ngoái.
+
+    Hệ thống lấy "Từ ngày" = 30 ngày trước HÔM NAY, tức sau "Đến ngày", rồi báo "Ngày bắt
+    đầu phải trước…" — trách người dùng về một ngày họ không hề chọn. Kỳ mặc định phải là
+    30 ngày KẾT THÚC Ở "Đến ngày" đã chọn.
+    """
+    dang_nhap(client, "quanly")
+
+    r = client.get("/stats", params={"tu_ngay": "", "den_ngay": "2025-06-30"})
+
+    assert r.status_code == 200
+    assert 'value="2025-06-01"' in r.text and 'value="2025-06-30"' in r.text
+
+
 def test_ngay_sai_dinh_dang_bao_loi_tieng_viet(client, nen):
     """Gõ tay vào URL, hoặc trình duyệt cũ không có ô chọn ngày — không được ra lỗi 422 thô."""
     dang_nhap(client, "quanly")

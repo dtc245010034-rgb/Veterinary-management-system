@@ -129,7 +129,9 @@ async def tao_goi(
     thanh_phan: dict[int, int] = {}
     for ma_chuoi, so_chuoi in zip(danh_sach_ma, danh_sach_so):
         so = (so_chuoi or "").strip()
-        if so and so.isdigit() and int(so) > 0:
+        # isdecimal() chứ không phải isdigit(): "²".isdigit() là True mà int("²") ném
+        # ValueError — từng thành lỗi 500 (rà 11/09). isdecimal() khớp đúng thứ int() đọc được.
+        if so and so.isdecimal() and int(so) > 0:
             thanh_phan[int(ma_chuoi)] = int(so)
 
     try:
@@ -168,9 +170,13 @@ def _doc_tien(chuoi: str) -> Decimal:
     if not chuoi:
         raise LoiNghiepVu("Giá không được để trống.")
     try:
-        return Decimal(chuoi)
+        gia = Decimal(chuoi)
     except InvalidOperation:
         raise LoiNghiepVu("Giá phải là một số.")
+    # Decimal nhận cả "NaN" và "Infinity" — cả hai từng thành lỗi 500 (rà 11/09).
+    if not gia.is_finite():
+        raise LoiNghiepVu("Giá phải là một số.")
+    return gia
 
 
 def _doc_nguyen(chuoi: str, ten_truong: str) -> int:

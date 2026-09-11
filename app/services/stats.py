@@ -57,10 +57,15 @@ class ThongKe:
     ti_le_quay_lai: Decimal  # phần trăm, một chữ số lẻ
 
 
-def ky_mac_dinh() -> tuple[date, date]:
-    """30 ngày gần nhất, tính cả hôm nay — mở vào mùng 1 vẫn có dữ liệu để xem."""
-    hom_nay = clock.now().date()
-    return hom_nay - timedelta(days=SO_NGAY_KY_MAC_DINH - 1), hom_nay
+def ky_mac_dinh(den_ngay: date | None = None) -> tuple[date, date]:
+    """30 ngày kết thúc ở `den_ngay` (mặc định hôm nay), tính cả hai đầu.
+
+    Mặc định 30 ngày gần nhất để mở vào mùng 1 vẫn có dữ liệu. Khi người dùng chỉ chọn
+    "Đến ngày", tính lùi từ ngày đó chứ không từ hôm nay — không thì "Đến ngày" năm ngoái
+    ra một kỳ ngược và bị báo lỗi về ngày bắt đầu mà họ không hề chọn.
+    """
+    den = den_ngay or clock.now().date()
+    return den - timedelta(days=SO_NGAY_KY_MAC_DINH - 1), den
 
 
 def thong_ke(db: Session, tu_ngay: date, den_ngay: date) -> ThongKe:

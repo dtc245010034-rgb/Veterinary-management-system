@@ -194,6 +194,27 @@ def test_can_nang_am_bi_chan_kem_thong_bao(client, seed_basic):
     assert "Cân nặng" in r.text
 
 
+@pytest.mark.parametrize("can_nang", ["nan", "inf", "-inf", "Infinity"])
+def test_can_nang_nan_hay_vo_cuc_bi_chan_kem_thong_bao(client, seed_basic, can_nang):
+    """Lỗi thật, rà bằng trình duyệt 11/09: `float()` nhận cả "nan" và "inf".
+
+    "nan" lọt qua phép so `<= 0` rồi bị SQLite lưu thành NULL — cân nặng người dùng gõ biến
+    mất không một lời báo. "inf" được lưu thật và trang hiện "inf kg".
+    """
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client)
+    ma = _ma_chu_nuoi_dau_tien(client)
+
+    r = client.post(
+        f"/owners/{ma}/pets",
+        data={"ten": "Mực", "loai": "Chó", "can_nang": can_nang},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 400
+    assert "Cân nặng phải là một số" in r.text
+
+
 def test_trang_chi_tiet_thu_cung_hien_thong_tin_chu_nuoi(client, seed_basic):
     """TC-020, phần làm được ở P2a.
 

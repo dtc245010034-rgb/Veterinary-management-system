@@ -4,6 +4,7 @@ Phục vụ US-04, US-05, US-06. Chỉ làm việc HTTP: đọc form, gọi app/
 render template. Mọi kiểm tra dữ liệu nằm ở tầng services.
 """
 
+import math
 from datetime import date
 
 from fastapi import APIRouter, Depends, Form, Request, status
@@ -227,6 +228,11 @@ def _doc_so(chuoi: str) -> float | None:
     if not chuoi:
         return None
     try:
-        return float(chuoi)
+        so = float(chuoi)
     except ValueError:
         raise LoiNghiepVu("Cân nặng phải là một số.")
+    # float() nhận cả "nan" và "inf": nan lọt qua phép so "> 0" rồi bị lưu thành trống,
+    # inf hiện ra "inf kg" (rà bằng trình duyệt 11/09).
+    if not math.isfinite(so):
+        raise LoiNghiepVu("Cân nặng phải là một số.")
+    return so

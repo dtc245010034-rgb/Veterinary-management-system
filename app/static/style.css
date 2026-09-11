@@ -274,7 +274,10 @@ td.thao-tac button { padding: 3px 10px; font-size: 13px; }
 .nguy-hiem { color: var(--loi); border-color: #fecdca; }
 
 /* Trang thống kê: bốn thẻ số, rồi bảng theo dịch vụ bên dưới. */
-.luoi-so { margin-bottom: 28px; }
+/* Bốn cột cố định chứ không auto-fill như .luoi-the: vùng nội dung tối đa 1040px chỉ vừa ba
+   thẻ 240px, nên thẻ thứ tư luôn rớt xuống dòng một mình (rà bằng trình duyệt 11/09). */
+.luoi-so { grid-template-columns: repeat(4, 1fr); margin-bottom: 28px; }
+@media (max-width: 820px) { .luoi-so { grid-template-columns: repeat(2, 1fr); } }
 .nhan-so { font-size: 14px; font-weight: 500; color: var(--chu-phu); margin: 0; }
 .so-lon { font-size: 28px; font-weight: 600; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
 .phu-nho { color: var(--chu-phu); font-size: 13px; margin: 0; }

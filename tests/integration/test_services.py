@@ -95,6 +95,21 @@ def test_gia_am_hoac_thoi_luong_sai_hien_loi_tren_trang(client, seed_basic, gia,
     assert tu_khoa in r.text
 
 
+@pytest.mark.parametrize("gia", ["NaN", "sNaN", "Infinity", "-Infinity"])
+def test_gia_nan_hay_vo_cuc_bao_loi_khong_ra_loi_500(client, seed_basic, gia):
+    """Lỗi thật, rà bằng trình duyệt 11/09: giá "NaN" hay "Infinity" → màn hình đen 500.
+
+    `Decimal("NaN")` qua được bước đọc số rồi nổ ở phép so `gia < 0`. "Infinity" cũng nổ
+    — khi lưu vào cột Numeric.
+    """
+    dang_nhap(client, "quanly")
+
+    r = them_dich_vu(client, gia=gia)
+
+    assert r.status_code == 400
+    assert "Giá phải là một số" in r.text
+
+
 def test_ma_trung_hien_loi_neu_ro_ma_nao(client, seed_basic):
     dang_nhap(client, "quanly")
     them_dich_vu(client, ma="TAM")
@@ -239,6 +254,41 @@ def test_goi_khong_chon_dich_vu_nao_bi_tu_choi(client, seed_basic):
     r = client.post(
         "/services/goi",
         data={"ten": "Gói rỗng", "gia": "100000"},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 400
+    assert "ít nhất một dịch vụ" in r.text
+
+
+def test_gia_goi_nan_bao_loi_khong_ra_loi_500(client, seed_basic):
+    """Cùng lỗi với giá dịch vụ, ở form tạo gói — cùng hàm đọc tiền."""
+    dang_nhap(client, "quanly")
+    them_dich_vu(client, ma="TAM", ten="Tắm cho chó", gia="150000")
+    ma = _ma_theo_ten(client)
+
+    r = client.post(
+        "/services/goi",
+        data={"ten": "Gói NaN", "gia": "NaN", "dich_vu_id": [str(ma["Tắm cho chó"])], "so_luong": ["1"]},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 400
+    assert "Giá phải là một số" in r.text
+
+
+def test_so_luot_trong_goi_la_chu_so_mu_khong_ra_loi_500(client, seed_basic):
+    """Lỗi thật 11/09: `"²".isdigit()` là True nhưng `int("²")` ném ValueError → 500.
+
+    Ô số lượt không phải một số nguyên thì coi như không chọn dịch vụ đó, như ô bỏ trống.
+    """
+    dang_nhap(client, "quanly")
+    them_dich_vu(client, ma="TAM", ten="Tắm cho chó", gia="150000")
+    ma = _ma_theo_ten(client)
+
+    r = client.post(
+        "/services/goi",
+        data={"ten": "Gói mũ", "gia": "100000", "dich_vu_id": [str(ma["Tắm cho chó"])], "so_luong": ["²"]},
         follow_redirects=True,
     )
 

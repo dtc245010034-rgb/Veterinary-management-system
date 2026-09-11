@@ -54,10 +54,10 @@ Phần AI **chưa cài đặt** (phase P7). Khi có, không cần khóa Gemini v
 ## Cách chạy test
 
 ```bash
-pytest tests/unit            # 335 ca, ~27s  — chạy mỗi lần sửa code
-pytest tests/integration     # 165 ca, ~41s  — chạy cuối mỗi phiên làm việc
-pytest tests/e2e             #   1 ca, ~12s  — kịch bản xuyên suốt, chạy cuối mỗi phase
-pytest                       # 501 ca, ~67s  — chạy trước mỗi commit (hồi quy)
+pytest tests/unit            # 336 ca, ~22s  — chạy mỗi lần sửa code
+pytest tests/integration     # 179 ca, ~35s  — chạy cuối mỗi phiên làm việc
+pytest tests/e2e             #   1 ca,  ~5s  — kịch bản xuyên suốt, chạy cuối mỗi phase
+pytest                       # 516 ca, ~57s  — chạy trước mỗi commit (hồi quy)
 ```
 
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).

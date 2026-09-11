@@ -255,6 +255,21 @@ Hai lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-08-ra-luong-P5-ch
       ô ngày **vẫn giữ** ngày vừa chọn
 - [ ] Thu hẹp cửa sổ còn khoảng 1000px → bốn thẻ số xuống dòng gọn, không tràn ngang
 
+### Sau đợt rà bằng trình duyệt ngày 11/09 — cùng P6
+
+Sáu lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-11-ra-luong-P6.md`](reports/2026-09-11-ra-luong-P6.md).
+Ba ô cuối ghi vào dữ liệu — làm **sau** các ô số liệu ở trên, nếu không số thống kê sẽ lệch.
+
+- [ ] Trang Thống kê trên màn hình máy tính → bốn thẻ số nằm trên **một hàng**, không còn thẻ thứ tư
+      rớt xuống dòng một mình
+- [ ] Xóa trống ô "Từ ngày", chọn "Đến ngày" là 30/06/2025, bấm **Xem** → **không** báo lỗi; ô "Từ ngày"
+      tự điền 01/06/2025
+- [ ] Mở một hóa đơn còn nợ, gõ `NaN` vào ô số tiền, bấm **Ghi nhận** → khung đỏ "Số tiền phải là một
+      số", ô vẫn giữ chữ vừa gõ — **không** phải màn hình đen
+- [ ] `quanly` thêm dịch vụ giá `Infinity` → khung đỏ "Giá phải là một số"; mở lại trang Dịch vụ vẫn
+      bình thường
+- [ ] Thêm thú cưng với cân nặng `nan` → khung đỏ "Cân nặng phải là một số", những gì đã gõ vẫn còn
+
 ## P7 — Tính năng AI
 
 Chạy **hai lượt**: lượt một với `AI_PROVIDER=fake`, lượt hai với `AI_PROVIDER=gemini` (API thật).

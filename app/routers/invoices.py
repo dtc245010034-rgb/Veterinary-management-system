@@ -133,6 +133,11 @@ def _doc_tien(chuoi: str) -> Decimal | None:
     if not chuoi:
         return None
     try:
-        return Decimal(chuoi)
+        so = Decimal(chuoi)
     except InvalidOperation:
         raise LoiNghiepVu("Số tiền phải là một số.")
+    # Decimal nhận cả "NaN" và "Infinity"; NaN làm phép so ở tầng services ném
+    # InvalidOperation thành lỗi 500 (rà bằng trình duyệt 11/09).
+    if not so.is_finite():
+        raise LoiNghiepVu("Số tiền phải là một số.")
+    return so

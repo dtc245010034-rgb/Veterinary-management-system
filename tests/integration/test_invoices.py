@@ -209,6 +209,24 @@ def test_so_tien_khong_phai_so_bao_loi_tieng_viet(client, db, nen):
     assert "phải là một số" in r.text
 
 
+@pytest.mark.parametrize("so_tien", ["NaN", "sNaN", "Infinity"])
+def test_so_tien_nan_hay_vo_cuc_bao_loi_khong_ra_loi_500(client, db, nen, so_tien):
+    """Lỗi thật, rà bằng trình duyệt 11/09: gõ "NaN" vào ô số tiền → màn hình đen 500.
+
+    `Decimal("NaN")` là một Decimal hợp lệ nên lọt qua bước đọc số, rồi phép so
+    `so_tien <= 0` ném `decimal.InvalidOperation`. "Infinity" không làm vỡ trang nhưng bị
+    báo nhầm là "vượt quá số còn nợ" — cũng phải là "không phải một số".
+    """
+    lich = lich_xong(db, nen)
+    dang_nhap(client, "letan")
+    ma = lap_hd(client, lich)
+
+    r = client.post(f"{ma}/thanh-toan", data={"so_tien": so_tien, "hinh_thuc": "cash"})
+
+    assert r.status_code == 400
+    assert "phải là một số" in r.text
+
+
 def test_hoa_don_da_thu_du_thi_khong_con_form_thu_tien(client, db, nen):
     lich = lich_xong(db, nen)
     dang_nhap(client, "letan")

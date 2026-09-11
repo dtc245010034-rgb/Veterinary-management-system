@@ -280,3 +280,8 @@ def test_moi_khach_chi_den_mot_lan_ti_le_quay_lai_bang_0(db, nen):
 
 def test_ky_mac_dinh_la_30_ngay_gan_nhat_tinh_ca_hom_nay(frozen_clock):
     assert nv.ky_mac_dinh() == (date(2026, 2, 11), date(2026, 3, 12))
+
+
+def test_ky_mac_dinh_ket_thuc_o_ngay_duoc_chon(frozen_clock):
+    """Biên: người dùng chỉ chọn "Đến ngày" — 30 ngày tính lùi từ ngày đó, không từ hôm nay."""
+    assert nv.ky_mac_dinh(date(2025, 6, 30)) == (date(2025, 6, 1), date(2025, 6, 30))

@@ -32,10 +32,10 @@ def trang_thong_ke(
 ):
     # Nhận chuỗi chứ không khai báo `date` cho FastAPI tự đọc: sai định dạng thì FastAPI
     # trả 422 dạng JSON thô, còn ở đây người dùng cần một câu tiếng Việt ngay trên trang.
-    mac_dinh_tu, mac_dinh_den = nv.ky_mac_dinh()
     try:
+        # Ô nào trống thì lấy theo kỳ mặc định — tính lùi từ "Đến ngày" nếu nó đã được chọn.
+        mac_dinh_tu, den = nv.ky_mac_dinh(_doc_ngay(den_ngay))
         tu = _doc_ngay(tu_ngay) or mac_dinh_tu
-        den = _doc_ngay(den_ngay) or mac_dinh_den
         thong_ke = nv.thong_ke(db, tu, den)
     except LoiNghiepVu as e:
         # Giữ nguyên thứ người dùng đã chọn — báo lỗi mà xóa ngày thì phải chọn lại cả hai.

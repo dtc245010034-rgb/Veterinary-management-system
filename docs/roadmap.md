@@ -37,15 +37,15 @@ mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ kh�
 | P3 | ✅ xong | 05/09 | [`P3-chang1`](testing/reports/2026-09-05-P3-chang1.md), [`P3-chang2`](testing/reports/2026-09-05-P3-chang2.md) |
 | P4 | ✅ xong | 05–06/09 | [`P4-chang1`](testing/reports/2026-09-05-P4-chang1.md), [`P4-chang2`](testing/reports/2026-09-05-P4-chang2.md), [`rà luồng`](testing/reports/2026-09-06-ra-luong-P4-chang2.md) |
 | P5 | ✅ xong | 06–08/09 | [`P5-chang1`](testing/reports/2026-09-06-P5-chang1.md), [`rà luồng chặng 1`](testing/reports/2026-09-07-ra-luong-P5-chang1.md), [`P5-chang2`](testing/reports/2026-09-07-P5-chang2.md), [`rà luồng chặng 2`](testing/reports/2026-09-08-ra-luong-P5-chang2.md) |
-| **P6** | 🟡 **code xong, chờ smoke** — 10 ô smoke chờ bấm · [kế hoạch](plans/2026-09-11-p6-thong-ke.md) | 11/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md) |
+| **P6** | 🟡 **code xong, chờ smoke** — 15 ô smoke chờ bấm · [kế hoạch](plans/2026-09-11-p6-thong-ke.md) | 11/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md), [`rà luồng`](testing/reports/2026-09-11-ra-luong-P6.md) |
 | **P7** | ⬜ **làm tiếp ở đây** sau khi P6 tick smoke | — | — |
 | P8 | ⬜ chưa làm | — | — |
 
 Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡 · 27 ⬜** trên 102 ca, smoke
 **97 ô đã tick / 29 ô còn lại đều thuộc P6–P8**, ERD **12/13 bảng** đã dựng (còn `ai_logs` của P7).
 
-Tính tới P6 code xong (11/09): **501 test xanh**, ma trận **80 ✅ · 2 🟡 · 20 ⬜** (20 ô còn lại thuộc
-P7–P8), smoke **97 tick / 31 trống** — 10 ô của P6 chờ bấm, 21 ô thuộc P7–P8.
+Tính tới P6 code xong và rà luồng (11/09): **516 test xanh**, ma trận **80 ✅ · 2 🟡 · 20 ⬜** (20 ô
+còn lại thuộc P7–P8), smoke **97 tick / 36 trống** — 15 ô của P6 chờ bấm, 21 ô thuộc P7–P8.
 
 ---
 
