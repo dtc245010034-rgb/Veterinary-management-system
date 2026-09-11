@@ -2,9 +2,9 @@
 
 Phục vụ US-02 (TC-007, TC-008) và US-03 (TC-010, TC-011, TC-012).
 
-TC-006 (caretaker mở trang thống kê) và TC-009 (caretaker chỉ thấy lịch của mình) không
-kiểm được ở phase này vì trang thống kê thuộc P6 và lịch hẹn thuộc P3. Cơ chế phân quyền
-dùng chung được kiểm ở đây qua trang /users; hai TC kia sẽ tick khi trang tương ứng ra đời.
+TC-009 (caretaker chỉ thấy lịch của mình) nằm ở tests/integration/test_appointments.py.
+TC-006 (caretaker mở trang thống kê) chờ trang thống kê của P6. Cơ chế phân quyền dùng
+chung được kiểm ở đây qua trang /users.
 """
 
 import pytest

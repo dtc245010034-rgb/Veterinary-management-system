@@ -23,22 +23,26 @@ hethongquanlythucung/
 │   ├── main.py              khởi tạo FastAPI, đăng ký router, tạo bảng lần đầu
 │   ├── config.py            đọc .env: DATABASE_URL, AI_PROVIDER, GEMINI_API_KEY, SECRET_KEY
 │   ├── db.py                engine, SessionLocal, get_db()
-│   ├── security.py          băm mật khẩu, session cookie, dependency kiểm tra vai trò
-│   ├── models/              SQLAlchemy — 13 bảng, mỗi nhóm một file
+│   ├── security.py          băm mật khẩu (bcrypt)
+│   ├── auth.py              session cookie, người dùng hiện tại, dependency kiểm tra vai trò
+│   ├── templates.py         cấu hình Jinja2 dùng chung
+│   ├── seed.py              dữ liệu mẫu: python -m app.seed
+│   ├── models/              SQLAlchemy — 13 bảng theo ERD, mỗi nhóm một file (ai_logs: P7)
 │   ├── services/            LOGIC NGHIỆP VỤ — không import gì từ FastAPI
 │   │   ├── scheduling.py    đặt/đổi/hủy lịch, kiểm tra trùng lịch
 │   │   ├── billing.py       lập hóa đơn, ghi nhận thanh toán
-│   │   └── stats.py         lượt dịch vụ, doanh thu, khách quay lại
-│   ├── ai/
+│   │   ├── stats.py         lượt dịch vụ, doanh thu, khách quay lại (P6)
+│   │   └── …                users, owners, catalog, care_records, vaccinations, clock, text, errors
+│   ├── ai/                  (P7 — chưa có)
 │   │   ├── provider.py      interface AIProvider
 │   │   ├── gemini.py        GeminiProvider — gọi API thật
 │   │   ├── fake.py          FakeProvider — trả lời cố định, dùng khi test
 │   │   ├── prompts.py       system prompt + câu khuyến cáo chuẩn
 │   │   └── service.py       3 use case: reminder, summary, qa
-│   ├── routers/             chỉ HTTP: auth, owners, pets, services, appointments,
-│   │                        care_records, vaccinations, invoices, stats, ai
+│   ├── routers/             chỉ HTTP: auth, users, owners, pets, services, appointments,
+│   │                        care_records, vaccinations, invoices; stats (P6), ai (P7)
 │   ├── templates/           Jinja2
-│   └── static/              CSS, JS
+│   └── static/              style.css — một file CSS, chưa có JS riêng
 ├── tests/
 │   ├── conftest.py          fixture dùng chung
 │   ├── unit/                test services/ và ai/prompts.py

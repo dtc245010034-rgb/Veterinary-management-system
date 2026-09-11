@@ -120,7 +120,7 @@ def seed_basic(db, bam_mat_khau_mau):
     """Dữ liệu mẫu tối thiểu: 1 manager, 1 receptionist, 2 caretaker.
 
     Mật khẩu của mọi tài khoản đều là 'matkhau123' để test đăng nhập đọc dễ.
-    Owner, pet, service sẽ thêm vào fixture này ở P2 khi các model đó tồn tại.
+    Chỉ có tài khoản: chủ nuôi, thú cưng, dịch vụ do từng file test tự dựng.
     """
     from app.models.user import User
 

@@ -2,8 +2,9 @@
 
 Chạy: python -m app.seed
 
-Chỉ thêm tài khoản còn thiếu, chạy nhiều lần không sinh trùng. Ở các phase sau, chủ nuôi,
-thú cưng và dịch vụ mẫu sẽ thêm vào đây.
+Chỉ thêm thứ còn thiếu, chạy nhiều lần không sinh trùng. Ngày giờ của lịch, hồ sơ, mũi
+tiêm và hóa đơn đều tính lùi/tiến từ lúc chạy, nên muốn dữ liệu mới thì xóa petcare.db
+rồi chạy lại.
 """
 
 import sys
@@ -275,8 +276,12 @@ def main() -> None:
             for lich, phan in zip(da_xong, PHAN_DA_TRA):
                 if phan is None:
                     continue
-                hd = billing.lap_hoa_don(db, lich.id)
-                billing.ghi_nhan_thanh_toan(db, hd.id, hd.total_amount * phan, "cash")
+                # Hóa đơn và lần trả mang ngày của chính buổi chăm sóc, không phải ngày chạy
+                # seed — không thì mọi đồng tiền mẫu rơi vào một ngày và thống kê theo kỳ ở
+                # P6 không kiểm tay được. billing.py lấy giờ qua clock nên freeze là đủ.
+                with clock.freeze(lich.end_at):
+                    hd = billing.lap_hoa_don(db, lich.id)
+                    billing.ghi_nhan_thanh_toan(db, hd.id, hd.total_amount * phan, "cash")
                 hoa_don_moi += 1
 
         db.commit()

@@ -396,3 +396,73 @@ def test_so_luong_ghi_trong_codebase_map_khop_so_file_that():
     # regex của nó không khớp gì cả chứ không phải vì code đúng.
     assert len(da_soat) == 3, f"Chỉ soát được {da_soat}, bản đồ đã đổi cách viết ba dòng đó?"
     assert len(lech) == 0, "codebase-map.md dem sai:" + "".join('\n  ' + d for d in lech)
+
+
+def _cot_trong_erd() -> dict[str, dict[str, str]]:
+    """Đọc bảng mô tả cột của từng mục "### `bang`" trong docs/erd.md.
+
+    Trả về {bảng: {cột: ô ràng buộc}}. Mỗi mục dừng ở tiêu đề `##`/`###` kế tiếp, nên bảng
+    "Đối chiếu bảng với user story" ở cuối file không bị đọc nhầm thành cột của `ai_logs`.
+    """
+    erd = _doc(GOC / "docs" / "erd.md")
+    return {
+        bang: dict(re.findall(r"^\| `(\w+)` \| [^|]+ \| ([^|]*) \|", than, re.M))
+        for bang, than in re.findall(r"^### `(\w+)`(.*?)(?=^##|\Z)", erd, re.M | re.S)
+    }
+
+
+def test_erd_khop_model_tung_cot():
+    """ERD là tài liệu thiết kế đã nộp ở KT1 — nó phải nói đúng thứ CSDL thật có.
+
+    Lỗi thật: đợt rà 08/09 ghi "ERD vs code: 0 lệch" nhưng chỉ so TÊN BẢNG. Rà 11/09 so tới
+    từng cột thì ra bốn chỗ: thiếu `vaccinations.created_at`, một INDEX không tồn tại, một
+    câu trái với US-21 đã sửa, một CHECK không ghi. Lần thứ năm của lớp lỗi "tài liệu nói
+    thứ code không làm" — và lớp này tự động hóa được.
+
+    Chỉ so bốn thứ đọc được không nhập nhằng: tập cột, NOT NULL, UNIQUE, khóa ngoại. Bảng
+    có trong ERD mà code chưa có (`ai_logs` trước P7) được phép — thiết kế đi trước code.
+    Chiều ngược lại thì không: bảng trong code phải có trong ERD.
+
+    NẾU TEST NÀY ĐỎ: sửa docs/erd.md cho khớp model (hoặc sửa model nếu ERD mới đúng).
+    """
+    import app.models  # noqa: F401 — đăng ký mọi bảng vào metadata
+    from sqlalchemy import UniqueConstraint
+
+    from app.db import Base
+
+    erd = _cot_trong_erd()
+    # Đọc được quá ít bảng nghĩa là ERD đổi cách viết và regex hụt — phép canh xanh vì
+    # không soát gì, đúng lỗi đã gặp hai lần với các phép canh trước.
+    assert len(erd) >= len(Base.metadata.tables), f"Chỉ đọc được {sorted(erd)} từ erd.md"
+
+    lech = []
+    for ten, bang in sorted(Base.metadata.tables.items()):
+        if ten not in erd:
+            lech.append(f"{ten}: có trong code, không có trong ERD")
+            continue
+        cot_erd = erd[ten]
+        cot_code = set(bang.columns.keys())
+
+        for cot in sorted(set(cot_erd) ^ cot_code):
+            lech.append(f"{ten}.{cot}: chỉ có ở {'ERD' if cot in cot_erd else 'code'}")
+
+        for cot in sorted(set(cot_erd) & cot_code):
+            c, rang_buoc = bang.columns[cot], cot_erd[cot]
+            viet_hoa = rang_buoc.upper()
+
+            if ("NOT NULL" in viet_hoa or "PK" in viet_hoa) != (not c.nullable):
+                lech.append(f"{ten}.{cot}: ERD '{rang_buoc}', code nullable={c.nullable}")
+
+            unique_code = bool(c.unique) or any(
+                isinstance(k, UniqueConstraint) and [x.name for x in k.columns] == [cot]
+                for k in bang.constraints
+            )
+            if ("UNIQUE" in viet_hoa) != unique_code:
+                lech.append(f"{ten}.{cot}: ERD '{rang_buoc}', code unique={unique_code}")
+
+            fk_erd = re.search(r"FK → `(\w+\.\w+)`", rang_buoc)
+            fk_code = [f"{f.column.table.name}.{f.column.name}" for f in c.foreign_keys]
+            if (fk_erd.group(1) if fk_erd else None) != (fk_code[0] if fk_code else None):
+                lech.append(f"{ten}.{cot}: FK trong ERD {fk_erd and fk_erd.group(1)}, code {fk_code}")
+
+    assert not lech, "docs/erd.md lệch model:\n  " + "\n  ".join(lech)

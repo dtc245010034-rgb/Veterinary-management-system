@@ -221,6 +221,18 @@ Hai lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-08-ra-luong-P5-ch
 
 ## P6 — Thống kê
 
+### Chặng 1 — dữ liệu mẫu mang đúng ngày
+
+> Chuẩn bị: **xóa `petcare.db`** rồi chạy `python -m app.seed` — seed không lập lại hóa đơn đã có,
+> nên CSDL cũ vẫn giữ ngày sai.
+
+- [ ] Đăng nhập `letan`, mở **Hóa đơn** → hai hóa đơn mẫu có **ngày lập khác nhau**: một là hôm qua,
+      một là cách đây 28 ngày _(trước đây cả hai mang ngày chạy seed)_
+- [ ] Mở hóa đơn cũ hơn (thu một phần) → "Ngày lập" và ngày trong lịch sử thanh toán **trùng ngày
+      buổi chăm sóc**, không phải hôm nay
+
+### Chặng 2 — trang thống kê _(chưa làm — đừng tick)_
+
 - [ ] `receptionist` gõ thẳng `/stats` → 403 (TC-006, hoãn từ P1 vì lúc đó chưa có trang này)
 - [ ] `caretaker` gõ thẳng `/stats` → 403
 - [ ] `manager` mở thống kê với khoảng thời gian có dữ liệu → số lượt và doanh thu hiện ra

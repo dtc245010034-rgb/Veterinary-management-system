@@ -19,6 +19,10 @@ bị bỏ qua — và một hệ thống test bị bỏ qua thì bằng không c
 | **Regression** | Chạy lại **toàn bộ** suite | Trước mỗi commit | < 1 phút | `pytest` |
 | **Hệ thống hoàn chỉnh** | `tests/e2e/test_full_flow.py` + [`smoke-checklist.md`](smoke-checklist.md) bấm tay | Cuối mỗi phase P1–P8 | vài phút | `pytest tests/e2e` |
 
+> **Thực đo ngày 11/09 (hết P5):** unit 316 ca ~26s, integration 158 ca ~41s, toàn bộ ~70s —
+> **vượt** ngân sách ở cả ba tầng đầu. Ngân sách giữ nguyên, chưa nới: đo lại trên máy rảnh ở P6
+> rồi mới quyết cắt test hay nới ngân sách (việc 6 của P6 trong [`../roadmap.md`](../roadmap.md)).
+
 **"Test hồi quy" không phải một loại test cần viết riêng.** Nó là việc chạy lại toàn bộ suite cũ sau
 khi thêm code mới. Hiểu như vậy thì không phải nuôi hai bộ test song song — mọi test đã viết đều tự
 động trở thành test hồi quy từ ngày hôm sau.
@@ -27,26 +31,32 @@ khi thêm code mới. Hiểu như vậy thì không phải nuôi hai bộ test s
 
 ## 2. Cấu trúc thư mục test
 
+Cây dưới đây chỉ nêu các file chính; danh sách đầy đủ, luôn khớp file thật, nằm ở
+[`../codebase-map.md`](../codebase-map.md). File đánh dấu *(P6)*, *(P7)* là dự kiến, chưa có.
+
 ```
 tests/
 ├── conftest.py                fixture dùng chung: db in-memory, client,
-│                              seed dữ liệu mẫu, FakeProvider, clock cố định
+│                              tài khoản mẫu, FakeProvider (P7), clock cố định
 ├── unit/
 │   ├── test_architecture.py   canh ranh giới dự án — xem mục 3b
-│   ├── test_scheduling.py     quy tắc trùng lịch, tính end_at
-│   ├── test_billing.py        tổng tiền, trạng thái thanh toán
-│   ├── test_stats.py          doanh thu, khách quay lại
-│   └── test_prompts.py        dựng prompt, lọc dữ liệu cá nhân, DISCLAIMER
+│   ├── test_models_*.py       ràng buộc CSDL từng bảng
+│   ├── test_*_service.py      nghiệp vụ từng mảng: users, owners, catalog,
+│   │                          care_records, vaccinations, billing
+│   ├── test_scheduling.py     quy tắc trùng lịch, tính end_at, đổi/hủy lịch
+│   ├── test_stats.py          doanh thu, khách quay lại            (P6)
+│   └── test_prompts.py        dựng prompt, lọc dữ liệu cá nhân, DISCLAIMER  (P7)
 ├── integration/
-│   ├── test_auth.py           đăng nhập, phân quyền theo vai trò
-│   ├── test_owners_pets.py    CRUD chủ nuôi và thú cưng
+│   ├── test_auth.py           đăng nhập
+│   ├── test_users.py          phân quyền, quản lý tài khoản
+│   ├── test_owners.py         chủ nuôi, thú cưng, tra cứu
 │   ├── test_services.py       dịch vụ, gói dịch vụ
-│   ├── test_appointments.py   đặt/đổi/hủy lịch qua API
+│   ├── test_appointments.py   đặt/đổi/hủy lịch qua HTTP
 │   ├── test_care_records.py   ghi hồ sơ chăm sóc
 │   ├── test_vaccinations.py   mũi tiêm và danh sách đến hạn
 │   ├── test_invoices.py       lập hóa đơn, ghi nhận thanh toán
-│   ├── test_stats_api.py      trang thống kê
-│   └── test_ai.py             20 ca guardrail trong ../ai-safety.md
+│   ├── test_stats.py          trang thống kê                       (P6)
+│   └── test_ai.py             20 ca guardrail trong ../ai-safety.md (P7)
 └── e2e/
     └── test_full_flow.py      một kịch bản xuyên suốt trên DB file thật
 ```
@@ -162,7 +172,7 @@ hơn vì chúng nói về *tình huống* chứ không về *dòng code*.
 | `client` | `TestClient` với `get_db` override sang `db` | Integration test dùng đúng DB đó |
 | `fake_ai` | `FakeProvider` ghi lại mọi `(system, user)` đã nhận | Cho phép assert prompt đã gửi — nền tảng của test US-28 |
 | `frozen_clock` | Cố định "bây giờ" ở một mốc | Ca "đặt lịch trong quá khứ", "đến hạn trong 30 ngày" không phụ thuộc ngày chạy |
-| `seed_basic` | 1 manager, 1 receptionist, 2 caretaker, 2 owner, 3 pet, 3 service | Không phải dựng lại dữ liệu ở từng test |
+| `seed_basic` | 1 manager, 1 receptionist, 2 caretaker — **chỉ tài khoản**; chủ nuôi, thú cưng, dịch vụ do từng file test tự dựng | Không phải dựng lại tài khoản ở từng test |
 
 `fake_ai` ghi lại tham số nhận được là chi tiết quan trọng nhất trong bảng này: không có nó thì không
 kiểm chứng được prompt sạch dữ liệu cá nhân, và US-28 sẽ chỉ là một dòng chữ trong tài liệu.

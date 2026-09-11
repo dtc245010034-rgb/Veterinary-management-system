@@ -122,6 +122,7 @@ erDiagram
         date given_at
         date next_due_at
         text note
+        datetime created_at
     }
     invoices {
         int id PK
@@ -254,7 +255,7 @@ Phục vụ US-10 → US-14, US-21. **Bảng trung tâm của nghiệp vụ.**
 | `pet_id` | int | FK → `pets.id`, NOT NULL | |
 | `service_id` | int | FK → `services.id`, NOT NULL | |
 | `staff_id` | int | FK → `users.id`, NOT NULL | Bắt buộc vai trò `caretaker` (US-10) |
-| `start_at` | datetime | NOT NULL, INDEX | |
+| `start_at` | datetime | NOT NULL | Không có index riêng — nằm trong hai index ghép bên dưới |
 | `end_at` | datetime | NOT NULL, CHECK > `start_at` | Tính từ `start_at` + `services.duration_min` |
 | `status` | varchar(20) | NOT NULL, CHECK | `booked` \| `rescheduled` \| `cancelled` \| `done` |
 | `note` | text | NULL | |
@@ -268,7 +269,7 @@ Phục vụ US-10 → US-14, US-21. **Bảng trung tâm của nghiệp vụ.**
 trùng `pet_id`. Lịch `cancelled` bị loại khỏi phép kiểm tra. Khi đổi lịch phải loại chính bản ghi
 đang sửa ra khỏi tập so sánh (US-12).
 
-Index gợi ý: `(staff_id, start_at)` và `(pet_id, start_at)` để truy vấn trùng lịch nhanh.
+Index đã dựng: `(staff_id, start_at)` và `(pet_id, start_at)` để truy vấn trùng lịch nhanh.
 
 ### `care_records` — hồ sơ chăm sóc
 Phục vụ US-15, US-16, US-25.
@@ -297,8 +298,9 @@ Phục vụ US-17, US-18, US-24.
 | `vaccine_name` | varchar(100) | NOT NULL | |
 | `dose_no` | int | NULL, CHECK > 0 | Mũi thứ mấy |
 | `given_at` | date | NOT NULL. Không nhận ngày tiêm ở tương lai (US-17). Kiểm ở tầng services, **không** dùng CHECK — cùng lý do với `pets.birth_date` | |
-| `next_due_at` | date | NULL, CHECK ≥ `given_at` | Nguồn cho danh sách đến hạn (US-18) |
+| `next_due_at` | date | NULL, CHECK ≥ `given_at`, INDEX | Nguồn cho danh sách đến hạn (US-18) |
 | `note` | text | NULL | |
+| `created_at` | datetime | NOT NULL | Thời điểm nhập bản ghi, khác `given_at` là ngày tiêm thật |
 
 > Bảng ghi nhận **thông tin**, không phải chỉ định y tế. Lịch tiêm cụ thể do bác sĩ thú y quyết định.
 
@@ -315,7 +317,8 @@ Phục vụ US-19, US-20, US-21, US-22.
 | `status` | varchar(20) | NOT NULL, CHECK | `unpaid` \| `partial` \| `paid` \| `cancelled` |
 | `note` | text | NULL | |
 
-`status = cancelled` là điều kiện để được phép hủy lịch hẹn liên quan (US-21).
+Hóa đơn chưa `cancelled` chặn việc hủy lịch hẹn liên quan (US-21). Hủy hóa đơn chỉ gỡ lớp chặn
+này; lịch có hóa đơn luôn đã `done`, nên vẫn không hủy được vì chính trạng thái của nó.
 
 ### `invoice_items` — dòng hóa đơn
 Phục vụ US-19, US-22.
@@ -341,7 +344,7 @@ Phục vụ US-20, US-22.
 | `invoice_id` | int | FK → `invoices.id`, NOT NULL | |
 | `paid_at` | datetime | NOT NULL | |
 | `amount` | decimal(12,2) | NOT NULL, CHECK > 0 | |
-| `method` | varchar(20) | NOT NULL | `cash` \| `transfer` \| `card` |
+| `method` | varchar(20) | NOT NULL, CHECK | `cash` \| `transfer` \| `card` |
 
 Một hóa đơn có nhiều lần trả (trả góp từng phần). Tổng `payments.amount` không được vượt
 `invoices.total_amount` (US-20). Doanh thu ở US-22 tính trên bảng này, không tính trên `invoices`.

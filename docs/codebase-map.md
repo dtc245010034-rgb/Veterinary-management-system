@@ -4,7 +4,7 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-08 (hết phase P5) · **Trạng thái:** P0→P5 xong — chủ nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn và thanh toán đều chạy được. Tiếp theo: **P6 thống kê**. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+**Cập nhật lần cuối:** 2026-09-11 (rà soát tài liệu ↔ code sau P5) · **Trạng thái:** P0→P5 xong — chủ nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn và thanh toán đều chạy được. Tiếp theo: **P6 thống kê**. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
 
 ---
 
@@ -26,7 +26,7 @@
 |---|---|
 | `settings.json` | Đăng ký hook `SessionStart` và `Stop`. **Được commit** |
 | `hooks/session-start.ps1` | Tạo `docs/sessions/YYYY-MM-DD-NN.md`, in nhắc nhở, cảnh báo nếu sai thư mục làm việc |
-| `hooks/session-stop.ps1` | Xóa file log rỗng, nhắc cập nhật codebase-map và checklist plan |
+| `hooks/session-stop.ps1` | Chạy sau **mỗi lượt**: xóa **mọi** file log còn rỗng (mọi ngày, không chỉ file mới nhất), nhắc cập nhật codebase-map và checklist plan |
 
 ### `docs/`
 
@@ -39,9 +39,9 @@
 | `codebase-map.md` | File này |
 | `roadmap.md` | Lộ trình P0→P8 gắn với mốc KT1/KT2/KT3/cuối kỳ, kèm Definition of Done |
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
-| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 9: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc |
+| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 10: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6 |
 | `sessions/README.md` | Quy ước log phiên làm việc |
-| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 8 |
+| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 9 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
 | `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 102 test case |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
@@ -58,7 +58,7 @@
 | `security.py` | `hash_password()`, `verify_password()` — bcrypt trực tiếp, không qua passlib |
 | `auth.py` | Session cookie, `nguoi_dung_hien_tai`, `yeu_cau_vai_tro()`, ngoại lệ `ChuaDangNhap` |
 | `templates.py` | Cấu hình Jinja2 dùng chung, và filter `tien` (`{{ so|tien }}`) |
-| `seed.py` | 4 tài khoản, 3 chủ nuôi, 5 thú cưng, 5 dịch vụ, 2 gói, 5 lịch hẹn, 3 hồ sơ chăm sóc, 5 mũi tiêm, 2 hóa đơn. Hóa đơn dựng **qua `billing.py`** chứ không gán trạng thái tay. Chạy `python -m app.seed`, không sinh trùng |
+| `seed.py` | 4 tài khoản, 3 chủ nuôi, 5 thú cưng, 5 dịch vụ, 2 gói, 8 lịch hẹn, 3 hồ sơ chăm sóc, 5 mũi tiêm, 2 hóa đơn, 2 lần thanh toán. Hóa đơn và lần trả mang **ngày của buổi chăm sóc** (lập trong `clock.freeze`), không phải ngày chạy seed. Hóa đơn dựng **qua `billing.py`** chứ không gán trạng thái tay. Chạy `python -m app.seed`, không sinh trùng |
 | `models/__init__.py` | Gom mọi model — `create_all` chỉ tạo bảng đã được import |
 | `models/user.py` | Bảng `users` + hằng `VAI_TRO`, `TEN_VAI_TRO` |
 | `models/owner.py` | Bảng `owners`. `search_name` tự đồng bộ qua `@validates` |
@@ -66,7 +66,7 @@
 | `models/service.py` | Bảng `services`. `price` kiểu `Numeric(12,2)`, **không** `Float` |
 | `models/service_package.py` | `service_packages` + `package_items`, property `tong_gia_le`, `tiet_kiem` |
 | `models/appointment.py` | Bảng `appointments`, hằng `TRANG_THAI`, 2 index phục vụ kiểm trùng |
-| `services/clock.py` | `now()` và `freeze()` — điểm lấy thời gian duy nhất của hệ thống |
+| `services/clock.py` | `now()` và `freeze()` — điểm lấy thời gian duy nhất của hệ thống. `freeze()` dùng khi test và ở `seed.py` |
 | `services/text.py` | `chuan_hoa()` — bỏ dấu tiếng Việt cho tìm kiếm, xử lý riêng chữ `đ` |
 | `services/errors.py` | `LoiNghiepVu` — lỗi nghiệp vụ, thông điệp hiển thị thẳng cho người dùng |
 | `models/care_record.py` | Bảng `care_records` — hồ sơ chăm sóc, quan hệ 1–1 với lịch hẹn (`appointment_id` UNIQUE) |
@@ -106,14 +106,15 @@
 
 | File | Vai trò |
 |---|---|
-| `conftest.py` | 5 fixture: `db`, `client`, `frozen_clock`, `fake_ai` (khung, dùng từ P7), `seed_basic` |
+| `conftest.py` | 5 fixture: `db`, `client`, `frozen_clock`, `fake_ai` (khung, dùng từ P7), `seed_basic` (chỉ 4 tài khoản); cộng `bam_mat_khau_mau` băm mật khẩu mẫu một lần cho cả phiên test |
 | `unit/test_security.py` | Băm mật khẩu (TC-005) |
 | `unit/test_clock.py` | Cố định thời gian |
 | `unit/test_models_user.py` | Ràng buộc bảng `users`: UNIQUE username, CHECK role |
 | `unit/test_text.py` | Chuẩn hóa chuỗi tiếng Việt, gồm bẫy chữ `đ` |
 | `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
 | `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa |
-| `unit/test_architecture.py` | **Canh ranh giới dự án**, không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, link tài liệu, `codebase-map` đủ file, hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật |
+| `unit/test_architecture.py` | **Canh ranh giới dự án** (14 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file, hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật |
+| `unit/test_hooks.py` | Chạy thật hook `session-stop.ps1` trên bản sao dựng trong thư mục tạm: mọi log rỗng bị dọn, log đã điền (kể cả điền dở) còn nguyên. Tự bỏ qua khi máy không có PowerShell |
 | `unit/test_owners_service.py` | Nghiệp vụ chủ nuôi, thú cưng, tra cứu |
 | `unit/test_models_service.py` | Ràng buộc `services`, gói, và **kiểu tiền `Decimal`** |
 | `unit/test_catalog_service.py` | Nghiệp vụ dịch vụ, ngưng bán, gói |
@@ -131,6 +132,7 @@
 | `integration/test_care_records.py` | Ghi hồ sơ và trang thú cưng qua HTTP (TC-053, TC-054, TC-057, TC-058) |
 | `integration/test_vaccinations.py` | Ghi mũi tiêm, danh sách đến hạn, link menu, khuyến cáo bác sĩ (TC-059, TC-063, TC-064, TC-020) |
 | `integration/test_invoices.py` | Hóa đơn qua HTTP: nút trên lưới lịch, thu tiền, hủy, phân quyền (TC-065, TC-068→070, TC-072) |
+| `integration/test_seed.py` | Chạy `python -m app.seed` trong tiến trình riêng trên CSDL tạm; ngày lập hóa đơn = ngày buổi chăm sóc, ngày thu = ngày lập |
 | `integration/test_appointments.py` | Đặt/đổi/hủy lịch qua HTTP, lịch theo vai trò (TC-035, TC-043, TC-050→052, TC-009) |
 | `e2e/test_full_flow.py` | **Kịch bản xuyên suốt TC-101 bước 1→9** trên CSDL file thật, đi bằng link và nút lấy từ HTML — không tự dựng URL. Chứa `TrinhDuyet`, trình duyệt tí hon gửi form đúng như trình duyệt |
 

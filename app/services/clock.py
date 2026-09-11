@@ -21,7 +21,10 @@ def now() -> datetime:
 
 @contextmanager
 def freeze(moc: datetime):
-    """Cố định thời gian trong phạm vi khối with. Chỉ dùng khi test.
+    """Cố định thời gian trong phạm vi khối with.
+
+    Dùng khi test, và ở app/seed.py để dựng hóa đơn mẫu mang ngày trong quá khứ. Không
+    dùng trong luồng xử lý request.
 
     Khôi phục giá trị trước đó khi thoát, kể cả khi có exception, để một test hỏng
     không làm sai lệch những test chạy sau.

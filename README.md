@@ -32,7 +32,7 @@ python -m venv .venv
 pip install -r requirements.txt
 
 copy .env.example .env            # tùy chọn; mặc định đã chạy được
-python -m app.seed                # tạo 4 tài khoản mẫu
+python -m app.seed                # dữ liệu mẫu: tài khoản, chủ nuôi, thú cưng, lịch, hóa đơn…
 uvicorn app.main:app --reload
 ```
 
@@ -44,12 +44,12 @@ Mật khẩu chung: `matkhau123`
 
 | Tên đăng nhập | Vai trò | Thấy được gì |
 |---|---|---|
-| `quanly` | Quản lý | Toàn bộ hệ thống |
-| `letan` | Lễ tân | Chủ nuôi, thú cưng, lịch hẹn, hóa đơn |
-| `chamsoc1`, `chamsoc2` | Nhân viên chăm sóc | Lịch của mình, hồ sơ chăm sóc |
+| `quanly` | Quản lý | Toàn bộ hệ thống, gồm tài khoản nhân viên và sửa bảng giá |
+| `letan` | Lễ tân | Chủ nuôi, thú cưng, lịch hẹn, tiêm phòng, hóa đơn; xem bảng giá |
+| `chamsoc1`, `chamsoc2` | Nhân viên chăm sóc | Lịch của mình, ghi hồ sơ chăm sóc, tiêm phòng; xem chủ nuôi và bảng giá |
 
-Không có khóa Gemini vẫn chạy được toàn bộ phần quản lý: để `AI_PROVIDER=fake` trong `.env`, các
-tính năng AI sẽ trả lời cố định thay vì gọi API thật.
+Phần AI **chưa cài đặt** (phase P7). Khi có, không cần khóa Gemini vẫn chạy được: để
+`AI_PROVIDER=fake` trong `.env` thì các tính năng AI trả lời cố định thay vì gọi API thật.
 
 ## Cách chạy test
 

@@ -37,7 +37,7 @@ mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ kh�
 | P3 | ✅ xong | 05/09 | [`P3-chang1`](testing/reports/2026-09-05-P3-chang1.md), [`P3-chang2`](testing/reports/2026-09-05-P3-chang2.md) |
 | P4 | ✅ xong | 05–06/09 | [`P4-chang1`](testing/reports/2026-09-05-P4-chang1.md), [`P4-chang2`](testing/reports/2026-09-05-P4-chang2.md), [`rà luồng`](testing/reports/2026-09-06-ra-luong-P4-chang2.md) |
 | P5 | ✅ xong | 06–08/09 | [`P5-chang1`](testing/reports/2026-09-06-P5-chang1.md), [`rà luồng chặng 1`](testing/reports/2026-09-07-ra-luong-P5-chang1.md), [`P5-chang2`](testing/reports/2026-09-07-P5-chang2.md), [`rà luồng chặng 2`](testing/reports/2026-09-08-ra-luong-P5-chang2.md) |
-| **P6** | ⬜ **làm tiếp ở đây** | — | — |
+| **P6** | 🟡 **đang làm** — chặng 1 xong, chặng 2 (trang thống kê) tiếp theo · [kế hoạch](plans/2026-09-11-p6-thong-ke.md) | 11/09– | — |
 | P7 | ⬜ chưa làm | — | — |
 | P8 | ⬜ chưa làm | — | — |
 
@@ -121,7 +121,7 @@ thực nhận), không tính trên `invoices` — đây là chỗ dễ nhầm nh
 
 **Sáu việc P5 để lại cho P6** (gom từ báo cáo và log phiên, đọc trước khi lập kế hoạch):
 
-1. **Dữ liệu mẫu ghi mọi hóa đơn và thanh toán vào đúng ngày chạy `seed.py`**, kể cả hóa đơn của buổi
+1. ✅ *Xong 11/09, chặng 1.* **Dữ liệu mẫu ghi mọi hóa đơn và thanh toán vào đúng ngày chạy `seed.py`**, kể cả hóa đơn của buổi
    cách đây một tháng. Không sửa thì "doanh thu theo khoảng thời gian" **không smoke test được** —
    mọi đồng tiền rơi vào một ngày. Cho seed lùi `issued_at` và `paid_at` về sát buổi chăm sóc.
 2. **Link "Thống kê" trong menu quản lý trỏ tới `/stats` chưa tồn tại → 404.** Lỗi có từ P1, đóng
