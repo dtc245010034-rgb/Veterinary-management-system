@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block tieu_de %}Thống kê{% endblock %}
+
+{% block noi_dung %}
+<h1>Thống kê</h1>
+<p class="phu">Lượt dịch vụ và khách tính theo ngày hẹn, gồm mọi lịch chưa hủy. Doanh thu là tiền
+  thực nhận, tính theo ngày thu. Số chưa thu là phần còn nợ của các hóa đơn lập trong kỳ.</p>
+
+<form class="thanh-tim" method="get" action="/stats">
+  <label class="loc">Từ ngày <input name="tu_ngay" type="date" value="{{ tu_ngay }}"></label>
+  <label class="loc">Đến ngày <input name="den_ngay" type="date" value="{{ den_ngay }}"></label>
+  <button type="submit" class="chinh">Xem</button>
+</form>
+
+{% if loi %}
+<div class="loi" role="alert"><p>{{ loi }}</p></div>
+{% endif %}
+
+{% if tk %}
+<div class="luoi-the luoi-so">
+  <div class="the">
+    <h2 class="nhan-so">Lượt dịch vụ</h2>
+    <p class="so-lon">{{ tk.so_luot }}</p>
+    <p class="phu-nho">trong đó {{ tk.so_luot_hoan_thanh }} đã hoàn thành</p>
+  </div>
+  <div class="the">
+    <h2 class="nhan-so">Doanh thu</h2>
+    <p class="so-lon">{{ tk.doanh_thu|tien }}</p>
+    <p class="phu-nho">tiền đã thu trong kỳ</p>
+  </div>
+  <div class="the">
+    <h2 class="nhan-so">Chưa thu</h2>
+    <p class="so-lon">{{ tk.chua_thu|tien }}</p>
+    <p class="phu-nho">còn nợ của hóa đơn lập trong kỳ</p>
+  </div>
+  <div class="the">
+    <h2 class="nhan-so">Khách quay lại</h2>
+    <p class="so-lon">{{ tk.ti_le_quay_lai|string|replace('.', ',') }}%</p>
+    <p class="phu-nho">{{ tk.so_khach_quay_lai }}/{{ tk.so_khach }} khách đến từ 2 ngày trở lên</p>
+  </div>
+</div>
+
+<h2>Theo dịch vụ</h2>
+{% if tk.theo_dich_vu %}
+  <table>
+    <thead>
+      <tr><th>Dịch vụ</th><th class="phai">Lượt</th><th class="phai">Doanh thu</th></tr>
+    </thead>
+    <tbody>
+    {% for d in tk.theo_dich_vu %}
+      <tr>
+        <td>{{ d.ten }}{% if not d.dang_ban %} <span class="trang-thai-khoa">Đã ngưng bán</span>{% endif %}</td>
+        <td class="phai">{{ d.so_luot }}</td>
+        <td class="phai">{{ d.doanh_thu|tien }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="the rong">
+    <p>Không có lượt dịch vụ hay khoản thu nào trong kỳ này.</p>
+    <p class="phu">Chọn một khoảng thời gian khác ở trên.</p>
+  </div>
+{% endif %}
+{% endif %}
+{% endblock %}

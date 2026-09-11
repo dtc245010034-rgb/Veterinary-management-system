@@ -1,4 +1,4 @@
-"""Kịch bản xuyên suốt — TC-101, bước 1 → 9 của docs/testing/test-strategy.md mục 6.
+"""Kịch bản xuyên suốt — TC-101, bước 1 → 9 và 11 của docs/testing/test-strategy.md mục 6.
 
 Khác mọi tầng test khác ở một điểm quyết định: **test này không được tự dựng URL.**
 Nó bắt đầu ở "/" rồi chỉ đi tiếp bằng link và nút có thật trong HTML vừa nhận, và gửi
@@ -10,8 +10,8 @@ bấm. Nặng nhất là lỗi ô `<select>` không có option nào `selected` �
 option đầu tiên, nên bấm "Đổi" mà không sửa gì lại chuyển lịch sang tên người khác. Test
 tự dựng `data={...}` không bao giờ chạm tới lỗi đó, vì nó không gửi thứ trình duyệt gửi.
 
-Bước 10 → 11 (AI tóm tắt, thống kê) nối tiếp ở P6 và P7. Vì vậy TC-101 vẫn là 🟡 chứ
-chưa phải ✅.
+Bước 11 (thống kê) nối ở P6. Bước 10 (AI tóm tắt) chờ P7, nên TC-101 vẫn là 🟡 chứ chưa
+phải ✅.
 """
 
 import re
@@ -276,6 +276,7 @@ def nen_e2e(tao_phien, bam_mat_khau_mau):
             User(username="letan", full_name="Tran Thi Le", role="receptionist"),
             User(username="chamsoc1", full_name="Le Van Cham", role="caretaker"),
             User(username="chamsoc2", full_name="Bui Thi An", role="caretaker"),
+            User(username="quanly", full_name="Nguyen Van Quan", role="manager"),
         ]
         for u in tai_khoan:
             u.password_hash = bam_mat_khau_mau
@@ -287,6 +288,7 @@ def nen_e2e(tao_phien, bam_mat_khau_mau):
 
         return {
             "le_tan": tai_khoan[0].username,
+            "quan_ly": tai_khoan[3].username,
             "nhan_vien": tai_khoan[1].username,
             "ten_nhan_vien": tai_khoan[1].full_name,
             "ten_nhan_vien_khac": tai_khoan[2].full_name,
@@ -440,3 +442,15 @@ def test_tu_dat_lich_den_ho_so_cham_soc(trinh_duyet, nen_e2e):
         # Và nó phải hiện đúng trạng thái đó ở danh sách hóa đơn.
         tb.bam("Hóa đơn")
         assert "Đã thu đủ" in tb.van_ban
+
+        # 11. Quản lý mở thống kê bằng link trên thanh điều hướng, kỳ mặc định. Doanh thu
+        # phải khớp đúng số đã thu ở bước 8–9 (50.000 + 100.000), và hóa đơn đã thu đủ thì
+        # không còn đồng nào "chưa thu". Một lịch, đã hoàn thành — lịch trùng ở bước 4 bị
+        # từ chối nên không được thành lượt.
+        tb.gui("Đăng xuất")
+        tb.gui("Đăng nhập", username=nen_e2e["quan_ly"], password=MAT_KHAU_MAU)
+        tb.bam("Thống kê")
+        assert tb.ma == 200
+        assert "Doanh thu 150.000đ" in tb.van_ban
+        assert "Chưa thu 0đ" in tb.van_ban
+        assert "Lượt dịch vụ 1 trong đó 1 đã hoàn thành" in tb.van_ban

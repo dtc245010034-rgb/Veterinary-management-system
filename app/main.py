@@ -24,6 +24,7 @@ from app.routers import invoices as invoices_router
 from app.routers import owners as owners_router
 from app.routers import pets as pets_router
 from app.routers import services as services_router
+from app.routers import stats as stats_router
 from app.routers import users as users_router
 from app.routers import vaccinations as vaccinations_router
 from app.templates import templates
@@ -50,6 +51,7 @@ app.include_router(care_records_router.router)
 app.include_router(pets_router.router)
 app.include_router(vaccinations_router.router)
 app.include_router(invoices_router.router)
+app.include_router(stats_router.router)
 
 
 @app.exception_handler(ChuaDangNhap)
@@ -59,8 +61,8 @@ async def xu_ly_chua_dang_nhap(request: Request, exc: ChuaDangNhap):
 
 
 # Starlette điền `detail` bằng cụm tiếng Anh mặc định của mã lỗi ("Not Found") khi URL
-# không khớp route nào — và người dùng gặp đúng câu đó qua link Thống kê trong menu quản
-# lý. CLAUDE.md mục 5: chữ hiển thị cho người dùng phải là tiếng Việt. Chỉ thay khi
+# không khớp route nào — và người dùng từng gặp đúng câu đó qua link Thống kê trong menu
+# quản lý, trước khi P6 dựng trang. CLAUDE.md mục 5: chữ hiển thị cho người dùng phải là tiếng Việt. Chỉ thay khi
 # `detail` đúng bằng cụm mặc định; thông điệp do dự án tự viết thì giữ nguyên.
 MO_TA_LOI_MAC_DINH = {
     status.HTTP_403_FORBIDDEN: "Bạn không có quyền truy cập chức năng này.",

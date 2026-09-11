@@ -37,12 +37,15 @@ mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ kh�
 | P3 | ✅ xong | 05/09 | [`P3-chang1`](testing/reports/2026-09-05-P3-chang1.md), [`P3-chang2`](testing/reports/2026-09-05-P3-chang2.md) |
 | P4 | ✅ xong | 05–06/09 | [`P4-chang1`](testing/reports/2026-09-05-P4-chang1.md), [`P4-chang2`](testing/reports/2026-09-05-P4-chang2.md), [`rà luồng`](testing/reports/2026-09-06-ra-luong-P4-chang2.md) |
 | P5 | ✅ xong | 06–08/09 | [`P5-chang1`](testing/reports/2026-09-06-P5-chang1.md), [`rà luồng chặng 1`](testing/reports/2026-09-07-ra-luong-P5-chang1.md), [`P5-chang2`](testing/reports/2026-09-07-P5-chang2.md), [`rà luồng chặng 2`](testing/reports/2026-09-08-ra-luong-P5-chang2.md) |
-| **P6** | 🟡 **đang làm** — chặng 1 xong, chặng 2 (trang thống kê) tiếp theo · [kế hoạch](plans/2026-09-11-p6-thong-ke.md) | 11/09– | — |
-| P7 | ⬜ chưa làm | — | — |
+| **P6** | 🟡 **code xong, chờ smoke** — 10 ô smoke chờ bấm · [kế hoạch](plans/2026-09-11-p6-thong-ke.md) | 11/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md) |
+| **P7** | ⬜ **làm tiếp ở đây** sau khi P6 tick smoke | — | — |
 | P8 | ⬜ chưa làm | — | — |
 
 Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡 · 27 ⬜** trên 102 ca, smoke
 **97 ô đã tick / 29 ô còn lại đều thuộc P6–P8**, ERD **12/13 bảng** đã dựng (còn `ai_logs` của P7).
+
+Tính tới P6 code xong (11/09): **501 test xanh**, ma trận **80 ✅ · 2 🟡 · 20 ⬜** (20 ô còn lại thuộc
+P7–P8), smoke **97 tick / 31 trống** — 10 ô của P6 chờ bấm, 21 ô thuộc P7–P8.
 
 ---
 
@@ -124,16 +127,16 @@ thực nhận), không tính trên `invoices` — đây là chỗ dễ nhầm nh
 1. ✅ *Xong 11/09, chặng 1.* **Dữ liệu mẫu ghi mọi hóa đơn và thanh toán vào đúng ngày chạy `seed.py`**, kể cả hóa đơn của buổi
    cách đây một tháng. Không sửa thì "doanh thu theo khoảng thời gian" **không smoke test được** —
    mọi đồng tiền rơi vào một ngày. Cho seed lùi `issued_at` và `paid_at` về sát buổi chăm sóc.
-2. **Link "Thống kê" trong menu quản lý trỏ tới `/stats` chưa tồn tại → 404.** Lỗi có từ P1, đóng
+2. ✅ *Xong 11/09.* **Link "Thống kê" trong menu quản lý trỏ tới `/stats` chưa tồn tại → 404.** Lỗi có từ P1, đóng
    cùng lúc với việc dựng trang.
-3. **TC-006** (`caretaker` mở trang thống kê → 403) đang ⬜ vì hoãn từ P1 — dựng trang xong là làm
+3. ✅ *Xong 11/09.* **TC-006** (`caretaker` mở trang thống kê → 403) đang ⬜ vì hoãn từ P1 — dựng trang xong là làm
    được ngay.
-4. **Hóa đơn đã hủy phải bị loại khỏi mọi con số.** `Invoice.con_no` đã trả 0 cho hóa đơn đã hủy,
+4. ✅ *Xong 11/09, có test.* **Hóa đơn đã hủy phải bị loại khỏi mọi con số.** `Invoice.con_no` đã trả 0 cho hóa đơn đã hủy,
    nhưng `total_amount` thì không đổi — đừng cộng nhầm nó vào công nợ.
-5. **Đừng join sang `services` rồi lọc `is_active`** khi tính doanh thu theo dịch vụ: hóa đơn cũ của
+5. ✅ *Xong 11/09, có test và đột biến.* **Đừng join sang `services` rồi lọc `is_active`** khi tính doanh thu theo dịch vụ: hóa đơn cũ của
    dịch vụ đã ngưng bán sẽ biến mất khỏi sổ, âm thầm. Dòng hóa đơn đã chép sẵn `description` và
    `unit_price` — dùng chúng. Có test giữ chỗ này: `test_hoa_don_cu_van_hien_du_khi_dich_vu_da_ngung_ban`.
-6. **Đo lại thời gian tầng unit trên máy rảnh** trước khi quyết có cắt test hay không. Hiện 26s, trên
+6. ✅ *Đo 11/09: trung vị 26,9s, không test nào đáng cắt, gần nửa thời gian là `create_all` từng test — chờ người dùng chọn hướng, xem báo cáo P6.* **Đo lại thời gian tầng unit trên máy rảnh** trước khi quyết có cắt test hay không. Hiện 26s, trên
    ngưỡng xem lại 20s, nhưng cùng bộ test cũ đo lại cũng chậm gần gấp đôi lần đo đầu.
 
 **DoD:** TC-076→081 xanh; TC-006 xanh; kịch bản e2e nối **bước 11** (quản lý xem thống kê, doanh

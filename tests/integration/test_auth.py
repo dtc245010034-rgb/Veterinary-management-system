@@ -108,8 +108,8 @@ def test_url_khong_khop_route_nao_van_hien_trang_loi_co_bo_cuc(client, seed_basi
 def test_trang_loi_404_khong_hien_chu_tieng_anh_cua_framework(client, seed_basic):
     """Trang 404 có bố cục rồi, nhưng dòng mô tả vẫn là "Not Found" của Starlette.
 
-    Người dùng gặp trang này qua link **Thống kê** trong menu quản lý (trang thuộc P6,
-    chưa dựng). CLAUDE.md mục 5: thông báo hiển thị cho người dùng viết bằng tiếng Việt.
+    Người dùng từng gặp trang này qua link **Thống kê** trong menu quản lý, trước khi P6
+    dựng trang đó. CLAUDE.md mục 5: thông báo hiển thị cho người dùng viết bằng tiếng Việt.
     Ca 403 không dính vì thông điệp do chính dự án viết.
     """
     dang_nhap(client, "quanly")

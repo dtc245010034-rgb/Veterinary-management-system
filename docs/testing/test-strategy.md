@@ -19,9 +19,12 @@ bị bỏ qua — và một hệ thống test bị bỏ qua thì bằng không c
 | **Regression** | Chạy lại **toàn bộ** suite | Trước mỗi commit | < 1 phút | `pytest` |
 | **Hệ thống hoàn chỉnh** | `tests/e2e/test_full_flow.py` + [`smoke-checklist.md`](smoke-checklist.md) bấm tay | Cuối mỗi phase P1–P8 | vài phút | `pytest tests/e2e` |
 
-> **Thực đo ngày 11/09 (hết P5):** unit 316 ca ~26s, integration 158 ca ~41s, toàn bộ ~70s —
-> **vượt** ngân sách ở cả ba tầng đầu. Ngân sách giữ nguyên, chưa nới: đo lại trên máy rảnh ở P6
-> rồi mới quyết cắt test hay nới ngân sách (việc 6 của P6 trong [`../roadmap.md`](../roadmap.md)).
+> **Thực đo ngày 11/09 (P6):** unit 335 ca, trung vị 3 lần **26,9s** — **vượt** ngân sách, cả ở
+> integration và toàn bộ. Không có test nào đáng cắt: chậm nhất 1,03s (test hook), còn lại dưới
+> 0,3s. Gần **một nửa** thời gian tầng unit (10,8s / 23s) là fixture `db` dựng CSDL mới bằng
+> `create_all` cho **từng** test. Ngân sách giữ nguyên chờ người dùng chọn: dựng schema một lần
+> mỗi phiên + rollback từng test, hay nới ngân sách. Chi tiết:
+> [`reports/2026-09-11-P6.md`](reports/2026-09-11-P6.md).
 
 **"Test hồi quy" không phải một loại test cần viết riêng.** Nó là việc chạy lại toàn bộ suite cũ sau
 khi thêm code mới. Hiểu như vậy thì không phải nuôi hai bộ test song song — mọi test đã viết đều tự
@@ -32,7 +35,7 @@ khi thêm code mới. Hiểu như vậy thì không phải nuôi hai bộ test s
 ## 2. Cấu trúc thư mục test
 
 Cây dưới đây chỉ nêu các file chính; danh sách đầy đủ, luôn khớp file thật, nằm ở
-[`../codebase-map.md`](../codebase-map.md). File đánh dấu *(P6)*, *(P7)* là dự kiến, chưa có.
+[`../codebase-map.md`](../codebase-map.md). File đánh dấu *(P7)* là dự kiến, chưa có.
 
 ```
 tests/
@@ -44,7 +47,7 @@ tests/
 │   ├── test_*_service.py      nghiệp vụ từng mảng: users, owners, catalog,
 │   │                          care_records, vaccinations, billing
 │   ├── test_scheduling.py     quy tắc trùng lịch, tính end_at, đổi/hủy lịch
-│   ├── test_stats.py          doanh thu, khách quay lại            (P6)
+│   ├── test_stats_service.py  doanh thu, khách quay lại
 │   └── test_prompts.py        dựng prompt, lọc dữ liệu cá nhân, DISCLAIMER  (P7)
 ├── integration/
 │   ├── test_auth.py           đăng nhập
@@ -55,7 +58,7 @@ tests/
 │   ├── test_care_records.py   ghi hồ sơ chăm sóc
 │   ├── test_vaccinations.py   mũi tiêm và danh sách đến hạn
 │   ├── test_invoices.py       lập hóa đơn, ghi nhận thanh toán
-│   ├── test_stats.py          trang thống kê                       (P6)
+│   ├── test_stats.py          trang thống kê
 │   └── test_ai.py             20 ca guardrail trong ../ai-safety.md (P7)
 └── e2e/
     └── test_full_flow.py      một kịch bản xuyên suốt trên DB file thật
@@ -194,7 +197,7 @@ bắt được cả lỗi ở tầng lưu trữ:
 8. ✅ Ghi nhận thanh toán một phần → trạng thái `partial` *(P5)*
 9. ✅ Ghi nhận nốt phần còn lại → trạng thái `paid` *(P5)*
 10. ⬜ Gọi AI tóm tắt hồ sơ → có nội dung và có `DISCLAIMER` *(P7)*
-11. ⬜ Đăng nhập quản lý → xem thống kê → doanh thu khớp số đã thu *(P6)*
+11. ✅ Đăng nhập quản lý → xem thống kê → doanh thu khớp số đã thu *(P6)*
 
 Một test đi qua gần hết hệ thống, nên nó bắt được lỗi tích hợp mà unit test không thấy: sai thứ tự
 trạng thái, session đăng nhập rơi giữa chừng, dữ liệu không commit, phân quyền chặn nhầm.

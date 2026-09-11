@@ -272,3 +272,9 @@ td.thao-tac input, td.thao-tac select { margin-top: 0; width: auto; font-size: 1
 td.thao-tac input[name="ly_do"] { width: 120px; }
 td.thao-tac button { padding: 3px 10px; font-size: 13px; }
 .nguy-hiem { color: var(--loi); border-color: #fecdca; }
+
+/* Trang thống kê: bốn thẻ số, rồi bảng theo dịch vụ bên dưới. */
+.luoi-so { margin-bottom: 28px; }
+.nhan-so { font-size: 14px; font-weight: 500; color: var(--chu-phu); margin: 0; }
+.so-lon { font-size: 28px; font-weight: 600; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
+.phu-nho { color: var(--chu-phu); font-size: 13px; margin: 0; }

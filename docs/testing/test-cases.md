@@ -22,7 +22,7 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 | TC-003 | US-01 | Tài khoản `is_active = false` → bị từ chối | I | `tests/integration/test_auth.py` | ✅ |
 | TC-004 | US-01 | Chưa đăng nhập mở trang nội bộ → chuyển về trang đăng nhập | I | `tests/integration/test_auth.py` | ✅ |
 | TC-005 | US-01 | Mật khẩu lưu dạng băm, không lưu bản gốc | U | `tests/unit/test_security.py` | ✅ |
-| TC-006 | US-02 | `caretaker` mở trang thống kê → 403 | I | — hoãn tới P6 (trang thống kê chưa có) | ⬜ |
+| TC-006 | US-02 | `caretaker` mở trang thống kê → 403 | I | `test_stats.py::test_caretaker_mo_trang_thong_ke_bi_chan_403`, `…_le_tan_mo_trang_thong_ke_bi_chan_403` — hoãn từ P1, đóng ở P6 | ✅ |
 | TC-007 | US-02 | `receptionist` mở trang quản lý tài khoản → 403 | I | `tests/integration/test_users.py` | ✅ |
 | TC-008 | US-02 | `manager` truy cập được mọi trang | I | `tests/integration/test_users.py` | ✅ |
 | TC-009 | US-02 | `caretaker` xem lịch → chỉ thấy lịch của mình | I | `test_appointments.py::test_caretaker_go_thang_trang_lich_chung_van_chi_thay_lich_minh` | ✅ |
@@ -127,12 +127,12 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-076 | US-22 | Tổng lượt, tổng doanh thu, bảng chia theo dịch vụ | U | | ⬜ |
-| TC-077 | US-22 | Doanh thu chỉ tính **tiền đã thực nhận**; số chưa thu hiển thị riêng | U | | ⬜ |
-| TC-078 | US-22 | Kỳ không có dữ liệu → số 0, không lỗi | U | | ⬜ |
-| TC-079 | US-22 | Ngày bắt đầu sau ngày kết thúc → từ chối | U | | ⬜ |
-| TC-080 | US-23 | Có khách dùng ≥ 2 lần → số lượng và tỉ lệ khách quay lại đúng | U | | ⬜ |
-| TC-081 | US-23 | Mọi khách chỉ đến một lần → tỉ lệ bằng 0% | U | | ⬜ |
+| TC-076 | US-22 | Tổng lượt, tổng doanh thu, bảng chia theo dịch vụ | U | `test_stats_service.py::test_thong_ke_tong_luot_doanh_thu_va_chia_theo_dich_vu`, `…_bang_theo_dich_vu_cong_lai_bang_dung_hai_con_so_tong`, `…_luot_gom_moi_lich_chua_huy_va_bo_lich_da_huy`, `…_dich_vu_da_ngung_ban_van_co_dong_trong_bang`, `test_stats.py` | ✅ |
+| TC-077 | US-22 | Doanh thu chỉ tính **tiền đã thực nhận**; số chưa thu hiển thị riêng | U | `test_stats_service.py::test_doanh_thu_chi_tinh_tien_da_thu_so_chua_thu_hien_rieng`, `…_hoa_don_da_huy_khong_cong_vao_so_chua_thu`, `…_hoa_don_lap_ky_truoc_thu_ky_nay_vao_doanh_thu_ky_nay`, `…_ky_tinh_ca_hai_ngay_dau_va_cuoi` | ✅ |
+| TC-078 | US-22 | Kỳ không có dữ liệu → số 0, không lỗi | U | `test_stats_service.py::test_ky_khong_co_du_lieu_ra_so_0_khong_loi`, `test_stats.py::test_ky_khong_co_du_lieu_hien_so_0_va_trang_thai_rong` | ✅ |
+| TC-079 | US-22 | Ngày bắt đầu sau ngày kết thúc → từ chối | U | `test_stats_service.py::test_ngay_bat_dau_sau_ngay_ket_thuc_bi_tu_choi`, `…_ky_mot_ngay_hop_le`, `test_stats.py::test_ngay_bat_dau_sau_ngay_ket_thuc_bao_loi_va_giu_ngay_da_nhap` | ✅ |
+| TC-080 | US-23 | Có khách dùng ≥ 2 lần → số lượng và tỉ lệ khách quay lại đúng. **Đếm theo số ngày đến**, không theo số lượt (người dùng chốt 11/09) | U | `test_stats_service.py::test_khach_quay_lai_tinh_theo_so_ngay_den_khong_theo_so_luot` | ✅ |
+| TC-081 | US-23 | Mọi khách chỉ đến một lần → tỉ lệ bằng 0% | U | `test_stats_service.py::test_moi_khach_chi_den_mot_lan_ti_le_quay_lai_bang_0` | ✅ |
 
 ## I. Chức năng AI — phase P7 · **đề bài yêu cầu đích danh có test**
 
@@ -176,12 +176,12 @@ Toàn bộ chạy với `FakeProvider`. Mã `G-xx` tham chiếu bộ ca trong [`
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | 🟡 bước 1→9 |
+| TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | 🟡 bước 1→9, 11 |
 | TC-102 | nhiều | Checklist bấm tay theo [`smoke-checklist.md`](smoke-checklist.md) | thủ công | — | ⬜ |
 
 TC-101 kéo lên sớm từ P5 (kế hoạch: [`../plans/2026-09-05-e2e-xuyen-suot.md`](../plans/2026-09-05-e2e-xuyen-suot.md)).
-Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→11 cần hóa đơn, thống kê và AI nên nối tiếp ở P5, P6,
-P7. Chỉ tick ✅ khi đủ 11 bước.
+Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5, bước 11 (thống kê) nối ở P6; còn bước 10
+(AI) chờ P7. Chỉ tick ✅ khi đủ 11 bước.
 
 ---
 

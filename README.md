@@ -6,9 +6,9 @@ chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham 
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P5 xong** — quản lý chủ nuôi, thú cưng, dịch
-vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn và thanh toán đều chạy được.
-Còn P6 thống kê, P7 tích hợp AI, P8 hoàn thiện — xem tiến độ từng phase trong
+Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P6 xong phần code, chờ smoke test** — quản lý chủ
+nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh
+toán và thống kê đều chạy được. Còn P7 tích hợp AI, P8 hoàn thiện — xem tiến độ từng phase trong
 [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Công nghệ
@@ -54,10 +54,10 @@ Phần AI **chưa cài đặt** (phase P7). Khi có, không cần khóa Gemini v
 ## Cách chạy test
 
 ```bash
-pytest tests/unit            # 316 ca, ~27s  — chạy mỗi lần sửa code
-pytest tests/integration     # 158 ca, ~39s  — chạy cuối mỗi phiên làm việc
-pytest tests/e2e             #   1 ca,  ~6s  — kịch bản xuyên suốt, chạy cuối mỗi phase
-pytest                       # 475 ca, ~68s  — chạy trước mỗi commit (hồi quy)
+pytest tests/unit            # 335 ca, ~27s  — chạy mỗi lần sửa code
+pytest tests/integration     # 165 ca, ~41s  — chạy cuối mỗi phiên làm việc
+pytest tests/e2e             #   1 ca, ~12s  — kịch bản xuyên suốt, chạy cuối mỗi phase
+pytest                       # 501 ca, ~67s  — chạy trước mỗi commit (hồi quy)
 ```
 
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).

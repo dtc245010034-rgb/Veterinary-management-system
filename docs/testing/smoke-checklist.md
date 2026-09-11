@@ -217,6 +217,8 @@ Hai lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-08-ra-luong-P5-ch
 - [x] Hủy một hóa đơn chưa thu, rồi từ tab cũ bấm **Lập hóa đơn** lại cho đúng lịch đó → thông báo nêu mã hóa đơn cũ **và** bảo đặt một lịch mới
 - [x] Cũng thao tác đó nhưng hóa đơn cũ **chưa hủy** → thông báo **không** xui đặt lịch mới (mở hóa đơn cũ ra là xong)
 - [x] Bấm link **Thống kê** trên thanh điều hướng → trang 404 **toàn tiếng Việt**, không còn chữ "Not Found"
+      <br>_Từ P6 link này mở trang thống kê thật. Muốn kiểm lại trang 404, gõ một địa chỉ không tồn
+      tại, ví dụ `/khong-co-trang-nay`._
 - [x] Đăng nhập `letan`, gõ thẳng `/users` → trang 403 vẫn giữ câu tiếng Việt của dự án, không bị thay bằng câu chung
 
 ## P6 — Thống kê
@@ -231,16 +233,27 @@ Hai lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-08-ra-luong-P5-ch
 - [ ] Mở hóa đơn cũ hơn (thu một phần) → "Ngày lập" và ngày trong lịch sử thanh toán **trùng ngày
       buổi chăm sóc**, không phải hôm nay
 
-### Chặng 2 — trang thống kê _(chưa làm — đừng tick)_
+### Chặng 2 — trang thống kê
 
-- [ ] `receptionist` gõ thẳng `/stats` → 403 (TC-006, hoãn từ P1 vì lúc đó chưa có trang này)
-- [ ] `caretaker` gõ thẳng `/stats` → 403
-- [ ] `manager` mở thống kê với khoảng thời gian có dữ liệu → số lượt và doanh thu hiện ra
-- [ ] Bảng chia theo dịch vụ khớp với dữ liệu đã tạo
-- [ ] Có hóa đơn chưa thanh toán → doanh thu **không** tính khoản đó, số chưa thu hiện riêng
-- [ ] Chọn khoảng thời gian không có dữ liệu → hiện số 0, không phải trang lỗi
-- [ ] Chọn ngày bắt đầu sau ngày kết thúc → bị chặn
-- [ ] Tỉ lệ khách quay lại hiện ra và khớp với dữ liệu
+> Dùng **cùng CSDL vừa seed ở chặng 1**, chưa bấm gì thêm. Dữ liệu mẫu có: buổi hôm qua của Mực
+> (thu đủ 150.000đ), Mun (chưa lập hóa đơn), Đậu Đỏ (chưa ghi hồ sơ, vẫn "Đã đặt"); buổi 28 ngày
+> trước của Mực (thu 60.000đ, còn nợ 90.000đ). Các con số dưới đây đã đối chiếu trên app thật
+> ngày 11/09. Đã ghi thêm hồ sơ hay thu tiền thì số sẽ khác.
+
+- [ ] `letan` gõ thẳng `/stats` → trang 403 _(TC-006 viết cho `caretaker`; lễ tân cũng không có quyền)_
+- [ ] `chamsoc1` gõ thẳng `/stats` → trang 403 _(TC-006, hoãn từ P1 vì khi đó chưa có trang này)_
+- [ ] `quanly` bấm **Thống kê** trên thanh điều hướng → hai ô ngày điền sẵn 30 ngày gần nhất, và bốn
+      thẻ: **4 lượt** (trong đó 3 đã hoàn thành) · doanh thu **210.000đ** · chưa thu **90.000đ** ·
+      khách quay lại **50,0%** (1/2 khách)
+- [ ] Bảng theo dịch vụ có đúng một dòng: **Tắm và sấy — 4 lượt — 210.000đ**
+- [ ] Đổi "Từ ngày" thành 6 ngày trước hôm nay, bấm **Xem** → doanh thu **150.000đ**, chưa thu **0đ**:
+      khoản 60.000đ và nợ 90.000đ của buổi tháng trước rời khỏi kỳ _(ô này chứng minh việc sửa ngày
+      hóa đơn ở chặng 1)_
+- [ ] Chọn một tháng của năm ngoái → bốn thẻ đều là 0, bảng thay bằng dòng "Không có lượt dịch vụ hay
+      khoản thu nào trong kỳ này", không phải trang lỗi
+- [ ] Chọn "Từ ngày" sau "Đến ngày" → khung đỏ "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc", hai
+      ô ngày **vẫn giữ** ngày vừa chọn
+- [ ] Thu hẹp cửa sổ còn khoảng 1000px → bốn thẻ số xuống dòng gọn, không tràn ngang
 
 ## P7 — Tính năng AI
 
