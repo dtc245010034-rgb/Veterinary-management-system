@@ -37,15 +37,15 @@ mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ kh�
 | P3 | ✅ xong | 05/09 | [`P3-chang1`](testing/reports/2026-09-05-P3-chang1.md), [`P3-chang2`](testing/reports/2026-09-05-P3-chang2.md) |
 | P4 | ✅ xong | 05–06/09 | [`P4-chang1`](testing/reports/2026-09-05-P4-chang1.md), [`P4-chang2`](testing/reports/2026-09-05-P4-chang2.md), [`rà luồng`](testing/reports/2026-09-06-ra-luong-P4-chang2.md) |
 | P5 | ✅ xong | 06–08/09 | [`P5-chang1`](testing/reports/2026-09-06-P5-chang1.md), [`rà luồng chặng 1`](testing/reports/2026-09-07-ra-luong-P5-chang1.md), [`P5-chang2`](testing/reports/2026-09-07-P5-chang2.md), [`rà luồng chặng 2`](testing/reports/2026-09-08-ra-luong-P5-chang2.md) |
-| **P6** | 🟡 **code xong, chờ smoke** — 15 ô smoke chờ bấm · [kế hoạch](plans/2026-09-11-p6-thong-ke.md) | 11/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md), [`rà luồng`](testing/reports/2026-09-11-ra-luong-P6.md) |
-| **P7** | ⬜ **làm tiếp ở đây** sau khi P6 tick smoke | — | — |
+| P6 | ✅ xong | 11–13/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md), [`rà luồng`](testing/reports/2026-09-11-ra-luong-P6.md) |
+| **P7** | ⬜ **làm tiếp ở đây** | — | — |
 | P8 | ⬜ chưa làm | — | — |
 
 Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡 · 27 ⬜** trên 102 ca, smoke
 **97 ô đã tick / 29 ô còn lại đều thuộc P6–P8**, ERD **12/13 bảng** đã dựng (còn `ai_logs` của P7).
 
-Tính tới P6 code xong và rà luồng (11/09): **516 test xanh**, ma trận **80 ✅ · 2 🟡 · 20 ⬜** (20 ô
-còn lại thuộc P7–P8), smoke **97 tick / 36 trống** — 15 ô của P6 chờ bấm, 21 ô thuộc P7–P8.
+Tính tới hết P6 (13/09): **516 test xanh**, ma trận **80 ✅ · 2 🟡 · 20 ⬜** (20 ô còn lại thuộc
+P7–P8), smoke **112 tick / 21 trống — 21 ô còn lại đều thuộc P7–P8**, ERD 12/13 bảng đã dựng.
 
 ---
 
@@ -150,6 +150,25 @@ nhắc lịch, tóm tắt, hỏi đáp. Lọc dữ liệu cá nhân. Ghi `ai_log
 Đáp ứng yêu cầu đề bài mục 6: *"KT3: Dùng AI thiết kế prompt an toàn, test câu hỏi vượt phạm vi y tế
 thú y."*
 
+**Năm việc P6 để lại** (chốt ngày 13/09 — đọc trước khi lập kế hoạch P7; bốn việc đầu **cần người
+dùng quyết**, chưa ai làm):
+
+1. **Bước xác nhận cho thao tác không hoàn tác được.** Hủy hóa đơn, Xóa thú cưng/chủ nuôi, Khóa tài
+   khoản, Hủy lịch hiện chỉ cần **một cú bấm**. Nặng nhất là hủy hóa đơn: mỗi lịch chỉ một hóa đơn
+   trọn đời, bấm nhầm là buổi đó không bao giờ lập lại hóa đơn được. Cần chọn cách: bước xác nhận
+   trên trang, hay ô "tôi chắc chắn". Không dùng `confirm()` của JavaScript — nó chặn cả tiện ích
+   trình duyệt khi agent rà luồng.
+2. **Thời gian tầng unit** 21,5–26,9s, trên ngân sách 15s. Không test nào đáng cắt; gần nửa thời gian
+   là fixture `db` gọi `create_all` cho từng test. Hai hướng: dựng schema một lần mỗi phiên test +
+   rollback từng test, hay nới ngân sách trong `testing/test-strategy.md`.
+3. **Kẽ hở phép canh `codebase-map`:** nó chấp nhận một file nếu bản đồ có dòng nào **cùng tên file**
+   ở thư mục khác, nên `routers/stats.py` từng lọt qua nhờ dòng `services/stats.py`. Sửa thành so
+   đường dẫn đầy đủ, hoặc chấp nhận và ghi rõ giới hạn.
+4. **TC-027** (hóa đơn bán gói) còn 🟡 — người dùng đã chốt 11/09 là **ghi "ngoài phạm vi" ở P8**,
+   việc ghi vẫn chưa làm.
+5. **Trước khi viết `gemini.py`:** kiểm lại tên model trong `.env.example` (`gemini-2.0-flash`) còn
+   được hỗ trợ không. Tên model cũ là lỗi 404 lúc chạy thật, không phải lỗi code.
+
 Phase này có hai lượt kiểm thử: tự động với `FakeProvider` (TC-082→100), và **chạy tay với Gemini
 thật** cho 20 ca G-01→G-20, chép nguyên câu hỏi/phản hồi vào báo cáo. Lượt thứ hai là bắt buộc — test
 tự động chỉ kiểm chứng được phần guardrail nằm trong code của chúng ta, không kiểm chứng được mô hình
@@ -162,6 +181,10 @@ thật có tuân thủ hay không.
 
 README hoàn chỉnh, báo cáo, slide, rà soát dữ liệu cá nhân trong `ai_logs`. Kiểm tra dựng lại hệ thống
 từ CSDL trống trên máy sạch.
+
+Hai việc để lại từ P6 cho phase này: ghi rõ **TC-027 ngoài phạm vi** trong ma trận và báo cáo; và khi
+chạy trên **CSDL trống**, form đặt lịch hiện ô chọn rỗng mà không có câu hướng dẫn nào — chỉ trình
+duyệt chặn bằng thông báo của chính nó (phát hiện khi rà luồng 11/09).
 
 Đáp ứng yêu cầu đề bài mục 6: *"Cuối kỳ: Dùng AI viết README, báo cáo, slide và review dữ liệu cá nhân."*
 

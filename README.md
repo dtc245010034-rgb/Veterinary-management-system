@@ -6,7 +6,7 @@ chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham 
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P6 xong phần code, chờ smoke test** — quản lý chủ
+Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P6 xong** — quản lý chủ
 nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh
 toán và thống kê đều chạy được. Còn P7 tích hợp AI, P8 hoàn thiện — xem tiến độ từng phase trong
 [`docs/roadmap.md`](docs/roadmap.md).

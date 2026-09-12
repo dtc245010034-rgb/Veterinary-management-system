@@ -19,12 +19,12 @@ bị bỏ qua — và một hệ thống test bị bỏ qua thì bằng không c
 | **Regression** | Chạy lại **toàn bộ** suite | Trước mỗi commit | < 1 phút | `pytest` |
 | **Hệ thống hoàn chỉnh** | `tests/e2e/test_full_flow.py` + [`smoke-checklist.md`](smoke-checklist.md) bấm tay | Cuối mỗi phase P1–P8 | vài phút | `pytest tests/e2e` |
 
-> **Thực đo ngày 11/09 (P6):** unit 335 ca, trung vị 3 lần **26,9s** — **vượt** ngân sách, cả ở
-> integration và toàn bộ. Không có test nào đáng cắt: chậm nhất 1,03s (test hook), còn lại dưới
-> 0,3s. Gần **một nửa** thời gian tầng unit (10,8s / 23s) là fixture `db` dựng CSDL mới bằng
-> `create_all` cho **từng** test. Ngân sách giữ nguyên chờ người dùng chọn: dựng schema một lần
-> mỗi phiên + rollback từng test, hay nới ngân sách. Chi tiết:
-> [`reports/2026-09-11-P6.md`](reports/2026-09-11-P6.md).
+> **Thực đo ngày 11–13/09 (P6):** unit 336 ca chạy **21,5s – 26,9s** tùy tải máy (trung vị ba lần
+> liền nhau: 26,9s; lần máy rảnh nhất: 21,5s) — **vượt** ngân sách, cả ở integration và toàn bộ.
+> Không có test nào đáng cắt: chậm nhất 1,03s (test hook), còn lại dưới 0,3s. Gần **một nửa** thời
+> gian tầng unit (10,8s / 23s) là fixture `db` dựng CSDL mới bằng `create_all` cho **từng** test.
+> Ngân sách giữ nguyên chờ người dùng chọn: dựng schema một lần mỗi phiên + rollback từng test, hay
+> nới ngân sách. Chi tiết: [`reports/2026-09-11-P6.md`](reports/2026-09-11-P6.md).
 
 **"Test hồi quy" không phải một loại test cần viết riêng.** Nó là việc chạy lại toàn bộ suite cũ sau
 khi thêm code mới. Hiểu như vậy thì không phải nuôi hai bộ test song song — mọi test đã viết đều tự

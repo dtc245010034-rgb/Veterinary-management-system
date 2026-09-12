@@ -31,7 +31,7 @@ hethongquanlythucung/
 │   ├── services/            LOGIC NGHIỆP VỤ — không import gì từ FastAPI
 │   │   ├── scheduling.py    đặt/đổi/hủy lịch, kiểm tra trùng lịch
 │   │   ├── billing.py       lập hóa đơn, ghi nhận thanh toán
-│   │   ├── stats.py         lượt dịch vụ, doanh thu, khách quay lại (P6)
+│   │   ├── stats.py         lượt dịch vụ, doanh thu, khách quay lại
 │   │   └── …                users, owners, catalog, care_records, vaccinations, clock, text, errors
 │   ├── ai/                  (P7 — chưa có)
 │   │   ├── provider.py      interface AIProvider
@@ -40,7 +40,7 @@ hethongquanlythucung/
 │   │   ├── prompts.py       system prompt + câu khuyến cáo chuẩn
 │   │   └── service.py       3 use case: reminder, summary, qa
 │   ├── routers/             chỉ HTTP: auth, users, owners, pets, services, appointments,
-│   │                        care_records, vaccinations, invoices; stats (P6), ai (P7)
+│   │                        care_records, vaccinations, invoices, stats; ai (P7)
 │   ├── templates/           Jinja2
 │   └── static/              style.css — một file CSS, chưa có JS riêng
 ├── tests/

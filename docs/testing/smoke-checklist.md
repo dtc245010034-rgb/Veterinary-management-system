@@ -228,9 +228,9 @@ Hai lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-08-ra-luong-P5-ch
 > Chuẩn bị: **xóa `petcare.db`** rồi chạy `python -m app.seed` — seed không lập lại hóa đơn đã có,
 > nên CSDL cũ vẫn giữ ngày sai.
 
-- [ ] Đăng nhập `letan`, mở **Hóa đơn** → hai hóa đơn mẫu có **ngày lập khác nhau**: một là hôm qua,
+- [x] Đăng nhập `letan`, mở **Hóa đơn** → hai hóa đơn mẫu có **ngày lập khác nhau**: một là hôm qua,
       một là cách đây 28 ngày _(trước đây cả hai mang ngày chạy seed)_
-- [ ] Mở hóa đơn cũ hơn (thu một phần) → "Ngày lập" và ngày trong lịch sử thanh toán **trùng ngày
+- [x] Mở hóa đơn cũ hơn (thu một phần) → "Ngày lập" và ngày trong lịch sử thanh toán **trùng ngày
       buổi chăm sóc**, không phải hôm nay
 
 ### Chặng 2 — trang thống kê
@@ -240,35 +240,35 @@ Hai lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-08-ra-luong-P5-ch
 > trước của Mực (thu 60.000đ, còn nợ 90.000đ). Các con số dưới đây đã đối chiếu trên app thật
 > ngày 11/09. Đã ghi thêm hồ sơ hay thu tiền thì số sẽ khác.
 
-- [ ] `letan` gõ thẳng `/stats` → trang 403 _(TC-006 viết cho `caretaker`; lễ tân cũng không có quyền)_
-- [ ] `chamsoc1` gõ thẳng `/stats` → trang 403 _(TC-006, hoãn từ P1 vì khi đó chưa có trang này)_
-- [ ] `quanly` bấm **Thống kê** trên thanh điều hướng → hai ô ngày điền sẵn 30 ngày gần nhất, và bốn
+- [x] `letan` gõ thẳng `/stats` → trang 403 _(TC-006 viết cho `caretaker`; lễ tân cũng không có quyền)_
+- [x] `chamsoc1` gõ thẳng `/stats` → trang 403 _(TC-006, hoãn từ P1 vì khi đó chưa có trang này)_
+- [x] `quanly` bấm **Thống kê** trên thanh điều hướng → hai ô ngày điền sẵn 30 ngày gần nhất, và bốn
       thẻ: **4 lượt** (trong đó 3 đã hoàn thành) · doanh thu **210.000đ** · chưa thu **90.000đ** ·
       khách quay lại **50,0%** (1/2 khách)
-- [ ] Bảng theo dịch vụ có đúng một dòng: **Tắm và sấy — 4 lượt — 210.000đ**
-- [ ] Đổi "Từ ngày" thành 6 ngày trước hôm nay, bấm **Xem** → doanh thu **150.000đ**, chưa thu **0đ**:
+- [x] Bảng theo dịch vụ có đúng một dòng: **Tắm và sấy — 4 lượt — 210.000đ**
+- [x] Đổi "Từ ngày" thành 6 ngày trước hôm nay, bấm **Xem** → doanh thu **150.000đ**, chưa thu **0đ**:
       khoản 60.000đ và nợ 90.000đ của buổi tháng trước rời khỏi kỳ _(ô này chứng minh việc sửa ngày
       hóa đơn ở chặng 1)_
-- [ ] Chọn một tháng của năm ngoái → bốn thẻ đều là 0, bảng thay bằng dòng "Không có lượt dịch vụ hay
+- [x] Chọn một tháng của năm ngoái → bốn thẻ đều là 0, bảng thay bằng dòng "Không có lượt dịch vụ hay
       khoản thu nào trong kỳ này", không phải trang lỗi
-- [ ] Chọn "Từ ngày" sau "Đến ngày" → khung đỏ "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc", hai
+- [x] Chọn "Từ ngày" sau "Đến ngày" → khung đỏ "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc", hai
       ô ngày **vẫn giữ** ngày vừa chọn
-- [ ] Thu hẹp cửa sổ còn khoảng 1000px → bốn thẻ số xuống dòng gọn, không tràn ngang
+- [x] Thu hẹp cửa sổ còn khoảng 1000px → bốn thẻ số xuống dòng gọn, không tràn ngang
 
 ### Sau đợt rà bằng trình duyệt ngày 11/09 — cùng P6
 
 Sáu lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-11-ra-luong-P6.md`](reports/2026-09-11-ra-luong-P6.md).
 Ba ô cuối ghi vào dữ liệu — làm **sau** các ô số liệu ở trên, nếu không số thống kê sẽ lệch.
 
-- [ ] Trang Thống kê trên màn hình máy tính → bốn thẻ số nằm trên **một hàng**, không còn thẻ thứ tư
+- [x] Trang Thống kê trên màn hình máy tính → bốn thẻ số nằm trên **một hàng**, không còn thẻ thứ tư
       rớt xuống dòng một mình
-- [ ] Xóa trống ô "Từ ngày", chọn "Đến ngày" là 30/06/2025, bấm **Xem** → **không** báo lỗi; ô "Từ ngày"
+- [x] Xóa trống ô "Từ ngày", chọn "Đến ngày" là 30/06/2025, bấm **Xem** → **không** báo lỗi; ô "Từ ngày"
       tự điền 01/06/2025
-- [ ] Mở một hóa đơn còn nợ, gõ `NaN` vào ô số tiền, bấm **Ghi nhận** → khung đỏ "Số tiền phải là một
+- [x] Mở một hóa đơn còn nợ, gõ `NaN` vào ô số tiền, bấm **Ghi nhận** → khung đỏ "Số tiền phải là một
       số", ô vẫn giữ chữ vừa gõ — **không** phải màn hình đen
-- [ ] `quanly` thêm dịch vụ giá `Infinity` → khung đỏ "Giá phải là một số"; mở lại trang Dịch vụ vẫn
+- [x] `quanly` thêm dịch vụ giá `Infinity` → khung đỏ "Giá phải là một số"; mở lại trang Dịch vụ vẫn
       bình thường
-- [ ] Thêm thú cưng với cân nặng `nan` → khung đỏ "Cân nặng phải là một số", những gì đã gõ vẫn còn
+- [x] Thêm thú cưng với cân nặng `nan` → khung đỏ "Cân nặng phải là một số", những gì đã gõ vẫn còn
 
 ## P7 — Tính năng AI
 

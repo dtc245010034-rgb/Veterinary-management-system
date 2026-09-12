@@ -4,7 +4,11 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-11 (P6 code xong) · **Trạng thái:** P0→P5 xong, P6 code xong chờ smoke — chủ nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh toán và thống kê đều chạy được. Tiếp theo: **P7 tích hợp AI**. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+**Cập nhật lần cuối:** 2026-09-13 (đóng P6) · **Trạng thái:** P0→P6 xong — chủ nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh toán và thống kê đều chạy được. Tiếp theo: **P7 tích hợp AI**. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+
+> **Làm tiếp:** P7 — tích hợp AI. Năm việc P6 để lại, **bốn trong đó cần người dùng quyết**, nằm ở
+> mục P7 của [`roadmap.md`](roadmap.md). Bối cảnh chi tiết: [`sessions/2026-09-11-01.md`](sessions/2026-09-11-01.md)
+> phần 5 và 6.
 
 ---
 
