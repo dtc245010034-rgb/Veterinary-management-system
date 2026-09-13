@@ -48,7 +48,9 @@ Tính tới hết P6 (13/09): **516 test xanh**, ma trận **80 ✅ · 2 🟡 ·
 P7–P8), smoke **112 tick / 21 trống — 21 ô còn lại đều thuộc P7–P8**, ERD 12/13 bảng đã dựng.
 
 Sau đợt dọn việc tồn 13/09 ([kế hoạch](plans/2026-09-13-viec-ton-p6.md)): **522 test xanh**, ma trận
-**80 ✅ · 1 🟡 · 20 ⬜ · 1 ➖** — TC-027 chuyển sang "ngoài phạm vi" kèm lý do, đúng như đã chốt.
+**80 ✅ · 1 🟡 · 20 ⬜ · 1 ➖** — TC-027 chuyển sang "ngoài phạm vi" kèm lý do, đúng như đã chốt —
+smoke **117 tick / 21 trống, cả 21 đều thuộc P7–P8**, ERD 12/13 bảng đã dựng. **Không còn việc nào
+chờ người dùng quyết.**
 
 ---
 

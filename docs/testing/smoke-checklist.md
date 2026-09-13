@@ -279,14 +279,14 @@ Người dùng chốt: **trang xác nhận riêng**, cho ba thao tác làm mất
 > Ba ô đầu chỉ mở trang xác nhận rồi quay lại, **không xóa gì**. Hai ô cuối mới thật sự xóa, nên làm
 > sau cùng — hoặc làm trên CSDL seed lại.
 
-- [ ] Mở một hóa đơn **chưa thu đồng nào** → bấm **Hủy hóa đơn** → trang "Xác nhận hủy hóa đơn #…"
+- [x] Mở một hóa đơn **chưa thu đồng nào** → bấm **Hủy hóa đơn** → trang "Xác nhận hủy hóa đơn #…"
       hiện tên khách, tên thú cưng, số tiền, và câu cảnh báo "không lập lại hóa đơn được nữa"
-- [ ] Ở trang đó bấm **Quay lại** → về đúng trang hóa đơn, hóa đơn **vẫn còn nguyên**, chưa bị hủy
-- [ ] Mở một chủ nuôi → bấm **Xóa chủ nuôi** → trang xác nhận hiện họ tên, số điện thoại, số thú
+- [x] Ở trang đó bấm **Quay lại** → về đúng trang hóa đơn, hóa đơn **vẫn còn nguyên**, chưa bị hủy
+- [x] Mở một chủ nuôi → bấm **Xóa chủ nuôi** → trang xác nhận hiện họ tên, số điện thoại, số thú
       cưng; bấm **Quay lại** → chủ nuôi vẫn còn trong danh sách
-- [ ] Bấm **Xóa** ở một thú cưng **chưa có lịch hẹn nào** → trang xác nhận **gọi đúng tên con vật** →
+- [x] Bấm **Xóa** ở một thú cưng **chưa có lịch hẹn nào** → trang xác nhận **gọi đúng tên con vật** →
       bấm nút đỏ → thú cưng biến khỏi danh sách của chủ
-- [ ] Bấm **Hủy hóa đơn** ở trang xác nhận (hóa đơn chưa thu) → hóa đơn chuyển **Đã hủy**, và trang
+- [x] Bấm **Hủy hóa đơn** ở trang xác nhận (hóa đơn chưa thu) → hóa đơn chuyển **Đã hủy**, và trang
       hóa đơn giải thích buổi đó không lập lại hóa đơn được
 
 ## P7 — Tính năng AI
