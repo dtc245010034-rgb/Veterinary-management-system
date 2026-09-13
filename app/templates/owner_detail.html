@@ -18,9 +18,8 @@
         <dt>Ghi chú</dt><dd>{{ chu_nuoi.note or "—" }}</dd>
       </dl>
       {% if user.role in ('manager', 'receptionist') %}
-        <form method="post" action="/owners/{{ chu_nuoi.id }}/xoa">
-          <button class="lien-ket">Xóa chủ nuôi</button>
-        </form>
+        {# Link GET sang trang hỏi lại, không POST thẳng: xóa là không lấy lại được. #}
+        <a class="lien-ket-nho" href="/owners/{{ chu_nuoi.id }}/xoa">Xóa chủ nuôi</a>
       {% endif %}
     </div>
 
@@ -38,7 +37,7 @@
             <td>{{ "%.1f kg"|format(p.weight_kg) if p.weight_kg else "—" }}</td>
             <td>
               {% if user.role in ('manager', 'receptionist') %}
-                <form method="post" action="/pets/{{ p.id }}/xoa"><button class="lien-ket">Xóa</button></form>
+                <a class="lien-ket-nho" href="/pets/{{ p.id }}/xoa">Xóa</a>
               {% endif %}
             </td>
           </tr>

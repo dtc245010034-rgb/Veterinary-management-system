@@ -101,12 +101,14 @@
     {% endif %}
 
     {% if hoa_don.status != 'cancelled' and not hoa_don.thanh_toan %}
-      <form class="the" method="post" action="/invoices/{{ hoa_don.id }}/huy">
+      {# Link GET sang trang hỏi lại, không POST thẳng: hủy nhầm là buổi này mất hẳn
+         hóa đơn trọn đời. Việc hủy vẫn do route POST cùng đường dẫn làm. #}
+      <div class="the">
         <h2>Hủy hóa đơn</h2>
         <p class="phu">Chỉ hủy được hóa đơn chưa thu đồng nào. Đã thu rồi thì hệ thống
           chưa làm nghiệp vụ hoàn tiền.</p>
-        <button type="submit" class="nguy-hiem">Hủy hóa đơn</button>
-      </form>
+        <a class="nguy-hiem" href="/invoices/{{ hoa_don.id }}/huy">Hủy hóa đơn</a>
+      </div>
     {% endif %}
   </div>
 </div>

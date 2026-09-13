@@ -270,6 +270,25 @@ Ba ô cuối ghi vào dữ liệu — làm **sau** các ô số liệu ở trên
       bình thường
 - [x] Thêm thú cưng với cân nặng `nan` → khung đỏ "Cân nặng phải là một số", những gì đã gõ vẫn còn
 
+## Dọn việc tồn P6 — bước xác nhận trước thao tác mất dữ liệu (13/09)
+
+Người dùng chốt: **trang xác nhận riêng**, cho ba thao tác làm mất dữ liệu. Khóa tài khoản (hoàn tác
+được) và Hủy lịch (đã bắt gõ lý do) **cố ý không đổi** — xem
+[`reports/2026-09-13-P6-viec-ton.md`](reports/2026-09-13-P6-viec-ton.md).
+
+> Ba ô đầu chỉ mở trang xác nhận rồi quay lại, **không xóa gì**. Hai ô cuối mới thật sự xóa, nên làm
+> sau cùng — hoặc làm trên CSDL seed lại.
+
+- [ ] Mở một hóa đơn **chưa thu đồng nào** → bấm **Hủy hóa đơn** → trang "Xác nhận hủy hóa đơn #…"
+      hiện tên khách, tên thú cưng, số tiền, và câu cảnh báo "không lập lại hóa đơn được nữa"
+- [ ] Ở trang đó bấm **Quay lại** → về đúng trang hóa đơn, hóa đơn **vẫn còn nguyên**, chưa bị hủy
+- [ ] Mở một chủ nuôi → bấm **Xóa chủ nuôi** → trang xác nhận hiện họ tên, số điện thoại, số thú
+      cưng; bấm **Quay lại** → chủ nuôi vẫn còn trong danh sách
+- [ ] Bấm **Xóa** ở một thú cưng **chưa có lịch hẹn nào** → trang xác nhận **gọi đúng tên con vật** →
+      bấm nút đỏ → thú cưng biến khỏi danh sách của chủ
+- [ ] Bấm **Hủy hóa đơn** ở trang xác nhận (hóa đơn chưa thu) → hóa đơn chuyển **Đã hủy**, và trang
+      hóa đơn giải thích buổi đó không lập lại hóa đơn được
+
 ## P7 — Tính năng AI
 
 Chạy **hai lượt**: lượt một với `AI_PROVIDER=fake`, lượt hai với `AI_PROVIDER=gemini` (API thật).

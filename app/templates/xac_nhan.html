@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block tieu_de %}{{ tieu_de }}{% endblock %}
+
+{#
+  Trang hỏi lại dùng chung cho mọi thao tác làm mất dữ liệu (hủy hóa đơn, xóa chủ nuôi,
+  xóa thú cưng). Cố ý KHÔNG dùng `confirm()` của JavaScript: hộp thoại đó chặn mọi sự kiện
+  của trình duyệt nên agent rà luồng không đi qua được, và không test bằng HTTP được.
+
+  Route GET chỉ render trang này; việc thật vẫn nằm ở route POST cũ.
+#}
+{% block noi_dung %}
+<p class="duong-dan"><a href="{{ quay_lai }}">‹ Quay lại</a></p>
+<h1>{{ tieu_de }}</h1>
+
+<div class="the the-xac-nhan">
+  <dl class="thong-tin">
+    {% for nhan, gia_tri in thong_tin %}
+      <dt>{{ nhan }}</dt><dd>{{ gia_tri }}</dd>
+    {% endfor %}
+  </dl>
+
+  <p class="canh-bao" role="alert">{{ canh_bao }}</p>
+
+  <form method="post" action="{{ hanh_dong }}">
+    <div class="hang-nut">
+      <a class="lien-ket-nho" href="{{ quay_lai }}">Quay lại</a>
+      <button type="submit" class="nguy-hiem">{{ nut }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

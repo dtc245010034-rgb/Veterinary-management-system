@@ -131,6 +131,54 @@ def test_xoa_chu_nuoi_con_thu_cung_bi_chan_kem_thong_bao(client, seed_basic):
     assert "thú cưng" in r.text.lower()
 
 
+def test_nut_xoa_chu_nuoi_dan_sang_trang_xac_nhan_chu_khong_xoa_ngay(client, seed_basic):
+    """Xóa chủ nuôi là thao tác không hoàn tác được — phải hỏi lại một bước."""
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client, ho_ten="Không Thú", sdt="0900000001")
+    ma = _ma_chu_nuoi_dau_tien(client)
+
+    trang = client.get(f"/owners/{ma}")
+
+    assert f'href="/owners/{ma}/xoa"' in trang.text
+
+
+def test_trang_xac_nhan_xoa_chu_nuoi_chua_xoa_gi(client, seed_basic):
+    """GET chỉ được hỏi lại, tuyệt đối không đổi dữ liệu."""
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client, ho_ten="Không Thú", sdt="0900000001")
+    ma = _ma_chu_nuoi_dau_tien(client)
+
+    trang = client.get(f"/owners/{ma}/xoa")
+
+    assert trang.status_code == 200
+    assert "không lấy lại được" in trang.text
+    assert "Không Thú" in client.get("/owners").text
+
+
+def test_trang_xac_nhan_xoa_thu_cung_noi_ro_ten_con_vat(client, seed_basic):
+    """Xác nhận mà không nói xóa con nào thì người dùng vẫn bấm mù."""
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client)
+    ma = _ma_chu_nuoi_dau_tien(client)
+    client.post(f"/owners/{ma}/pets", data={"ten": "Mực", "loai": "Chó"})
+
+    trang = client.get("/pets/1/xoa")
+
+    assert trang.status_code == 200
+    assert "Mực" in trang.text
+    assert "Mực" in client.get(f"/owners/{ma}").text
+
+
+def test_nhan_vien_cham_soc_khong_mo_duoc_trang_xac_nhan_xoa(client, seed_basic):
+    """Trang xác nhận phải chặn đúng như POST — thêm route là thêm một mặt phải canh."""
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client)
+    ma = _ma_chu_nuoi_dau_tien(client)
+    dang_nhap(client, "chamsoc1")
+
+    assert client.get(f"/owners/{ma}/xoa").status_code == 403
+
+
 def test_xoa_chu_nuoi_khong_co_thu_cung_thanh_cong(client, seed_basic):
     dang_nhap(client, "letan")
     them_chu_nuoi(client, ho_ten="Không Thú", sdt="0900000001")

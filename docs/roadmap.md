@@ -47,6 +47,9 @@ Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡
 Tính tới hết P6 (13/09): **516 test xanh**, ma trận **80 ✅ · 2 🟡 · 20 ⬜** (20 ô còn lại thuộc
 P7–P8), smoke **112 tick / 21 trống — 21 ô còn lại đều thuộc P7–P8**, ERD 12/13 bảng đã dựng.
 
+Sau đợt dọn việc tồn 13/09 ([kế hoạch](plans/2026-09-13-viec-ton-p6.md)): **522 test xanh**, ma trận
+**80 ✅ · 1 🟡 · 20 ⬜ · 1 ➖** — TC-027 chuyển sang "ngoài phạm vi" kèm lý do, đúng như đã chốt.
+
 ---
 
 ## Chi tiết từng phase
@@ -150,24 +153,27 @@ nhắc lịch, tóm tắt, hỏi đáp. Lọc dữ liệu cá nhân. Ghi `ai_log
 Đáp ứng yêu cầu đề bài mục 6: *"KT3: Dùng AI thiết kế prompt an toàn, test câu hỏi vượt phạm vi y tế
 thú y."*
 
-**Năm việc P6 để lại** (chốt ngày 13/09 — đọc trước khi lập kế hoạch P7; bốn việc đầu **cần người
-dùng quyết**, chưa ai làm):
+**Năm việc P6 để lại — dọn xong hết ngày 13/09**, trước khi mở P7. Kế hoạch và bằng chứng:
+[`plans/2026-09-13-viec-ton-p6.md`](plans/2026-09-13-viec-ton-p6.md) ·
+[`báo cáo`](testing/reports/2026-09-13-P6-viec-ton.md).
 
-1. **Bước xác nhận cho thao tác không hoàn tác được.** Hủy hóa đơn, Xóa thú cưng/chủ nuôi, Khóa tài
-   khoản, Hủy lịch hiện chỉ cần **một cú bấm**. Nặng nhất là hủy hóa đơn: mỗi lịch chỉ một hóa đơn
-   trọn đời, bấm nhầm là buổi đó không bao giờ lập lại hóa đơn được. Cần chọn cách: bước xác nhận
-   trên trang, hay ô "tôi chắc chắn". Không dùng `confirm()` của JavaScript — nó chặn cả tiện ích
-   trình duyệt khi agent rà luồng.
-2. **Thời gian tầng unit** 21,5–26,9s, trên ngân sách 15s. Không test nào đáng cắt; gần nửa thời gian
-   là fixture `db` gọi `create_all` cho từng test. Hai hướng: dựng schema một lần mỗi phiên test +
-   rollback từng test, hay nới ngân sách trong `testing/test-strategy.md`.
-3. **Kẽ hở phép canh `codebase-map`:** nó chấp nhận một file nếu bản đồ có dòng nào **cùng tên file**
-   ở thư mục khác, nên `routers/stats.py` từng lọt qua nhờ dòng `services/stats.py`. Sửa thành so
-   đường dẫn đầy đủ, hoặc chấp nhận và ghi rõ giới hạn.
-4. **TC-027** (hóa đơn bán gói) còn 🟡 — người dùng đã chốt 11/09 là **ghi "ngoài phạm vi" ở P8**,
-   việc ghi vẫn chưa làm.
-5. **Trước khi viết `gemini.py`:** kiểm lại tên model trong `.env.example` (`gemini-2.0-flash`) còn
-   được hỗ trợ không. Tên model cũ là lỗi 404 lúc chạy thật, không phải lỗi code.
+1. ✅ **Bước xác nhận cho thao tác không hoàn tác được.** Người dùng chốt **trang xác nhận riêng**
+   (không dùng `confirm()` của JavaScript — nó chặn cả tiện ích trình duyệt khi agent rà luồng).
+   Áp cho **ba** thao tác làm mất dữ liệu: Hủy hóa đơn, Xóa chủ nuôi, Xóa thú cưng. Roadmap cũ ghi
+   thừa hai chỗ: **Khóa tài khoản hoàn tác được** (có nút Mở khóa), **Hủy lịch đã bắt gõ lý do**.
+2. ✅ **Thời gian tầng unit.** Nới ngân sách cho khớp thực đo (unit 30s, integration 45s, toàn bộ
+   90s) thay vì đổi fixture `db` ngay trước phase khó nhất. Lý do đầy đủ ghi ở
+   [`testing/test-strategy.md`](testing/test-strategy.md).
+3. ✅ **Kẽ hở phép canh `codebase-map`.** Nay so theo **đuôi đường dẫn cắt trên dấu `/`**, và dòng
+   chỉ ghi mỗi tên file chỉ được chấp nhận khi tên đó không trùng với file ở thư mục khác. Bắt được
+   thêm một chỗ thật: `app/auth.py` từng được nhận nhờ dòng của `routers/auth.py`.
+4. ✅ **TC-027** (hóa đơn bán gói) chuyển 🟡 → ➖ **ngoài phạm vi**, kèm lý do ngay trong ma trận:
+   hệ thống không có nghiệp vụ bán gói, hóa đơn lập từ một lịch hẹn và mỗi lịch một dịch vụ.
+5. ✅ **Tên model Gemini.** Kiểm 13/09 tại
+   [ai.google.dev](https://ai.google.dev/gemini-api/docs/models): **`gemini-2.0-flash` đặt từ P0 đã
+   bị tắt** ("Previous models — Shut down"). `.env.example` và `config.py` đổi sang
+   `gemini-2.5-flash`. **Vẫn phải gọi thử một lần bằng khóa thật ở đầu P7** — trang tài liệu nói
+   model còn sống không thay được một lần gọi 200.
 
 Phase này có hai lượt kiểm thử: tự động với `FakeProvider` (TC-082→100), và **chạy tay với Gemini
 thật** cho 20 ca G-01→G-20, chép nguyên câu hỏi/phản hồi vào báo cáo. Lượt thứ hai là bắt buộc — test
@@ -182,9 +188,9 @@ thật có tuân thủ hay không.
 README hoàn chỉnh, báo cáo, slide, rà soát dữ liệu cá nhân trong `ai_logs`. Kiểm tra dựng lại hệ thống
 từ CSDL trống trên máy sạch.
 
-Hai việc để lại từ P6 cho phase này: ghi rõ **TC-027 ngoài phạm vi** trong ma trận và báo cáo; và khi
-chạy trên **CSDL trống**, form đặt lịch hiện ô chọn rỗng mà không có câu hướng dẫn nào — chỉ trình
-duyệt chặn bằng thông báo của chính nó (phát hiện khi rà luồng 11/09).
+Một việc để lại từ P6 cho phase này: khi chạy trên **CSDL trống**, form đặt lịch hiện ô chọn rỗng mà
+không có câu hướng dẫn nào — chỉ trình duyệt chặn bằng thông báo của chính nó (phát hiện khi rà luồng
+11/09). Việc "ghi TC-027 ngoài phạm vi" **đã làm xong 13/09**, không còn chờ P8.
 
 Đáp ứng yêu cầu đề bài mục 6: *"Cuối kỳ: Dùng AI viết README, báo cáo, slide và review dữ liệu cá nhân."*
 

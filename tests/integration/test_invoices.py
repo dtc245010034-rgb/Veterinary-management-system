@@ -275,6 +275,33 @@ def test_huy_hoa_don_chua_thu_dong_nao(client, db, nen):
     assert "Đã hủy" in client.get(ma).text
 
 
+def test_nut_huy_hoa_don_dan_sang_trang_xac_nhan_chu_khong_huy_ngay(client, db, nen):
+    """Mỗi lịch chỉ lập được một hóa đơn trọn đời — bấm nhầm là mất hẳn buổi đó.
+
+    Nút phải là link GET sang trang xác nhận, không phải form POST hủy thẳng.
+    """
+    lich = lich_xong(db, nen)
+    dang_nhap(client, "letan")
+    ma = lap_hd(client, lich)
+
+    trang = client.get(ma)
+
+    assert f'href="{ma}/huy"' in trang.text
+
+
+def test_trang_xac_nhan_huy_hoa_don_noi_ro_hau_qua_va_chua_huy_gi(client, db, nen):
+    """GET chỉ được hỏi lại, tuyệt đối không đổi dữ liệu."""
+    lich = lich_xong(db, nen)
+    dang_nhap(client, "letan")
+    ma = lap_hd(client, lich)
+
+    trang = client.get(f"{ma}/huy")
+
+    assert trang.status_code == 200
+    assert "không lập lại hóa đơn được" in trang.text
+    assert "Đã hủy" not in client.get(ma).text
+
+
 def test_hoa_don_da_co_thanh_toan_khong_con_nut_huy(client, db, nen):
     """Ca biên: nút không được hiện khi bấm vào là bị từ chối."""
     lich = lich_xong(db, nen)

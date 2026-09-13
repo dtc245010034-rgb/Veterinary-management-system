@@ -7,7 +7,8 @@ test case ở đây. Khi cài đặt một phase, điền cột **File test** v�
 kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có test — đặc biệt yêu cầu ở mục 4:
 *"có test cho lịch hẹn, hóa đơn, hồ sơ và AI"*.
 
-**Trạng thái:** ⬜ chưa làm · 🟡 đang làm · ✅ xanh · ❌ đỏ (ghi lý do ở log phiên)
+**Trạng thái:** ⬜ chưa làm · 🟡 đang làm · ✅ xanh · ❌ đỏ (ghi lý do ở log phiên) · ➖ ngoài phạm
+vi (chốt với người dùng, kèm lý do ngay trong dòng — **không** được dùng để cất một ca khó đi)
 
 **Mức test:** `U` unit · `I` integration · `E` e2e — theo định nghĩa ở [`test-strategy.md`](test-strategy.md)
 
@@ -53,7 +54,7 @@ kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có 
 | TC-024 | US-07 | Thêm dịch vụ hợp lệ → xuất hiện khi đặt lịch | I | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py`, `tests/integration/test_appointments.py` | ✅ |
 | TC-025 | US-07 | Giá âm hoặc thời lượng ≤ 0 → bị từ chối | U | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` | ✅ |
 | TC-026 | US-07 | Đổi giá dịch vụ → hóa đơn cũ giữ nguyên giá | U | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py`, `test_billing_service.py::test_doi_gia_dich_vu_khong_lam_doi_hoa_don_cu` | ✅ |
-| TC-027 | US-08 | Tạo gói 3 dịch vụ → hiện khi lập hóa đơn | I | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — tạo gói xong; **P5 không làm hóa đơn bán gói** (ngoài phạm vi kế hoạch P5), nên nửa sau chưa có nơi kiểm | 🟡 |
+| TC-027 | US-08 | Tạo gói 3 dịch vụ → hiện khi lập hóa đơn | I | `tests/unit/test_models_service.py`, `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` — **nửa đầu (tạo gói, gói hiện trong danh sách đang bán) có test và xanh**. Nửa sau ➖: hệ thống **không có nghiệp vụ bán gói** — hóa đơn lập từ một lịch hẹn, mỗi lịch một dịch vụ. Người dùng chốt 11/09 là ngoài phạm vi; gói chỉ dùng để niêm yết giá so sánh. Muốn làm thật thì cần `invoice_items` nhiều dòng và luật trừ dần lượt trong gói — một phase riêng | ➖ |
 | TC-028 | US-08 | Chi tiết gói hiện thành phần và tổng giá lẻ để so sánh | I | `tests/unit/test_models_service.py`, `tests/integration/test_services.py` | ✅ |
 | TC-029 | US-08 | Gói không có thành phần → không lưu được | U | `tests/unit/test_catalog_service.py`, `tests/integration/test_services.py` | ✅ |
 | TC-030 | US-09 | Ngưng bán dịch vụ → biến mất khỏi danh sách đặt lịch mới | I | `tests/unit/test_catalog_service.py`, `tests/unit/test_scheduling.py`, `tests/integration/test_appointments.py` | ✅ |

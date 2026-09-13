@@ -281,3 +281,16 @@ td.thao-tac button { padding: 3px 10px; font-size: 13px; }
 .nhan-so { font-size: 14px; font-weight: 500; color: var(--chu-phu); margin: 0; }
 .so-lon { font-size: 28px; font-weight: 600; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
 .phu-nho { color: var(--chu-phu); font-size: 13px; margin: 0; }
+
+/* Trang xác nhận thao tác làm mất dữ liệu: một thẻ hẹp, thông tin đối tượng, cảnh báo,
+   rồi hai lối ra đặt cạnh nhau — "Quay lại" nhạt bên trái, nút phá hủy bên phải. */
+.the-xac-nhan { max-width: 520px; }
+.hang-nut { display: flex; gap: 16px; align-items: center; }
+
+/* Nút phá hủy nay là link GET sang trang xác nhận. Cho <a> cái hộp mà trình duyệt vẽ sẵn
+   cho <button>, để chỗ đó trông y như trước khi thêm bước hỏi lại. */
+a.nguy-hiem {
+  display: inline-block; padding: 6px 12px;
+  border: 1px solid #fecdca; border-radius: 7px;
+  background: #fff; text-decoration: none;
+}

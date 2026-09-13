@@ -100,21 +100,49 @@ def test_moi_file_app_va_tests_deu_co_trong_codebase_map():
     Trước khi có test này, luật đó chỉ được thực hiện khi agent nhớ ra.
 
     NẾU TEST NÀY ĐỎ: thêm dòng mô tả file vào `docs/codebase-map.md`, đừng xóa test.
+
+    Kẽ hở đã sửa 13/09: luật cũ nhận một file khi bản đồ có dòng nào **trùng tên file**,
+    kể cả ở thư mục khác — `app/routers/stats.py` từng lọt qua nhờ dòng `services/stats.py`,
+    và chỉ bị bắt bằng mắt. Nay so theo đuôi đường dẫn, cắt trên dấu `/`.
     """
     nhac = set(re.findall(r"`([^`]+)`", _doc(GOC / "docs" / "codebase-map.md")))
 
-    thieu = []
+    tep = []
     for thu_muc in ("app", "tests"):
         for p in sorted((GOC / thu_muc).rglob("*")):
             if not p.is_file() or "__pycache__" in p.parts:
                 continue
             if p.suffix not in (".py", ".html", ".css"):
                 continue
-            duong_dan = p.relative_to(GOC).as_posix()
-            if not any(m == duong_dan or m.endswith("/" + p.name) or m == p.name for m in nhac):
-                thieu.append(duong_dan)
+            # `__init__.py` rỗng chỉ đánh dấu package, không có vai trò gì để mô tả.
+            # `models/__init__.py` có nội dung (gom model cho `create_all`) nên vẫn bị đòi.
+            if p.name == "__init__.py" and not _doc(p).strip():
+                continue
+            tep.append(p)
+
+    trung_ten = {p.name for p in tep if sum(q.name == p.name for q in tep) > 1}
+
+    thieu = [
+        p.relative_to(GOC).as_posix()
+        for p in tep
+        if not any(
+            _bao_phu(p.relative_to(GOC).as_posix(), m, p.name in trung_ten) for m in nhac
+        )
+    ]
 
     assert not thieu, "File chưa có trong docs/codebase-map.md:\n  " + "\n  ".join(thieu)
+
+
+def _bao_phu(duong_dan: str, nhac: str, ten_bi_trung: bool) -> bool:
+    """Dòng bản đồ `nhac` có mô tả đúng file `duong_dan` không."""
+    if nhac == duong_dan:
+        return True
+    if not duong_dan.endswith("/" + nhac):
+        return False
+    # Dòng ghi mỗi tên file (`main.py`) thì chấp nhận — bản đồ chia mục theo thư mục nên
+    # viết đủ `app/main.py` ở mọi dòng là thừa. Nhưng khi hai thư mục có file trùng tên,
+    # một dòng như thế nhận thay cho cả hai: lúc đó bắt buộc ghi kèm thư mục.
+    return "/" in nhac or not ten_bi_trung
 
 
 def test_moi_loai_o_nhap_deu_dung_chung_quy_tac_khung_voi_input():

@@ -21,7 +21,10 @@ class Settings(BaseSettings):
     # Nhà cung cấp AI: "gemini" gọi API thật, "fake" trả lời cố định (dùng từ P7)
     ai_provider: str = "fake"
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    # Kiểm ngày 13/09 tại https://ai.google.dev/gemini-api/docs/models: `gemini-2.0-flash`
+    # đặt từ P0 nay nằm trong mục "Previous models — Shut down". Tên model chết là lỗi 404
+    # lúc chạy thật chứ không phải lỗi code, nên kiểm lại tên này trước khi viết gemini.py.
+    gemini_model: str = "gemini-2.5-flash"
 
 
 settings = Settings()

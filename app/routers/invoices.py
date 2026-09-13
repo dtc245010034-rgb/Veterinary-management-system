@@ -99,6 +99,43 @@ def thu_tien(
     return _ve_chi_tiet(hoa_don_id)
 
 
+@router.get("/{hoa_don_id}/huy", response_class=HTMLResponse)
+def trang_xac_nhan_huy(
+    request: Request,
+    hoa_don_id: int,
+    user: User = Depends(nguoi_dung_hien_tai),
+    db: Session = Depends(get_db),
+):
+    """Hỏi lại trước khi hủy. GET không đổi gì — việc thật nằm ở route POST bên dưới."""
+    try:
+        hoa_don = nv.lay_hoa_don(db, hoa_don_id)
+    except LoiNghiepVu as e:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(e))
+
+    return templates.TemplateResponse(
+        request,
+        "xac_nhan.html",
+        {
+            "user": user,
+            "tieu_de": f"Xác nhận hủy hóa đơn #{hoa_don.id}",
+            "thong_tin": [
+                ("Khách", hoa_don.appointment.pet.owner.full_name),
+                ("Thú cưng", hoa_don.appointment.pet.name),
+                # Dùng lại đúng filter của template: chép cách hiển thị tiền ra đây là
+                # mở nguồn sự thật thứ hai cho một thứ đã có một chỗ duy nhất.
+                ("Số tiền", templates.env.filters["tien"](hoa_don.total_amount)),
+            ],
+            "canh_bao": (
+                "Mỗi lịch hẹn chỉ lập được một hóa đơn trọn đời. Hủy rồi thì buổi này "
+                "không lập lại hóa đơn được nữa, phải đặt một lịch mới."
+            ),
+            "hanh_dong": f"/invoices/{hoa_don.id}/huy",
+            "quay_lai": f"/invoices/{hoa_don.id}",
+            "nut": "Hủy hóa đơn",
+        },
+    )
+
+
 @router.post("/{hoa_don_id}/huy", response_class=HTMLResponse)
 def huy(
     request: Request,

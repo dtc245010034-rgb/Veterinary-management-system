@@ -139,6 +139,34 @@ def trang_chi_tiet(
     )
 
 
+@router.get("/owners/{chu_nuoi_id}/xoa", response_class=HTMLResponse)
+def trang_xac_nhan_xoa_chu_nuoi(
+    request: Request,
+    chu_nuoi_id: int,
+    user: User = duoc_sua,
+    db: Session = Depends(get_db),
+):
+    """Hỏi lại trước khi xóa. GET không đổi gì — việc thật nằm ở route POST bên dưới."""
+    chu_nuoi = nv.lay_chu_nuoi(db, chu_nuoi_id)
+    return _trang_xac_nhan(
+        request,
+        user,
+        tieu_de=f"Xác nhận xóa chủ nuôi {chu_nuoi.full_name}",
+        thong_tin=[
+            ("Họ tên", chu_nuoi.full_name),
+            ("Số điện thoại", chu_nuoi.phone),
+            ("Thú cưng", len(chu_nuoi.pets)),
+        ],
+        canh_bao=(
+            "Xóa rồi thì hồ sơ chủ nuôi này không lấy lại được. Chủ nuôi còn thú cưng "
+            "thì hệ thống sẽ từ chối — xóa thú cưng trước."
+        ),
+        hanh_dong=f"/owners/{chu_nuoi.id}/xoa",
+        quay_lai=f"/owners/{chu_nuoi.id}",
+        nut="Xóa chủ nuôi",
+    )
+
+
 @router.post("/owners/{chu_nuoi_id}/xoa", response_class=HTMLResponse)
 def xoa_chu_nuoi(
     request: Request,
@@ -193,6 +221,33 @@ def them_thu_cung(
     return RedirectResponse(f"/owners/{chu_nuoi_id}", status_code=status.HTTP_303_SEE_OTHER)
 
 
+@router.get("/pets/{thu_cung_id}/xoa", response_class=HTMLResponse)
+def trang_xac_nhan_xoa_thu_cung(
+    request: Request,
+    thu_cung_id: int,
+    user: User = duoc_sua,
+    db: Session = Depends(get_db),
+):
+    thu_cung = nv.lay_thu_cung(db, thu_cung_id)
+    return _trang_xac_nhan(
+        request,
+        user,
+        tieu_de=f"Xác nhận xóa thú cưng {thu_cung.name}",
+        thong_tin=[
+            ("Tên", thu_cung.name),
+            ("Loài", thu_cung.species),
+            ("Chủ nuôi", thu_cung.owner.full_name),
+        ],
+        canh_bao=(
+            "Xóa rồi thì hồ sơ con vật này không lấy lại được. Thú cưng đã có lịch hẹn "
+            "hoặc mũi tiêm thì hệ thống sẽ từ chối."
+        ),
+        hanh_dong=f"/pets/{thu_cung.id}/xoa",
+        quay_lai=f"/owners/{thu_cung.owner_id}",
+        nut="Xóa thú cưng",
+    )
+
+
 @router.post("/pets/{thu_cung_id}/xoa", response_class=HTMLResponse)
 def xoa_thu_cung(
     request: Request,
@@ -210,6 +265,13 @@ def xoa_thu_cung(
         return trang_chi_tiet(request, chu_nuoi_id, user, db, loi=str(loi))
 
     return RedirectResponse(f"/owners/{chu_nuoi_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+
+def _trang_xac_nhan(request: Request, user: User, **noi_dung):
+    """Render trang hỏi lại dùng chung — xem `templates/xac_nhan.html`."""
+    return templates.TemplateResponse(
+        request, "xac_nhan.html", {"user": user, **noi_dung}
+    )
 
 
 def _doc_ngay(chuoi: str) -> date | None:

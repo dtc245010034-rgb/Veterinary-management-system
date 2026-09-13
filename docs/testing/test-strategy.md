@@ -14,17 +14,25 @@ bị bỏ qua — và một hệ thống test bị bỏ qua thì bằng không c
 
 | Tầng | Phạm vi | Chạy khi nào | Ngân sách | Lệnh |
 |---|---|---|---|---|
-| **Unit** | Hàm trong `app/services/`, `app/ai/prompts.py`. Không HTTP, DB in-memory hoặc không DB | Mỗi lần sửa code | < 15s | `pytest tests/unit` |
-| **Integration** | Router + DB in-memory qua `TestClient`. Có phân quyền, có validation | Cuối mỗi phiên làm việc | < 30s | `pytest tests/integration` |
-| **Regression** | Chạy lại **toàn bộ** suite | Trước mỗi commit | < 1 phút | `pytest` |
+| **Unit** | Hàm trong `app/services/`, `app/ai/prompts.py`. Không HTTP, DB in-memory hoặc không DB | Mỗi lần sửa code | < 30s | `pytest tests/unit` |
+| **Integration** | Router + DB in-memory qua `TestClient`. Có phân quyền, có validation | Cuối mỗi phiên làm việc | < 45s | `pytest tests/integration` |
+| **Regression** | Chạy lại **toàn bộ** suite | Trước mỗi commit | < 90s | `pytest` |
 | **Hệ thống hoàn chỉnh** | `tests/e2e/test_full_flow.py` + [`smoke-checklist.md`](smoke-checklist.md) bấm tay | Cuối mỗi phase P1–P8 | vài phút | `pytest tests/e2e` |
 
-> **Thực đo ngày 11–13/09 (P6):** unit 336 ca chạy **21,5s – 26,9s** tùy tải máy (trung vị ba lần
-> liền nhau: 26,9s; lần máy rảnh nhất: 21,5s) — **vượt** ngân sách, cả ở integration và toàn bộ.
-> Không có test nào đáng cắt: chậm nhất 1,03s (test hook), còn lại dưới 0,3s. Gần **một nửa** thời
-> gian tầng unit (10,8s / 23s) là fixture `db` dựng CSDL mới bằng `create_all` cho **từng** test.
-> Ngân sách giữ nguyên chờ người dùng chọn: dựng schema một lần mỗi phiên + rollback từng test, hay
-> nới ngân sách. Chi tiết: [`reports/2026-09-11-P6.md`](reports/2026-09-11-P6.md).
+> **Ngân sách nới ngày 13/09 cho khớp thực đo** — người dùng chốt. Ba con số cũ (15s / 30s / 60s)
+> đặt từ P0 khi suite mới có vài chục test; tới P6 là 516 test thì cả ba đều vượt, và một ngân sách
+> luôn vượt thì không ai còn nhìn nó nữa.
+>
+> Thực đo 11–13/09: unit 336 ca **21,5s – 26,9s** tùy tải máy; integration 179 ca **34,7s – 42,7s**;
+> toàn bộ **57s – 72s**. Không có test nào đáng cắt: chậm nhất 1,03s (test hook), còn lại dưới 0,3s.
+> Gần **một nửa** thời gian tầng unit (10,8s / 23s) là fixture `db` dựng CSDL mới bằng `create_all`
+> cho **từng** test — đó là cái giá của việc mỗi test hoàn toàn cô lập, và là thứ đã bắt được nhiều
+> lỗi rò trạng thái giữa các test. Hướng còn lại (dựng schema một lần mỗi phiên + rollback từng
+> test, ước giảm 8–9s) **cố ý không làm**: nó sửa đúng chỗ cả 516 test đi qua, ngay trước P7 là
+> phase khó nhất. Chi tiết đo: [`reports/2026-09-11-P6.md`](reports/2026-09-11-P6.md) mục 8.
+>
+> **Ngân sách này là mốc xem lại, không phải mốc chặn.** Vượt thì đo và tìm nguyên nhân, không cắt
+> test để lấy màu xanh.
 
 **"Test hồi quy" không phải một loại test cần viết riêng.** Nó là việc chạy lại toàn bộ suite cũ sau
 khi thêm code mới. Hiểu như vậy thì không phải nuôi hai bộ test song song — mọi test đã viết đều tự
