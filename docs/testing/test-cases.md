@@ -143,13 +143,13 @@ Toàn bộ chạy với `FakeProvider`. Mã `G-xx` tham chiếu bộ ca trong [`
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-082 | US-24 | Tin nhắn nhắc lịch nêu đúng tên thú cưng, dịch vụ, ngày giờ | U | | ⬜ |
-| TC-083 | US-24 | Nhắc lịch tiêm nêu vắc-xin, hạn, kèm khuyến cáo bác sĩ thú y | U | | ⬜ |
+| TC-082 | US-24 | Tin nhắn nhắc lịch nêu đúng tên thú cưng, dịch vụ, ngày giờ | U | `tests/unit/test_ai_service.py`, `tests/unit/test_prompts.py` | ✅ |
+| TC-083 | US-24 | Nhắc lịch tiêm nêu vắc-xin, hạn, kèm khuyến cáo bác sĩ thú y | U | `tests/unit/test_ai_service.py`, `tests/unit/test_prompts.py` | ✅ |
 | TC-084 | US-24 | Lễ tân sửa nội dung trước khi gửi → bản sửa được dùng | I | | ⬜ |
 | TC-085 | US-24 | Lời gọi AI lỗi → thông báo rõ ràng, trang không vỡ, lịch còn nguyên (G-17) | I | | ⬜ |
 | TC-086 | US-25 | Tóm tắt hồ sơ nhiều bản ghi → có nội dung, nêu mốc chính | I | | ⬜ |
-| TC-087 | US-25 | Thú cưng chưa có hồ sơ → báo chưa đủ dữ liệu, **không gọi API** (G-20) | U | | ⬜ |
-| TC-088 | US-25 | Tóm tắt luôn kèm `DISCLAIMER` | U | | ⬜ |
+| TC-087 | US-25 | Thú cưng chưa có hồ sơ → báo chưa đủ dữ liệu, **không gọi API** (G-20) | U | `tests/unit/test_ai_service.py` | ✅ |
+| TC-088 | US-25 | Tóm tắt luôn kèm `DISCLAIMER` | U | `tests/unit/test_ai_service.py`, `tests/unit/test_prompts.py` | ✅ |
 
 ### I.2 Guardrail hỏi đáp
 
@@ -158,20 +158,39 @@ Toàn bộ chạy với `FakeProvider`. Mã `G-xx` tham chiếu bộ ca trong [`
 | TC-089 | US-26 | Câu hỏi trong phạm vi → có trả lời, kết thúc bằng `DISCLAIMER` (G-01→G-03) | I | | ⬜ |
 | TC-090 | US-26 | `DISCLAIMER` hiện trên giao diện **kể cả khi lời gọi AI lỗi** (G-19) | I | | ⬜ |
 | TC-091 | US-26 | Mỗi lượt hỏi đáp sinh một bản ghi `ai_logs` | I | | ⬜ |
-| TC-092 | US-27 | Câu hỏi dấu hiệu bệnh lý → khuyên đi khám, không kết luận bệnh (G-04→G-07) | U | | ⬜ |
-| TC-093 | US-27 | Xin liều thuốc → không trả về số kèm `mg`/`ml`/`viên` (G-08→G-10) | U | | ⬜ |
-| TC-094 | US-27 | Câu hỏi ngoài phạm vi → từ chối lịch sự, nêu rõ phạm vi (G-11, G-12) | U | | ⬜ |
-| TC-095 | US-27 | Câu lệnh ép bỏ qua hướng dẫn → guardrail không bị vô hiệu (G-13) | U | | ⬜ |
-| TC-096 | US-27 | System prompt đúng loại được gắn cho từng `feature` | U | | ⬜ |
+| TC-092 | US-27 | Câu hỏi dấu hiệu bệnh lý → khuyên đi khám, không kết luận bệnh (G-04→G-07) | U | `tests/unit/test_ai_service.py` | ✅ |
+| TC-093 | US-27 | Xin liều thuốc → không trả về số kèm `mg`/`ml`/`viên` (G-08→G-10) | U | `tests/unit/test_guardrail.py`, `tests/unit/test_ai_service.py` | ✅ |
+| TC-094 | US-27 | Câu hỏi ngoài phạm vi → từ chối lịch sự, nêu rõ phạm vi (G-11, G-12) | U | `tests/unit/test_prompts.py` | 🟡 code chỉ kiểm được system prompt **có** luật này; mô hình tuân thủ hay không thì chạy tay ở chặng 3 |
+| TC-095 | US-27 | Câu lệnh ép bỏ qua hướng dẫn → guardrail không bị vô hiệu (G-13) | U | `tests/unit/test_ai_service.py`, `tests/unit/test_guardrail.py` | ✅ |
+| TC-096 | US-27 | System prompt đúng loại được gắn cho từng `feature` | U | `tests/unit/test_prompts.py`, `tests/unit/test_ai_service.py` | ✅ |
 
 ### I.3 Dữ liệu cá nhân
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-097 | US-28 | Prompt nhắc lịch không chứa số điện thoại, email, địa chỉ (G-14) | U | | ⬜ |
-| TC-098 | US-28 | Prompt tóm tắt không chứa dữ liệu liên hệ (G-15) | U | | ⬜ |
+| TC-097 | US-28 | Prompt nhắc lịch không chứa số điện thoại, email, địa chỉ (G-14) | U | `tests/unit/test_ai_service.py`, `tests/unit/test_guardrail.py` | ✅ |
+| TC-098 | US-28 | Prompt tóm tắt không chứa dữ liệu liên hệ (G-15) | U | `tests/unit/test_ai_service.py` | ✅ |
 | TC-099 | US-28 | `ai_logs.prompt` đã lưu cũng không chứa dữ liệu liên hệ (G-16) | I | | ⬜ |
 | TC-100 | US-28 | Lời gọi AI lỗi → `ai_logs.is_error = true` (G-18) | I | | ⬜ |
+
+### I.4 Xoay ca model và quota — thêm ở P7 chặng 1
+
+Gói miễn phí giới hạn lượt/ngày cho mỗi model và quota reset theo giờ Pacific, nên hệ thống phải tự
+đổi model. Nhóm này không thuộc user story nào: nó là điều kiện để ba tính năng AI chạy được trong
+thực tế. Chi tiết: [`../plans/2026-09-18-p7-tich-hop-ai.md`](../plans/2026-09-18-p7-tich-hop-ai.md).
+
+| TC | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|
+| TC-103 | Ngày quota tính theo giờ Pacific, đúng cả mùa hè lẫn mùa đông bên Mỹ | U | `tests/unit/test_ai_quota.py` | ✅ |
+| TC-104 | Luôn thử model đầu danh sách; model lỗi thì xoay sang model kế | U | `tests/unit/test_ai_quota.py` | ✅ |
+| TC-105 | 503 → model nghỉ một lát rồi được dùng lại | U | `tests/unit/test_ai_quota.py` | ✅ |
+| TC-106 | 429 theo ngày → bỏ model tới khi reset, ghi lại hạn mức thật | U | `tests/unit/test_ai_quota.py`, `tests/unit/test_gemini.py` | ✅ |
+| TC-107 | 429 theo phút → chỉ nghỉ đúng thời gian Google báo, không bỏ cả ngày | U | `tests/unit/test_ai_quota.py`, `tests/unit/test_gemini.py` | ✅ |
+| TC-108 | 404 → loại hẳn model; 400/401/403 → dừng xoay ngay | U | `tests/unit/test_ai_quota.py`, `tests/unit/test_gemini.py` | ✅ |
+| TC-109 | Hết sạch model → lỗi tiếng Việt, trang không vỡ | U | `tests/unit/test_ai_quota.py` | ✅ |
+| TC-110 | Đếm lượt: 503 tính, 429 và 404 không tính | U | `tests/unit/test_ai_quota.py` | ✅ |
+| TC-111 | Ngân sách thời gian cắt chuỗi thử, không để treo trang | U | `tests/unit/test_ai_quota.py` | ✅ |
+| TC-112 | Bảng quota in đúng mẫu, phân biệt số thật với số ước tính | U | `tests/unit/test_ai_quota.py` | ✅ |
 
 ## J. Hệ thống hoàn chỉnh — chạy cuối mỗi phase từ P5
 
@@ -201,8 +220,9 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | G. Hóa đơn, thanh toán | US-19 → US-21 | TC-065 → TC-075 | 11 |
 | H. Thống kê | US-22, US-23 | TC-076 → TC-081 | 6 |
 | I. AI | US-24 → US-28 | TC-082 → TC-100 | 19 |
+| I.4 Xoay model, quota | — (vận hành) | TC-103 → TC-112 | 10 |
 | J. Xuyên suốt | — | TC-101, TC-102 | 2 |
-| | **28/28 US** | | **102** |
+| | **28/28 US** | | **112** |
 
 ### Theo yêu cầu đề bài mục 4
 
@@ -212,6 +232,7 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | Test cho **hóa đơn** | TC-065 → TC-075 | 11 |
 | Test cho **hồ sơ** | TC-053 → TC-058 | 6 |
 | Test cho **AI** | TC-082 → TC-100 | 19 |
+| Hạ tầng AI (xoay model, quota) | TC-103 → TC-112 | 10 |
 
 **Kết luận: 28/28 user story có test case. Bốn hạng mục đề bài yêu cầu đích danh đều được phủ, trong
-đó lịch hẹn và AI — hai phần khó nhất — chiếm 40/102 test case.**
+đó lịch hẹn và AI — hai phần khó nhất — chiếm 50/112 test case.**

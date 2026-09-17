@@ -21,6 +21,11 @@ FILE_ROUTER = sorted((GOC / "app" / "routers").glob("*.py"))
 FILE_SERVICE = [
     p for p in sorted((GOC / "app" / "services").glob("*.py")) if p.name != "__init__.py"
 ]
+# Luật bao phủ của CLAUDE.md mục 7 nói tới `app/services/`, nhưng `app/ai/` cũng là tầng
+# nghiệp vụ gọi thẳng được và là nơi guardrail sống — mở phép canh sang đó từ P7.
+FILE_AI = [
+    p for p in sorted((GOC / "app" / "ai").glob("*.py")) if p.name != "__init__.py"
+]
 
 
 def _doc(p: Path) -> str:
@@ -68,7 +73,15 @@ def test_router_khong_import_thang_vao_app_ai(tep):
     nhất: gọi thẳng `gemini.py` từ router sẽ bỏ qua bước lọc dữ liệu cá nhân và bước
     chèn khuyến cáo bác sĩ thú y.
     """
-    sai = [m for m in re.findall(r"^\s*from app\.ai\.(\w+)", _doc(tep), re.M) if m != "service"]
+    # Bắt cả hai lối viết: `from app.ai.x import ...` và `import app.ai.x`. Kẽ hở này lộ ra
+    # khi mở P7 — bản cũ chỉ bắt lối thứ nhất, nên lối thứ hai vẫn lách qua được.
+    noi_dung = _doc(tep)
+    sai = [
+        m
+        for m in re.findall(r"^\s*from app\.ai\.(\w+)", noi_dung, re.M)
+        + re.findall(r"^\s*import app\.ai\.(\w+)", noi_dung, re.M)
+        if m != "service"
+    ]
 
     assert not sai, (
         f"{tep.name} import thẳng app/ai/{sai}. Chỉ được gọi qua app/ai/service.py."
@@ -196,8 +209,8 @@ def test_moi_ham_public_trong_services_deu_duoc_goi_thang_trong_test():
     van_ban_test = "".join(_doc(p) for p in (GOC / "tests").rglob("test_*.py"))
 
     thieu = []
-    for tep in FILE_SERVICE:
-        if tep.name == "errors.py":
+    for tep in FILE_SERVICE + FILE_AI:
+        if tep.name in ("errors.py", "provider.py"):
             continue
         for ham in re.findall(r"^def ([a-z][a-z0-9_]*)\(", _doc(tep), re.M):
             if f"{ham}(" not in van_ban_test:

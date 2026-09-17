@@ -2,7 +2,7 @@
 
 Nguồn yêu cầu: [`user-stories.md`](user-stories.md) · Kiến trúc: [`architecture.md`](architecture.md)
 
-13 bảng. Tên bảng và tên cột dùng tiếng Anh không dấu theo quy ước trong [`../CLAUDE.md`](../CLAUDE.md).
+14 bảng. Tên bảng và tên cột dùng tiếng Anh không dấu theo quy ước trong [`../CLAUDE.md`](../CLAUDE.md).
 Mọi bảng đều có `id` khóa chính tự tăng.
 
 ## Sơ đồ
@@ -156,9 +156,24 @@ erDiagram
         text prompt
         text response
         bool is_error
+        string model
         datetime created_at
     }
+
+    ai_quota {
+        int id PK
+        string model
+        date quota_day
+        int request_count
+        int daily_limit
+        bool exhausted
+        datetime cooldown_until
+        text disabled_reason
+    }
 ```
+
+`ai_quota` không nối với bảng nào: nó đếm lượt gọi tới nhà cung cấp AI theo từng model và
+từng ngày quota, không thuộc nghiệp vụ cửa hàng.
 
 ---
 
@@ -360,10 +375,28 @@ Phục vụ US-26, US-28, và phần báo cáo cuối kỳ.
 | `prompt` | text | NOT NULL | Prompt đã gửi. **Đã lọc dữ liệu cá nhân** (US-28) |
 | `response` | text | NULL | NULL khi lời gọi lỗi |
 | `is_error` | bool | NOT NULL, mặc định `false` | |
+| `model` | varchar(60) | NULL | Model đã trả lời. NULL = **không có lời gọi nào đi ra** (guardrail chặn trước, hoặc thiếu dữ liệu) |
 | `created_at` | datetime | NOT NULL | |
 
 Bảng này vừa phục vụ kiểm chứng guardrail khi test, vừa là bằng chứng cho báo cáo cuối kỳ về cách
 dùng AI trong hệ thống.
+
+### `ai_quota` — lượt đã dùng của từng model Gemini
+Phục vụ US-24 → US-26 ở mặt vận hành: gói miễn phí giới hạn lượt/ngày cho mỗi model, nên hệ thống
+phải tự xoay sang model khác khi hết lượt (xem `app/ai/quota.py`).
+
+| Cột | Kiểu | Ràng buộc | Ý nghĩa |
+|---|---|---|---|
+| `id` | int | PK | |
+| `model` | varchar(60) | NOT NULL | Tên model, ví dụ `gemini-3.6-flash` |
+| `quota_day` | date | NOT NULL | Ngày theo **giờ Pacific** — quota Google reset theo múi giờ đó |
+| `request_count` | int | NOT NULL, mặc định 0 | Số lượt hệ thống đã gọi. Ước tính: không thấy lượt của ứng dụng khác dùng chung khóa |
+| `daily_limit` | int | NULL | Hạn mức **thật**, học từ `quotaValue` trong lỗi 429. NULL = chưa biết, màn hình hiện số ước tính kèm `~` |
+| `exhausted` | bool | NOT NULL, mặc định `false` | Google đã trả 429 loại theo ngày |
+| `cooldown_until` | datetime | NULL | Nghỉ tới lúc này vì 503 hoặc hết lượt theo phút |
+| `disabled_reason` | text | NULL | Model bị Google tắt (404). Khác `exhausted`: mai cũng không dùng lại được |
+
+UNIQUE `(model, quota_day)` — mỗi model một dòng mỗi ngày.
 
 ---
 
@@ -384,5 +417,6 @@ dùng AI trong hệ thống.
 | `invoice_items` | US-19, US-22 |
 | `payments` | US-20, US-22 |
 | `ai_logs` | US-26, US-28 |
+| `ai_quota` | US-24, US-25, US-26 (vận hành: xoay ca model khi hết lượt) |
 
-**Kết luận: 13/13 bảng đều được ít nhất một user story sử dụng. Không có bảng thừa.**
+**Kết luận: 14/14 bảng đều được ít nhất một user story sử dụng. Không có bảng thừa.**

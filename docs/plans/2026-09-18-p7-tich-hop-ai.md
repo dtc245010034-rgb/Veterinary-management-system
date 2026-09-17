@@ -1,6 +1,6 @@
 # P7 — Tích hợp AI, xoay ca model Gemini và ước tính quota
 
-> **Phase:** P7 · **Mốc:** KT3 · **Duyệt ngày:** 2026-09-18 · **Trạng thái:** chặng 0 xong 18/09 (còn 6 ô smoke chờ tick), đang mở chặng 1
+> **Phase:** P7 · **Mốc:** KT3 · **Duyệt ngày:** 2026-09-18 · **Trạng thái:** chặng 0 và chặng 1 xong 18/09 (smoke chặng 0 còn 6 ô chờ tick), đang mở chặng 2
 >
 > Thiết kế qua hai vòng brainstorming 17–18/09; người dùng chốt Q1–Q7, duyệt kèm đề xuất Q8–Q10 và bảy
 > tối ưu O1–O7. Chia bốn chặng (0–3). Theo [`../roadmap.md`](../roadmap.md).
@@ -130,18 +130,18 @@ Hai bảng mới tạo được bằng `create_all` trên CSDL đang có — kh�
 
 ### Checklist chặng 1
 
-- [ ] `config.py`/`.env.example`: `gemini_models`, `gemini_rpd_uoc_tinh=20`, `gemini_rpm_uoc_tinh`, `gemini_thinking_level`, `ai_tong_giay`, `ai_moi_lan_giay`, `ai_nghi_giay=120`; bỏ `gemini_model`. Nhắc người dùng sửa `.env`
-- [ ] `tzdata` vào `requirements.txt`
-- [ ] Model `ai_log.py` (+ `model`), `ai_quota.py`; `erd.md` lên 14 bảng; test ràng buộc
-- [ ] `provider.py`, `fake.py`, `prompts.py`, `guardrail.py`, `quota.py`, `service.py`, `gemini.py`
-- [ ] Fixture `fake_ai` chạy thật (thay `pytest.skip`), override `lay_provider`
-- [ ] `tests/unit/test_prompts.py`, `test_guardrail.py`, `test_ai_service.py`: TC-082, 083, 087, 088, 092→098
-- [ ] `tests/unit/test_ai_quota.py` (TC mới từ TC-103): thứ tự ưu tiên; 503 → nghỉ rồi quay lại model đầu; 429 theo phút vs theo ngày; học `quotaValue`; 404 loại model; khóa sai dừng ngay; hết model → lỗi thân thiện; ngân sách thời gian; ghim model không xoay; ranh giới ngày Pacific hai mùa; model chạm `~` vẫn được thử sau cùng
-- [ ] `tests/unit/test_gemini.py`: chỉ mock `urllib.request.urlopen`; JSON 200 thật, 429 có/không `QuotaFailure`, 503, timeout, 404, 401
-- [ ] `test_architecture.py`: bắt cả `import app.ai.x`; mở luật "hàm public có test gọi thẳng" sang `app/ai/`
-- [ ] **Đột biến có chủ đích** (bài học 3, kiểm cả CRLF): gỡ chặn thuốc / gỡ nối DISCLAIMER / gỡ `xoa_lien_he` / đảo thứ tự xoay / bỏ phân biệt 429 ngày-phút → đúng test đỏ → hoàn nguyên
-- [ ] **Đo O6**: `--hoi` G-01 và G-08 trên `gemini-3.6-flash` với và không `thinkingLevel: low` (4 lượt) → chốt mặc định theo số đo, ghi vào báo cáo
-- [ ] Báo cáo `testing/reports/…-P7-chang1.md` kèm output CLI thật
+- [x] `config.py`/`.env.example`: `gemini_models`, `gemini_rpd_uoc_tinh=20`, `gemini_rpm_uoc_tinh`, `gemini_thinking_level`, `ai_tong_giay`, `ai_moi_lan_giay`, `ai_nghi_giay=120`; bỏ `gemini_model`. Nhắc người dùng sửa `.env`
+- [x] `tzdata` vào `requirements.txt`
+- [x] Model `ai_log.py` (+ `model`), `ai_quota.py`; `erd.md` lên 14 bảng; test ràng buộc
+- [x] `provider.py`, `fake.py`, `prompts.py`, `guardrail.py`, `quota.py`, `service.py`, `gemini.py`
+- [x] Fixture `fake_ai` chạy thật (thay `pytest.skip`), override `lay_provider`
+- [x] `tests/unit/test_prompts.py`, `test_guardrail.py`, `test_ai_service.py`: TC-082, 083, 087, 088, 092→098
+- [x] `tests/unit/test_ai_quota.py` (TC mới từ TC-103): thứ tự ưu tiên; 503 → nghỉ rồi quay lại model đầu; 429 theo phút vs theo ngày; học `quotaValue`; 404 loại model; khóa sai dừng ngay; hết model → lỗi thân thiện; ngân sách thời gian; ghim model không xoay; ranh giới ngày Pacific hai mùa; model chạm `~` vẫn được thử sau cùng
+- [x] `tests/unit/test_gemini.py`: chỉ mock `urllib.request.urlopen`; JSON 200 thật, 429 có/không `QuotaFailure`, 503, timeout, 404, 401
+- [x] `test_architecture.py`: bắt cả `import app.ai.x`; mở luật "hàm public có test gọi thẳng" sang `app/ai/`
+- [x] **Đột biến có chủ đích** (bài học 3, kiểm cả CRLF): gỡ chặn thuốc / gỡ nối DISCLAIMER / gỡ `xoa_lien_he` / đảo thứ tự xoay / bỏ phân biệt 429 ngày-phút → đúng test đỏ → hoàn nguyên
+- [x] **Đo O6**: `--hoi` G-01 và G-08 trên `gemini-3.6-flash` với và không `thinkingLevel: low` (4 lượt) → chốt mặc định theo số đo, ghi vào báo cáo
+- [x] Báo cáo `testing/reports/…-P7-chang1.md` kèm output CLI thật
 
 ---
 

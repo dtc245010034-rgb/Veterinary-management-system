@@ -8,6 +8,8 @@ gì về nguyên nhân thật.
 Import ở đây một lần để mọi nơi chỉ cần `import app.models`.
 """
 
+from app.models.ai_log import AiLog
+from app.models.ai_quota import AiQuota
 from app.models.appointment import Appointment
 from app.models.care_record import CareRecord
 from app.models.invoice import Invoice, InvoiceItem
@@ -20,6 +22,8 @@ from app.models.user import User
 from app.models.vaccination import Vaccination
 
 __all__ = [
+    "AiLog",
+    "AiQuota",
     "Appointment",
     "CareRecord",
     "Invoice",

@@ -19,6 +19,12 @@ import pytest
 # mật khẩu — thuật toán và cách kiểm tra vẫn y nguyên.
 os.environ.setdefault("BCRYPT_ROUNDS", "4")
 
+# GÁN CỨNG, không setdefault: chạy tay với Gemini thật cần `AI_PROVIDER=gemini` trong .env,
+# và chỉ cần quên đổi lại là cả bộ test đốt sạch quota miễn phí của ngày hôm đó — mỗi lần
+# chạy hàng trăm test. Khóa cũng xóa luôn để có lọt qua thì cũng không gọi được.
+os.environ["AI_PROVIDER"] = "fake"
+os.environ["GEMINI_API_KEY"] = ""
+
 # Mốc thời gian cố định dùng cho mọi test phụ thuộc ngày giờ.
 # Chọn một ngày thứ Năm, giờ hành chính, để các ca đặt lịch trong ngày làm việc tự nhiên.
 MOC_THOI_GIAN = datetime(2026, 3, 12, 8, 0, 0)
@@ -55,7 +61,7 @@ def db():
 
 
 @pytest.fixture
-def client(db):
+def client(db, fake_ai):
     """TestClient dùng chung session với fixture db.
 
     Nhờ override get_db, thứ test chuẩn bị qua fixture db và thứ ứng dụng đọc qua HTTP
@@ -68,10 +74,13 @@ def client(db):
     """
     from fastapi.testclient import TestClient
 
+    from app.ai.service import lay_provider
     from app.db import get_db
     from app.main import app
 
     app.dependency_overrides[get_db] = lambda: db
+    # Không test nào được gọi API thật: chậm, tốn quota, và kết quả đổi theo từng lần chạy.
+    app.dependency_overrides[lay_provider] = lambda: fake_ai
     try:
         yield TestClient(app)
     finally:
@@ -89,14 +98,17 @@ def frozen_clock():
 
 @pytest.fixture
 def fake_ai():
-    """FakeProvider ghi lại mọi cặp (system, user) đã nhận.
+    """FakeProvider ghi lại mọi cặp (model, system, user) đã nhận.
 
     Việc ghi lại tham số là điều kiện để kiểm chứng US-28 — prompt không chứa dữ liệu
     cá nhân. Không có nó, US-28 chỉ là một dòng chữ trong tài liệu.
 
-    Khung dựng ở P1; dùng thật từ P7 khi app/ai/ tồn tại.
+    Khung dựng ở P1, chạy thật từ P7. Test integration dùng kèm fixture `client`: nó đã
+    override sẵn dependency `lay_provider` bằng chính đối tượng này.
     """
-    pytest.skip("FakeProvider có từ phase P7")
+    from app.ai.fake import FakeProvider
+
+    return FakeProvider()
 
 
 MAT_KHAU_MAU = "matkhau123"

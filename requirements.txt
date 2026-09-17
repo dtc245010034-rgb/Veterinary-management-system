@@ -7,6 +7,9 @@ Jinja2==3.1.6
 python-multipart==0.0.32
 itsdangerous==2.2.0
 bcrypt==5.0.0
+# Windows không có sẵn dữ liệu múi giờ IANA, mà quota Gemini reset theo giờ Pacific:
+# thiếu gói này thì ZoneInfo("America/Los_Angeles") ném ZoneInfoNotFoundError.
+tzdata==2026.4
 
 # Kiểm thử
 pytest==9.1.1
