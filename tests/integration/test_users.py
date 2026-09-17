@@ -194,3 +194,58 @@ def test_phien_dang_nhap_het_hieu_luc_ngay_khi_tai_khoan_bi_khoa(client, db, see
 
     r = client.get("/", follow_redirects=False)
     assert r.status_code == 303
+
+
+
+def _hai_lich_chua_lam(db, seed_basic):
+    """Hai lịch `booked` của nhân viên chăm sóc 1, dựng thẳng bằng model cho gọn."""
+    from datetime import datetime
+    from decimal import Decimal
+
+    from app.models.appointment import Appointment
+    from app.models.owner import Owner
+    from app.models.pet import Pet
+    from app.models.service import Service
+
+    chu = Owner(full_name="Đỗ Thị Hằng", phone="0912345678")
+    db.add(chu)
+    db.flush()
+    thu_cung = Pet(owner_id=chu.id, name="Mực", species="Chó")
+    dich_vu = Service(code="TAM", name="Tắm và sấy", duration_min=60, price=Decimal("150000"))
+    db.add_all([thu_cung, dich_vu])
+    db.flush()
+    nhan_vien = seed_basic["caretaker1"]
+    for gio in (9, 11):
+        db.add(Appointment(
+            pet_id=thu_cung.id, service_id=dich_vu.id, staff_id=nhan_vien.id,
+            start_at=datetime(2030, 1, 7, gio), end_at=datetime(2030, 1, 7, gio + 1),
+            status="booked", created_by=seed_basic["receptionist"].id,
+        ))
+    db.commit()
+    return nhan_vien
+
+
+def test_nhan_vien_da_khoa_con_giu_lich_thi_trang_tai_khoan_canh_bao(client, db, seed_basic):
+    """Lỗ hổng S4 (kế hoạch P7 chặng 0).
+
+    Khóa nhân viên chăm sóc không làm lịch của họ biến mất: chúng nằm `booked` mãi vì không
+    ai đăng nhập được để ghi hồ sơ. Quản lý phải thấy ngay còn bao nhiêu lịch cần chuyển
+    người, ở đúng chỗ vừa bấm khóa.
+    """
+    nhan_vien = _hai_lich_chua_lam(db, seed_basic)
+    dang_nhap(client, "quanly")
+
+    client.post(f"/users/{nhan_vien.id}/khoa")
+    r = client.get("/users")
+
+    assert "còn 2 lịch chưa làm" in r.text
+
+
+def test_nhan_vien_dang_hoat_dong_co_lich_thi_khong_hien_canh_bao(client, db, seed_basic):
+    """Biên của ca trên: có lịch là chuyện thường, chỉ đáng cảnh báo khi đã khóa."""
+    _hai_lich_chua_lam(db, seed_basic)
+    dang_nhap(client, "quanly")
+
+    r = client.get("/users")
+
+    assert "lịch chưa làm" not in r.text

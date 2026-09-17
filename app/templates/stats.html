@@ -22,6 +22,9 @@
     <h2 class="nhan-so">Lượt dịch vụ</h2>
     <p class="so-lon">{{ tk.so_luot }}</p>
     <p class="phu-nho">trong đó {{ tk.so_luot_hoan_thanh }} đã hoàn thành</p>
+    {% if tk.so_lich_qua_gio_chua_ghi %}
+    <p class="loi">{{ tk.so_lich_qua_gio_chua_ghi }} lịch đã qua giờ nhưng chưa ghi hồ sơ — khách không đến hoặc chưa ai ghi</p>
+    {% endif %}
   </div>
   <div class="the">
     <h2 class="nhan-so">Doanh thu</h2>

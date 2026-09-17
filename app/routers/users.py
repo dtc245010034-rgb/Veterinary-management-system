@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.auth import yeu_cau_vai_tro
 from app.db import get_db
 from app.models.user import VAI_TRO, User
+from app.services import scheduling
 from app.services import users as nv
 from app.services.errors import LoiNghiepVu
 from app.templates import templates
@@ -27,6 +28,8 @@ def _render(request: Request, db: Session, user: User, loi: str | None = None, m
         {
             "user": user,
             "danh_sach": nv.danh_sach_tai_khoan(db),
+            # Nhân viên đã khóa mà còn giữ lịch thì phải chuyển người (S4).
+            "lich_chua_lam": scheduling.so_lich_chua_lam_theo_nhan_vien(db),
             "vai_tro": VAI_TRO,
             "loi": loi,
         },

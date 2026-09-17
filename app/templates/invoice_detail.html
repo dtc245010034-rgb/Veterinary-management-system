@@ -93,16 +93,21 @@
     {% if hoa_don.status == 'cancelled' %}
       <div class="the">
         <h2>Hóa đơn này đã hủy</h2>
-        <p class="phu">Mỗi lịch hẹn chỉ gắn được một hóa đơn, nên buổi chăm sóc này
-          <strong>không lập lại được</strong> hóa đơn mới. Buổi đó vẫn nằm trong sổ ở trạng thái
-          đã hoàn thành — lịch đã hoàn thành thì không hủy được. Nếu vẫn cần thu tiền cho buổi
-          này, đặt một lịch mới rồi lập hóa đơn cho lịch đó.</p>
+        <p class="phu">Buổi chăm sóc vẫn nằm trong sổ ở trạng thái đã hoàn thành. Nếu vẫn cần
+          thu tiền cho buổi này, lập lại hóa đơn: hệ thống mở lại chính hóa đơn này với giá dịch
+          vụ hiện tại và ngày lập là hôm nay.</p>
+        {% if hoa_don.appointment %}
+        <form method="post" action="/appointments/{{ hoa_don.appointment.id }}/hoa-don">
+          <input type="hidden" name="ngay" value="{{ hoa_don.appointment.start_at.date().isoformat() }}">
+          <button type="submit" class="chinh">Lập lại hóa đơn</button>
+        </form>
+        {% endif %}
       </div>
     {% endif %}
 
     {% if hoa_don.status != 'cancelled' and not hoa_don.thanh_toan %}
-      {# Link GET sang trang hỏi lại, không POST thẳng: hủy nhầm là buổi này mất hẳn
-         hóa đơn trọn đời. Việc hủy vẫn do route POST cùng đường dẫn làm. #}
+      {# Link GET sang trang hỏi lại, không POST thẳng: hủy nhầm thì hóa đơn rời khỏi danh
+         sách cần thu cho tới khi có người lập lại. Việc hủy vẫn do route POST cùng đường dẫn làm. #}
       <div class="the">
         <h2>Hủy hóa đơn</h2>
         <p class="phu">Chỉ hủy được hóa đơn chưa thu đồng nào. Đã thu rồi thì hệ thống

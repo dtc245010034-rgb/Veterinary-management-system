@@ -14,7 +14,7 @@ from starlette.exceptions import HTTPException as LoiHTTPStarlette
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.auth import ChuaDangNhap
-from app.config import settings
+from app.config import SECRET_KEY_MAC_DINH, settings
 import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
 from app.db import Base, engine
 from app.routers import appointments as appointments_router
@@ -32,7 +32,16 @@ from app.templates import templates
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Tạo bảng nếu chưa có. Đủ dùng cho dự án môn học, không cần Alembic."""
+    """Tạo bảng nếu chưa có. Đủ dùng cho dự án môn học, không cần Alembic.
+
+    Kiểm SECRET_KEY trước tiên: khóa mặc định nằm công khai trong repo, chạy với nó thì
+    ai cũng tự ký được cookie phiên quản lý. Dừng hẳn còn hơn chạy âm thầm không an toàn.
+    """
+    if settings.secret_key == SECRET_KEY_MAC_DINH:
+        raise RuntimeError(
+            "SECRET_KEY vẫn là chuỗi mặc định trong app/config.py. Sao chép .env.example "
+            "thành .env và đặt SECRET_KEY là một chuỗi ngẫu nhiên riêng trước khi chạy."
+        )
     Base.metadata.create_all(engine)
     yield
 

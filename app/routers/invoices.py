@@ -126,8 +126,8 @@ def trang_xac_nhan_huy(
                 ("Số tiền", templates.env.filters["tien"](hoa_don.total_amount)),
             ],
             "canh_bao": (
-                "Mỗi lịch hẹn chỉ lập được một hóa đơn trọn đời. Hủy rồi thì buổi này "
-                "không lập lại hóa đơn được nữa, phải đặt một lịch mới."
+                "Hóa đơn đã hủy không còn nằm trong số tiền cần thu. Nếu hủy nhầm, "
+                "vẫn lập lại được cho buổi này, theo giá dịch vụ tại lúc lập lại."
             ),
             "hanh_dong": f"/invoices/{hoa_don.id}/huy",
             "quay_lai": f"/invoices/{hoa_don.id}",

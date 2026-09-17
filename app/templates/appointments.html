@@ -54,9 +54,15 @@
                 {% if user.role in ('manager', 'receptionist') %}
                   {% if hoa_don.get(a.id) %}
                     {# Hóa đơn đã hủy vẫn giữ chỗ của lịch này (appointment_id là UNIQUE)
-                       nên nói thẳng trạng thái ở đây; bấm vào mới biết là ngõ cụt câm. #}
+                       nên nói thẳng trạng thái ở đây, kèm nút mở lại chính hóa đơn đó (S3). #}
                     <a class="chinh-nhe" href="/invoices/{{ hoa_don[a.id].id }}">{{
                        "Hóa đơn đã hủy" if hoa_don[a.id].status == 'cancelled' else "Xem hóa đơn" }}</a>
+                    {% if hoa_don[a.id].status == 'cancelled' %}
+                    <form method="post" action="/appointments/{{ a.id }}/hoa-don">
+                      <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">
+                      <button type="submit">Lập lại hóa đơn</button>
+                    </form>
+                    {% endif %}
                   {% else %}
                     <form method="post" action="/appointments/{{ a.id }}/hoa-don">
                       <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">

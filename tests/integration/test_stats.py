@@ -138,3 +138,35 @@ def test_ngay_sai_dinh_dang_bao_loi_tieng_viet(client, nen):
 
     assert r.status_code == 400
     assert "Ngày không hợp lệ" in r.text
+
+
+def test_trang_thong_ke_canh_bao_lich_qua_gio_chua_ghi_ho_so(client, db, nen):
+    """S5 (kế hoạch P7 chặng 0): quản lý phải đọc được bao nhiêu lượt chưa có hồ sơ.
+
+    Buổi 10:00 ngày 11/03 đã qua mà không ai ghi hồ sơ — nó vẫn nằm trong "Lượt dịch vụ".
+    """
+    thu_cung = db.query(Pet).one()
+    dich_vu = db.query(Service).one()
+    with clock.freeze(datetime(2026, 3, 10, 8, 0)):
+        scheduling.dat_lich(
+            db,
+            thu_cung_id=thu_cung.id,
+            dich_vu_id=dich_vu.id,
+            nhan_vien_id=nen["caretaker1"].id,
+            bat_dau=datetime(2026, 3, 11, 10, 0),
+            nguoi_tao_id=nen["receptionist"].id,
+        )
+    dang_nhap(client, "quanly")
+
+    r = client.get("/stats")
+
+    assert "1 lịch đã qua giờ nhưng chưa ghi hồ sơ" in r.text
+
+
+def test_trang_thong_ke_khong_canh_bao_khi_moi_lich_qua_gio_deu_co_ho_so(client, nen):
+    """Biên của ca trên: fixture chỉ có một buổi và buổi đó đã ghi hồ sơ."""
+    dang_nhap(client, "quanly")
+
+    r = client.get("/stats")
+
+    assert "chưa ghi hồ sơ" not in r.text

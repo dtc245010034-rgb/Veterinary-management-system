@@ -289,6 +289,23 @@ Người dùng chốt: **trang xác nhận riêng**, cho ba thao tác làm mất
 - [x] Bấm **Hủy hóa đơn** ở trang xác nhận (hóa đơn chưa thu) → hóa đơn chuyển **Đã hủy**, và trang
       hóa đơn giải thích buổi đó không lập lại hóa đơn được
 
+## P7 chặng 0 — Vá lỗ hổng hệ thống S1–S5
+
+Chuẩn bị: chạy `uvicorn app.main:app` với `.env` đã có `SECRET_KEY` riêng.
+
+- [x] Tạm đổi `SECRET_KEY` trong `.env` về đúng chuỗi mặc định trong `app/config.py` rồi khởi động →
+      app **không chạy**, báo lỗi nói rõ phải đặt khóa riêng. Đổi lại khóa riêng trước khi làm tiếp
+- [x] Ghi một mũi tiêm tên **"Dại"** cho một thú cưng, hạn nhắc trong quá khứ → thấy nó ở trang Tiêm phòng.
+      Ghi tiếp mũi cùng con đó, gõ **"dai"** không dấu, hạn nhắc năm sau → danh sách đến hạn **không còn
+      mũi cũ**, và hồ sơ tiêm của con đó chỉ có một tên vắc-xin
+- [x] Hủy một hóa đơn chưa thu → trang hóa đơn có nút **Lập lại hóa đơn**; bấm → hóa đơn về **Chưa thu**,
+      ngày lập là hôm nay. Lưới lịch của buổi đó cũng có nút **Lập lại hóa đơn**
+- [x] Khóa một nhân viên chăm sóc đang còn lịch → trang Tài khoản hiện **"còn N lịch chưa làm"**
+- [x] Ở lưới lịch, bấm **Đổi** một lịch của nhân viên vừa khóa mà **giữ nguyên nhân viên** → bị từ chối,
+      báo nhân viên đã ngưng hoạt động. Đổi sang nhân viên khác → thành công
+- [x] Để một buổi đã qua giờ mà không ghi hồ sơ → trang Thống kê hiện dòng **"N lịch đã qua giờ nhưng
+      chưa ghi hồ sơ"**
+
 ## P7 — Tính năng AI
 
 Chạy **hai lượt**: lượt một với `AI_PROVIDER=fake`, lượt hai với `AI_PROVIDER=gemini` (API thật).

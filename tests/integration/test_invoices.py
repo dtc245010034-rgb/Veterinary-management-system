@@ -7,6 +7,7 @@ thuộc tầng HTTP: nút trên lưới lịch hẹn, phân quyền, form thu ti
 dữ liệu đã nhập khi báo lỗi.
 """
 
+import re
 from datetime import datetime
 from decimal import Decimal
 
@@ -276,7 +277,7 @@ def test_huy_hoa_don_chua_thu_dong_nao(client, db, nen):
 
 
 def test_nut_huy_hoa_don_dan_sang_trang_xac_nhan_chu_khong_huy_ngay(client, db, nen):
-    """Mỗi lịch chỉ lập được một hóa đơn trọn đời — bấm nhầm là mất hẳn buổi đó.
+    """Hủy là thao tác người dùng phải cân nhắc — hóa đơn biến khỏi danh sách cần thu.
 
     Nút phải là link GET sang trang xác nhận, không phải form POST hủy thẳng.
     """
@@ -298,7 +299,10 @@ def test_trang_xac_nhan_huy_hoa_don_noi_ro_hau_qua_va_chua_huy_gi(client, db, ne
     trang = client.get(f"{ma}/huy")
 
     assert trang.status_code == 200
-    assert "không lập lại hóa đơn được" in trang.text
+    # S3 (kế hoạch P7 chặng 0): hủy xong vẫn lập lại được. Trang xác nhận không được dọa
+    # "mất hẳn" nữa — nói sai hậu quả thì người dùng quyết định sai.
+    assert "không lập lại hóa đơn được" not in trang.text
+    assert "lập lại" in trang.text
     assert "Đã hủy" not in client.get(ma).text
 
 
@@ -410,8 +414,11 @@ def test_hoa_don_da_huy_khong_con_no_dong_nao(client, db, nen):
     assert "Đã hủy" in danh_sach.text
 
 
-def test_luoi_lich_noi_ro_hoa_don_da_bi_huy(client, db, nen):
-    """Bấm "Xem hóa đơn" rồi mới biết nó đã hủy, và không lập lại được, là ngõ cụt câm."""
+def test_luoi_lich_noi_ro_hoa_don_da_bi_huy_va_co_nut_lap_lai(client, db, nen):
+    """Bấm "Xem hóa đơn" rồi mới biết nó đã hủy là ngõ cụt câm.
+
+    S3 (kế hoạch P7 chặng 0): lưới lịch hiện cả nút lập lại, gửi tới đúng route lập hóa đơn.
+    """
     lich = lich_xong(db, nen)
     dang_nhap(client, "letan")
     ma = lap_hd(client, lich)
@@ -420,17 +427,33 @@ def test_luoi_lich_noi_ro_hoa_don_da_bi_huy(client, db, nen):
     r = client.get(f"/appointments?ngay={NGAY}")
 
     assert "Hóa đơn đã hủy" in r.text
+    assert "Lập lại hóa đơn" in r.text
 
 
-def test_trang_hoa_don_da_huy_noi_ro_buoc_tiep_theo(client, db, nen):
+def test_trang_hoa_don_da_huy_co_nut_lap_lai_va_bam_vao_mo_lai_dung_hoa_don(client, db, nen):
+    """S3 ở tầng HTTP, đi bằng chính form trên trang hóa đơn đã hủy.
+
+    Form lấy từ HTML chứ không tự dựng URL: nút trỏ sai route thì test này đỏ.
+    """
     lich = lich_xong(db, nen)
     dang_nhap(client, "letan")
     ma = lap_hd(client, lich)
     client.post(f"{ma}/huy")
 
     trang = client.get(ma)
+    assert "không lập lại được" not in trang.text
+    hanh_dong = re.search(
+        r'<form method="post" action="([^"]+)">\s*<input type="hidden" name="ngay" value="([^"]+)">'
+        r'\s*<button[^>]*>Lập lại hóa đơn</button>',
+        trang.text,
+    )
+    assert hanh_dong, "Trang hóa đơn đã hủy không có form Lập lại hóa đơn"
 
-    assert "không lập lại được" in trang.text
+    r = client.post(hanh_dong.group(1), data={"ngay": hanh_dong.group(2)}, follow_redirects=False)
+
+    assert r.status_code == 303
+    assert r.headers["location"] == ma
+    assert "Chưa thu" in client.get(ma).text
 
 
 def test_huy_lich_khi_con_hoa_don_hien_ma_hoa_don_cho_le_tan(client, db, nen):

@@ -194,6 +194,14 @@ Một việc để lại từ P6 cho phase này: khi chạy trên **CSDL trống
 không có câu hướng dẫn nào — chỉ trình duyệt chặn bằng thông báo của chính nó (phát hiện khi rà luồng
 11/09). Việc "ghi TC-027 ngoài phạm vi" **đã làm xong 13/09**, không còn chờ P8.
 
+Hai lỗ hổng tìm được khi rà soát hệ thống ngày 18/09 (chặng 0 của P7), cùng người dùng chốt để lại
+đây vì rủi ro thấp — xem [`plans/2026-09-18-p7-tich-hop-ai.md`](plans/2026-09-18-p7-tich-hop-ai.md):
+
+- **S6 — đặt lịch ngoài giờ mở cửa.** `scheduling.dat_lich` không kiểm giờ làm việc: đặt được lúc 3
+  giờ sáng hoặc để buổi lấn qua nửa đêm. Chỉ phần gợi ý khung trống tôn trọng `GIO_MO_CUA`/`GIO_DONG_CUA`.
+- **S7 — ngày sai định dạng khi POST.** `routers/appointments._doc_ngay` trả về hôm nay khi chuỗi ngày
+  hỏng, nên một form gửi ngày sai sẽ âm thầm đặt lịch vào hôm nay thay vì báo lỗi.
+
 Đáp ứng yêu cầu đề bài mục 6: *"Cuối kỳ: Dùng AI viết README, báo cáo, slide và review dữ liệu cá nhân."*
 
 Cân nhắc lại việc dựng CI ở phase này nếu dự án được đẩy lên GitHub.

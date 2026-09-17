@@ -177,6 +177,33 @@ def test_loai_vac_xin_khac_thi_van_tinh_rieng(db, thu_cung):
     assert [v.vaccine_name for v in nv.den_han(db)] == ["Cúm"]
 
 
+def test_ten_vac_xin_go_khac_hoa_thuong_va_dau_van_tinh_la_cung_loai(db, thu_cung):
+    """Lỗ hổng S2 (kế hoạch P7 chặng 0).
+
+    Lần đầu ghi "Dại", lần sau lễ tân gõ "dai " không dấu. So tên tuyệt đối thì đó là hai
+    loại vắc-xin, và mũi 1 nằm lì trong danh sách quá hạn — đúng lỗi luật "mũi mới nhất"
+    sinh ra để chặn. Ghi mũi mới phải dùng lại đúng tên đã có của thú cưng đó.
+    """
+    ghi(
+        db, thu_cung["muc"], ten_vac_xin="Dại",
+        ngay_tiem=HOM_NAY - timedelta(days=400), han_nhac=HOM_NAY - timedelta(days=35),
+    )
+    moi = ghi(
+        db, thu_cung["muc"], ten_vac_xin="  dai ",
+        ngay_tiem=HOM_NAY - timedelta(days=35), han_nhac=HOM_NAY + timedelta(days=330),
+    )
+
+    assert moi.vaccine_name == "Dại"
+    assert nv.den_han(db) == []
+
+
+def test_ten_vac_xin_trung_o_thu_cung_khac_thi_khong_bi_doi(db, thu_cung):
+    """Biên của luật trên: chỉ dùng lại tên đã có của CHÍNH thú cưng đó."""
+    ghi(db, thu_cung["mun"], ten_vac_xin="Dại")
+
+    assert ghi(db, thu_cung["muc"], ten_vac_xin="dai").vaccine_name == "dai"
+
+
 def test_khong_ai_den_han_thi_tra_ve_danh_sach_rong(db, thu_cung):
     """TC-064 ở tầng nghiệp vụ."""
     assert nv.den_han(db) == []

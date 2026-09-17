@@ -205,6 +205,36 @@ def test_luot_gom_moi_lich_chua_huy_va_bo_lich_da_huy(db, nen):
     assert tk.so_luot_hoan_thanh == 1
 
 
+def test_dem_lich_da_qua_gio_ma_chua_ghi_ho_so(db, nen):
+    """Lỗ hổng S5 (kế hoạch P7 chặng 0).
+
+    Lượt dịch vụ đếm mọi lịch chưa hủy (định nghĩa đã chốt 11/09), nên buổi khách không đến
+    hoặc nhân viên quên ghi hồ sơ vẫn được tính. `services/care_records.py` từng hứa P6 sẽ
+    hiện chỉ báo cho đúng nhóm này — lời hứa chưa làm. Con số phải tách ra được.
+    """
+    dat(db, nen, "muc", gio(3))                     # qua giờ, chưa ghi → tính
+    doi = dat(db, nen, "bong", gio(4))
+    with clock.freeze(gio(3)):
+        scheduling.doi_lich(db, doi.id, gio(6))     # đã đổi lịch, qua giờ → tính
+    xong(db, nen, dat(db, nen, "mun", gio(5)))      # đã ghi → không tính
+    dat(db, nen, "dau_do", gio(20))                 # chưa tới giờ → không tính
+
+    tk = nv.thong_ke(db, *THANG_3)
+
+    assert tk.so_luot == 4
+    assert tk.so_lich_qua_gio_chua_ghi == 2
+
+
+def test_lich_vua_ket_thuc_dung_bay_gio_da_tinh_la_qua_gio(db, nen):
+    """Biên: "bây giờ" là 12/03 08:00. Buổi 07:00–08:00 đã xong, chưa ghi thì là thiếu."""
+    dat(db, nen, "muc", gio(12, 7))
+    dat(db, nen, "mun", gio(12, 8))  # 08:00–09:00 vừa bắt đầu → không tính
+
+    tk = nv.thong_ke(db, *THANG_3)
+
+    assert tk.so_lich_qua_gio_chua_ghi == 1
+
+
 def test_dich_vu_da_ngung_ban_van_co_dong_trong_bang(db, nen):
     """Việc 5 của roadmap P6: lọc `is_active` là làm hóa đơn cũ biến khỏi sổ, âm thầm."""
     buoi_da_thu_du(db, nen, "mun", gio(5), nen["cat_mong"])

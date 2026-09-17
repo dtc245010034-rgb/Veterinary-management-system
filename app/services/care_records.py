@@ -7,8 +7,9 @@ dấu hoàn thành" riêng: hai đường tới cùng một trạng thái thì `
 sơ", và mọi thứ dựa vào nó ở P6, P7 đều lung lay.
 
 Hệ quả đã biết và chấp nhận: hệ thống không biểu diễn được "buổi chăm sóc đã diễn ra
-nhưng chưa ai ghi hồ sơ". Lịch quên ghi sẽ nằm `booked` mãi. P6 sẽ đếm số lịch đã qua giờ
-mà vẫn `booked` và hiện như chỉ báo "hồ sơ còn thiếu".
+nhưng chưa ai ghi hồ sơ". Lịch quên ghi sẽ nằm `booked` mãi. Trang thống kê hiện số lịch
+đã qua giờ mà chưa ghi (`stats.ThongKe.so_lich_qua_gio_chua_ghi`) — làm ở P7 chặng 0, lời hứa
+cũ ghi "P6 sẽ làm" nhưng P6 đã bỏ sót.
 
 Không import fastapi.
 """

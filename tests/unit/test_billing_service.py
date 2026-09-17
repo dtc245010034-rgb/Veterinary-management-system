@@ -317,27 +317,46 @@ def test_huy_hoa_don_lan_hai_bi_chan(db, nen):
         nv.huy_hoa_don(db, hd.id)
 
 
-def test_lap_lai_hoa_don_sau_khi_huy_bi_tu_choi_ro_rang_khong_phai_loi_500(db, nen):
-    """Giới hạn đã biết của P5, được kiểm để nó lộ ra tử tế thay vì thành lỗi 500.
+def test_lap_lai_hoa_don_da_huy_thi_mo_lai_chinh_hoa_don_do(db, nen):
+    """Lỗ hổng S3 (kế hoạch P7 chặng 0) — thay giới hạn "một hóa đơn trọn đời" của P5.
 
-    `invoices.appointment_id` là UNIQUE nên mỗi lịch hẹn chỉ có đúng một hóa đơn trong
-    suốt đời nó, kể cả hóa đơn đã hủy. Điều phải chặn trước hết là để ràng buộc CSDL bắn
-    IntegrityError thành màn hình đen, đúng lớp lỗi đã gặp khi xóa thú cưng.
-
-    Nhưng nêu được mã hóa đơn cũ vẫn chưa đủ: người dùng đứng ở lưới lịch đọc xong không
-    biết làm gì tiếp. Đường đi tiếp theo KHÔNG phải hủy lịch hẹn — chặng 2 đã chứng minh
-    lịch đã hoàn thành thì không hủy được — mà là đặt một lịch mới. Trang hóa đơn đã hủy
-    nói đúng câu đó từ chặng 1; thông báo ở đây thì chưa, nên vẫn là ngõ cụt câm.
+    `appointment_id` là UNIQUE, nên trước đây hủy nhầm là buổi đó mất hẳn hóa đơn. Lối lách
+    từng được gợi ý — đặt một lịch mới — không đi được: lịch không đặt vào quá khứ, và nếu
+    đặt được thì thống kê đếm dôi một lượt. Hóa đơn đã hủy luôn chưa có đồng nào
+    (`huy_hoa_don` chặn khi đã thu), nên mở lại chính nó là an toàn và giữ nguyên UNIQUE.
     """
     lich = lich_xong(db, nen)
     hd = nv.lap_hoa_don(db, lich.id)
     nv.huy_hoa_don(db, hd.id)
 
-    with pytest.raises(LoiNghiepVu) as loi:
-        nv.lap_hoa_don(db, lich.id)
+    lai = nv.lap_hoa_don(db, lich.id)
 
-    assert f"#{hd.id}" in str(loi.value)
-    assert "đặt một lịch mới" in str(loi.value)
+    assert lai.id == hd.id
+    assert lai.status == "unpaid"
+    assert lai.status == nv.trang_thai_tinh_lai(lai)
+    assert lai.con_no == GIA_GOC
+    assert db.query(Invoice).count() == 1
+
+
+def test_lap_lai_hoa_don_da_huy_chep_gia_va_ngay_lap_moi(db, nen):
+    """Biên của ca trên: hóa đơn mở lại là hóa đơn lập HÔM NAY với giá HÔM NAY.
+
+    Giữ giá cũ thì khách bị tính theo bảng giá đã bỏ; giữ ngày lập cũ thì số "chưa thu"
+    của thống kê rơi vào kỳ đã qua.
+    """
+    lich = lich_xong(db, nen)
+    hd = nv.lap_hoa_don(db, lich.id)
+    nv.huy_hoa_don(db, hd.id)
+    ngay_lap_cu = hd.issued_at
+    nen["dv"].price = Decimal("180000")
+    db.commit()
+
+    with clock.freeze(datetime(2026, 3, 20, 10, 0)):
+        lai = nv.lap_hoa_don(db, lich.id)
+
+    assert [(d.unit_price, d.amount) for d in lai.dong] == [(Decimal("180000"), Decimal("180000"))]
+    assert lai.total_amount == Decimal("180000")
+    assert lai.issued_at == datetime(2026, 3, 20, 10, 0) != ngay_lap_cu
 
 
 def test_lap_lai_hoa_don_khi_hoa_don_cu_con_hieu_luc_khong_bay_dat_lich_moi(db, nen):

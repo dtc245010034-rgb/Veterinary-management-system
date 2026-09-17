@@ -19,6 +19,7 @@ from app.models.pet import Pet
 from app.models.vaccination import Vaccination
 from app.services import clock
 from app.services.errors import LoiNghiepVu
+from app.services.text import chuan_hoa
 
 # Khoảng nhìn trước của danh sách đến hạn, tính từ hôm nay — US-18.
 SO_NGAY_NHAC = 30
@@ -44,6 +45,7 @@ def ghi_mui_tiem(
     ten = (ten_vac_xin or "").strip()
     if not ten:
         raise LoiNghiepVu("Tên vắc-xin không được để trống.")
+    ten = _ten_da_co(db, thu_cung_id, ten)
 
     if ngay_tiem is None:
         raise LoiNghiepVu("Ngày tiêm không được để trống.")
@@ -70,6 +72,25 @@ def ghi_mui_tiem(
     db.commit()
     db.refresh(v)
     return v
+
+
+def _ten_da_co(db: Session, thu_cung_id: int, ten: str) -> str:
+    """Tên vắc-xin thú cưng này đã có mà trùng `ten` khi bỏ dấu và hoa thường, nếu có.
+
+    `den_han()` so tên tuyệt đối để tìm mũi mới nhất. Lần trước ghi "Dại", lần này gõ "dai"
+    mà lưu nguyên thì thành hai loại, và mũi cũ nằm lì trong danh sách quá hạn (lỗ hổng S2).
+    Chuẩn hóa lúc ghi thay vì lúc so: dữ liệu đã lưu nhất quán thì mọi truy vấn đều đúng.
+    """
+    khoa = chuan_hoa(ten)
+    for da_co in db.scalars(
+        select(Vaccination.vaccine_name)
+        .where(Vaccination.pet_id == thu_cung_id)
+        .distinct()
+        .order_by(Vaccination.vaccine_name)
+    ):
+        if chuan_hoa(da_co) == khoa:
+            return da_co
+    return ten
 
 
 def ho_so_tiem(db: Session, thu_cung_id: int) -> list[Vaccination]:

@@ -5,12 +5,16 @@ File .env không vào repo; .env.example là mẫu để sao chép.
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Chuỗi này nằm công khai trong repo. app/main.py từ chối khởi động khi khóa còn là nó —
+# ai đọc được mã nguồn cũng tự ký được cookie phiên của tài khoản quản lý.
+SECRET_KEY_MAC_DINH = "doi-thanh-chuoi-ngau-nhien-truoc-khi-chay-that"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     database_url: str = "sqlite:///./petcare.db"
-    secret_key: str = "doi-thanh-chuoi-ngau-nhien-truoc-khi-chay-that"
+    secret_key: str = SECRET_KEY_MAC_DINH
 
     # Số vòng băm bcrypt. 12 là mặc định của bcrypt và là giá trị dùng khi chạy thật.
     # Test hạ xuống 4 qua biến môi trường: bcrypt cố ý chậm (~1,5s mỗi lần băm), mà mỗi

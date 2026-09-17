@@ -20,7 +20,7 @@ không thể ở hai nơi cùng lúc. Lịch đã hủy không tham gia kiểm t
 
 from datetime import date, datetime, time, timedelta
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models.appointment import (
@@ -246,9 +246,10 @@ def doi_lich(
     if bat_dau < clock.now():
         raise LoiNghiepVu("Không thể đổi lịch về quá khứ.")
 
+    # Kiểm cả khi giữ nguyên nhân viên: người đó có thể bị khóa sau khi được phân lịch, và
+    # dời giờ mà giữ họ thì lịch vẫn kẹt trong tay tài khoản không đăng nhập được (S4).
     nhan_vien_moi = lich.staff_id if nhan_vien_id is None else nhan_vien_id
-    if nhan_vien_moi != lich.staff_id:
-        _kiem_nhan_vien(db, nhan_vien_moi)
+    _kiem_nhan_vien(db, nhan_vien_moi)
 
     thoi_luong = lich.service.duration_min
     ket_thuc = bat_dau + timedelta(minutes=thoi_luong)
@@ -325,6 +326,21 @@ def lay_lich(db: Session, lich_id: int) -> Appointment:
     if a is None:
         raise LoiNghiepVu("Không tìm thấy lịch hẹn.")
     return a
+
+
+def so_lich_chua_lam_theo_nhan_vien(db: Session) -> dict[int, int]:
+    """Số lịch còn sửa được (chưa hủy, chưa xong) của từng nhân viên — lỗ hổng S4.
+
+    Trang Tài khoản dùng để cảnh báo nhân viên đã khóa vẫn còn giữ lịch: không ai chuyển
+    những lịch đó sang người khác thì chúng nằm `booked` mãi.
+    """
+    return dict(
+        db.execute(
+            select(Appointment.staff_id, func.count())
+            .where(Appointment.status.in_(TRANG_THAI_SUA_DUOC))
+            .group_by(Appointment.staff_id)
+        ).all()
+    )
 
 
 def lich_theo_ngay(

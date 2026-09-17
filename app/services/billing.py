@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 from app.models.appointment import Appointment
 from app.models.invoice import Invoice, InvoiceItem
 from app.models.payment import HINH_THUC, Payment
+from app.services import clock
 from app.services.errors import LoiNghiepVu
 
 # Thứ tự hiện trên màn hình: việc chưa làm xong nằm trên. Hóa đơn đã hủy xuống cuối.
@@ -54,20 +55,12 @@ def lap_hoa_don(db: Session, lich_id: int, ghi_chu: str | None = None) -> Invoic
     # Ràng buộc UNIQUE trên appointment_id cũng chặn ca này ở tầng CSDL, nhưng phép kiểm
     # ở đây mới nói được cho người dùng biết hóa đơn cũ nằm ở đâu.
     cu = db.scalar(select(Invoice).where(Invoice.appointment_id == lich.id))
-    if cu is not None:
+    if cu is not None and cu.status != "cancelled":
         # Hóa đơn cũ còn hiệu lực thì việc phải làm là mở nó ra, và lưới lịch đã có sẵn
-        # nút "Xem hóa đơn". Hóa đơn cũ đã hủy thì không còn đường nào đi tiếp trong màn
-        # hình này, nên phải nói ra bước kế — nếu không, người dùng đứng trước một câu từ
-        # chối không lối thoát, đúng thứ đã sửa cho trang hóa đơn ở chặng 1.
-        buoc_ke = ""
-        if cu.status == "cancelled":
-            buoc_ke = (
-                " Cần thu tiền cho buổi này thì đặt một lịch mới rồi lập hóa đơn cho lịch "
-                "đó; buổi cũ vẫn giữ nguyên trong sổ."
-            )
+        # nút "Xem hóa đơn".
         raise LoiNghiepVu(
             f"Lịch này đã có hóa đơn #{cu.id} ({cu.ten_trang_thai.lower()}). "
-            f"Mỗi lịch hẹn chỉ một hóa đơn.{buoc_ke}"
+            "Mỗi lịch hẹn chỉ một hóa đơn."
         )
 
     dich_vu = lich.service
@@ -78,6 +71,21 @@ def lap_hoa_don(db: Session, lich_id: int, ghi_chu: str | None = None) -> Invoic
         unit_price=dich_vu.price,
         amount=dich_vu.price,
     )
+
+    if cu is not None:
+        # Hóa đơn cũ đã hủy: MỞ LẠI chính nó thay vì lập bản ghi mới (lỗ hổng S3, kế hoạch
+        # P7 chặng 0). An toàn vì hóa đơn đã hủy luôn chưa có đồng nào — `huy_hoa_don` chặn
+        # khi đã thu. Chép lại giá và ngày lập như một hóa đơn mới lập hôm nay: giữ giá cũ
+        # là tính theo bảng giá đã bỏ, giữ ngày cũ là "chưa thu" rơi vào kỳ thống kê đã qua.
+        cu.dong.clear()
+        cu.dong.append(dong)
+        cu.total_amount = dong.amount
+        cu.status = "unpaid"
+        cu.issued_at = clock.now()
+        cu.note = (ghi_chu or "").strip() or None
+        db.commit()
+        db.refresh(cu)
+        return cu
 
     hd = Invoice(
         owner_id=lich.pet.owner_id,

@@ -414,6 +414,53 @@ def test_doi_lich_giu_nguyen_gio_van_bao_trung_neu_nhan_vien_moi_ban(db, nen):
     assert a.staff_id == nen["nv1"].id
 
 
+def test_doi_gio_ma_giu_nhan_vien_da_khoa_bi_tu_choi(db, nen):
+    """Lỗ hổng S4 (kế hoạch P7 chặng 0).
+
+    Nhân viên bị khóa sau khi đã được phân lịch. Đổi giờ mà giữ nguyên người đó thì trước
+    đây lọt qua — phép kiểm nhân viên chỉ chạy khi ĐỔI nhân viên — và lịch mới lại nằm
+    trong tay một tài khoản không đăng nhập được, không ai ghi hồ sơ cho nó.
+    """
+    a = dat(db, nen, gio(9), nhan_vien="nv1")
+    nen["nv1"].is_active = False
+    db.commit()
+
+    with pytest.raises(LoiNghiepVu, match="ngưng hoạt động"):
+        nv.doi_lich(db, a.id, bat_dau=gio(14))
+
+    assert a.start_at == gio(9)
+
+
+def test_lich_cua_nhan_vien_da_khoa_van_chuyen_duoc_sang_nguoi_khac(db, nen):
+    """Biên của ca trên: lối thoát đúng cho lịch kẹt là chuyển người, và nó phải còn mở."""
+    a = dat(db, nen, gio(9), nhan_vien="nv1")
+    nen["nv1"].is_active = False
+    db.commit()
+
+    nv.doi_lich(db, a.id, bat_dau=gio(9), nhan_vien_id=nen["nv2"].id)
+
+    assert a.staff_id == nen["nv2"].id
+
+
+def test_dem_lich_chua_lam_theo_nhan_vien(db, nen):
+    """S4: trang Tài khoản cần biết nhân viên sắp khóa/đã khóa còn giữ bao nhiêu lịch.
+
+    Chỉ đếm lịch còn sửa được (`booked`, `rescheduled`): lịch đã hủy không cần ai làm,
+    lịch đã xong thì đã làm rồi.
+    """
+    dat(db, nen, gio(9), nhan_vien="nv1")
+    dat(db, nen, gio(10), nhan_vien="nv1")
+    huy = dat(db, nen, gio(11), nhan_vien="nv1")
+    nv.huy_lich(db, huy.id, "Khách báo bận")
+    dat(db, nen, gio(9), pet="pet2", nhan_vien="nv2")
+
+    assert nv.so_lich_chua_lam_theo_nhan_vien(db) == {nen["nv1"].id: 2, nen["nv2"].id: 1}
+
+
+def test_dem_lich_chua_lam_khi_chua_co_lich_nao(db, nen):
+    assert nv.so_lich_chua_lam_theo_nhan_vien(db) == {}
+
+
 # --- Hủy lịch (chặng 2) ------------------------------------------------------------
 
 

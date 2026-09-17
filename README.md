@@ -6,10 +6,13 @@ chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham 
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P6 xong** — quản lý chủ
+Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P6 xong, đang làm P7** — quản lý chủ
 nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh
-toán và thống kê đều chạy được. Còn P7 tích hợp AI, P8 hoàn thiện — xem tiến độ từng phase trong
-[`docs/roadmap.md`](docs/roadmap.md).
+toán và thống kê đều chạy được; P7 mới xong chặng 0 (vá lỗ hổng), **chức năng AI chưa có**. Còn P8
+hoàn thiện — xem tiến độ từng phase trong [`docs/roadmap.md`](docs/roadmap.md).
+
+Chạy lần đầu phải sao chép `.env.example` thành `.env` và đặt `SECRET_KEY` riêng — ứng dụng từ chối
+khởi động với khóa mặc định.
 
 ## Công nghệ
 

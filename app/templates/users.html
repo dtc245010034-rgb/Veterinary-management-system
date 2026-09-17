@@ -20,7 +20,11 @@
         <td>{{ nv.ten_vai_tro }}</td>
         <td>
           {% if nv.is_active %}Đang hoạt động
-          {% else %}<span class="trang-thai-khoa">Đã khóa</span>{% endif %}
+          {% else %}<span class="trang-thai-khoa">Đã khóa</span>
+            {% if lich_chua_lam.get(nv.id) %}
+              <p class="loi">còn {{ lich_chua_lam[nv.id] }} lịch chưa làm — đổi lịch sang nhân viên khác</p>
+            {% endif %}
+          {% endif %}
         </td>
         <td>
           {% if nv.id != user.id %}

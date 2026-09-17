@@ -49,6 +49,9 @@ class ThongKe:
     den_ngay: date
     so_luot: int
     so_luot_hoan_thanh: int
+    # Lịch chưa hủy, chưa ghi hồ sơ, đã kết thúc: khách không đến hoặc nhân viên quên ghi.
+    # Vẫn nằm trong `so_luot` theo định nghĩa đã chốt 11/09; tách ra để quản lý đọc được.
+    so_lich_qua_gio_chua_ghi: int
     doanh_thu: Decimal
     chua_thu: Decimal
     theo_dich_vu: list[DongDichVu]
@@ -75,6 +78,7 @@ def thong_ke(db: Session, tu_ngay: date, den_ngay: date) -> ThongKe:
 
     # So bằng khoảng nửa mở [đầu ngày đầu, đầu ngày SAU ngày cuối) — cùng quy ước với lịch
     # hẹn. So `<= den_ngay 00:00` sẽ đánh rơi mọi thứ xảy ra trong chính ngày cuối kỳ.
+    bay_gio = clock.now()
     tu = datetime.combine(tu_ngay, time.min)
     den = datetime.combine(den_ngay + timedelta(days=1), time.min)
 
@@ -139,6 +143,9 @@ def thong_ke(db: Session, tu_ngay: date, den_ngay: date) -> ThongKe:
         den_ngay=den_ngay,
         so_luot=len(lich),
         so_luot_hoan_thanh=sum(1 for l in lich if l.status == "done"),
+        so_lich_qua_gio_chua_ghi=sum(
+            1 for l in lich if l.status != "done" and l.end_at <= bay_gio
+        ),
         doanh_thu=sum((p.amount for p in thanh_toan), Decimal("0")),
         chua_thu=sum((hd.con_no for hd in hoa_don), Decimal("0")),
         theo_dich_vu=theo_dich_vu,

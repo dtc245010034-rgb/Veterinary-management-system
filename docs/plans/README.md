@@ -34,4 +34,13 @@ Chép vào đây thì kế hoạch trở thành một phần của lịch sử d
 | 2026-09-04 | [Nền tảng, đăng nhập và phân quyền](2026-09-04-p1-nen-tang-va-xac-thuc.md) | P1 | Hoàn thành |
 | 2026-09-04 | [Chủ nuôi và thú cưng](2026-09-04-p2a-chu-nuoi-va-thu-cung.md) | P2a | Hoàn thành |
 | 2026-09-05 | [Dịch vụ, bảng giá và gói](2026-09-05-p2b-dich-vu-va-goi.md) | P2b | Hoàn thành |
-| 2026-09-05 | [Lịch hẹn và chống trùng lịch](2026-09-05-p3-lich-hen.md) | P3 | Chặng 1 xong, chờ duyệt sang chặng 2 |
+| 2026-09-05 | [Lịch hẹn và chống trùng lịch](2026-09-05-p3-lich-hen.md) | P3 | Hoàn thành |
+| 2026-09-05 | [Hồ sơ chăm sóc và tiêm phòng](2026-09-05-p4-ho-so-va-tiem-phong.md) | P4 | Hoàn thành |
+| 2026-09-05 | [Kịch bản e2e xuyên suốt](2026-09-05-e2e-xuyen-suot.md) | P4–P7 | Còn bước 10 của P7 |
+| 2026-09-05 | [Trả nợ kiến trúc và bao phủ](2026-09-05-tra-no-kien-truc-va-bao-phu.md) | — | Hoàn thành |
+| 2026-09-06 | [Hóa đơn và thanh toán](2026-09-06-p5-hoa-don-va-thanh-toan.md) | P5 | Hoàn thành |
+| 2026-09-11 | [Thống kê](2026-09-11-p6-thong-ke.md) | P6 | Hoàn thành |
+| 2026-09-13 | [Dọn việc tồn của P6](2026-09-13-viec-ton-p6.md) | P6 | Hoàn thành |
+| 2026-09-18 | [Tích hợp AI, xoay ca model Gemini và ước tính quota](2026-09-18-p7-tich-hop-ai.md) | P7 | Đang làm |
+
+> Bảng này từng dừng ở P3 trong khi thư mục đã có thêm bảy kế hoạch — bổ sung ngày 18/09.
