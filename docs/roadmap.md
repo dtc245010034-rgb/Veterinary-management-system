@@ -215,7 +215,9 @@ Hai lỗ hổng tìm được khi rà soát hệ thống ngày 18/09 (chặng 0 
 
 Đáp ứng yêu cầu đề bài mục 6: *"Cuối kỳ: Dùng AI viết README, báo cáo, slide và review dữ liệu cá nhân."*
 
-Cân nhắc lại việc dựng CI ở phase này nếu dự án được đẩy lên GitHub.
+Dự án **đã đẩy lên GitHub ngày 18/09**: <https://github.com/dtc245010034-rgb/Veterinary-management-system>
+(repo công khai; `.env` và `petcare.db` nằm ngoài repo theo `.gitignore`). Vì vậy việc dựng CI ở phase
+này là làm được ngay — một workflow chạy `pytest` mỗi lần push là đủ.
 
 **DoD:** ma trận [`testing/test-cases.md`](testing/test-cases.md) không còn ô ⬜; toàn bộ suite xanh;
 smoke P8 tick đủ; báo cáo dựng được từ chính `docs/` và `docs/sessions/`.

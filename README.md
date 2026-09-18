@@ -6,13 +6,17 @@ chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham 
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P6 xong, đang làm P7** — quản lý chủ
-nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh
-toán và thống kê đều chạy được; P7 mới xong chặng 0 (vá lỗ hổng), **chức năng AI chưa có**. Còn P8
-hoàn thiện — xem tiến độ từng phase trong [`docs/roadmap.md`](docs/roadmap.md).
+Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P6 xong, đang làm P7** — quản lý chủ nuôi, thú
+cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh toán và
+thống kê đều chạy được. **Ba tính năng AI đã dùng được trên giao diện**; còn lượt chạy kiểm chứng với
+Gemini thật (P7 chặng 3) và P8 hoàn thiện — xem tiến độ từng phase trong
+[`docs/roadmap.md`](docs/roadmap.md).
 
 Chạy lần đầu phải sao chép `.env.example` thành `.env` và đặt `SECRET_KEY` riêng — ứng dụng từ chối
-khởi động với khóa mặc định.
+khởi động với khóa mặc định. Muốn gọi AI thật thì đặt thêm `GEMINI_API_KEY` và `AI_PROVIDER=gemini`;
+để `fake` thì hệ thống trả lời cố định, không cần mạng và không tốn lượt gọi.
+
+Xem lượt gọi AI còn lại trong ngày: `python -m app.ai.quota`.
 
 ## Công nghệ
 
@@ -51,16 +55,29 @@ Mật khẩu chung: `matkhau123`
 | `letan` | Lễ tân | Chủ nuôi, thú cưng, lịch hẹn, tiêm phòng, hóa đơn; xem bảng giá |
 | `chamsoc1`, `chamsoc2` | Nhân viên chăm sóc | Lịch của mình, ghi hồ sơ chăm sóc, tiêm phòng; xem chủ nuôi và bảng giá |
 
-Phần AI **chưa cài đặt** (phase P7). Khi có, không cần khóa Gemini vẫn chạy được: để
-`AI_PROVIDER=fake` trong `.env` thì các tính năng AI trả lời cố định thay vì gọi API thật.
+### Ba tính năng AI
+
+| Ở đâu | Làm gì |
+|---|---|
+| Lưới lịch hẹn, trang Tiêm phòng | **Soạn tin nhắc (AI)** — tin nhắn nháp gửi khách, sửa được trước khi gửi |
+| Trang thú cưng | **Tóm tắt bằng AI** lịch sử chăm sóc |
+| Menu **Trợ lý AI** | Hỏi đáp chăm sóc thường ngày |
+
+Không có khóa Gemini vẫn chạy được: để `AI_PROVIDER=fake` thì các tính năng AI trả lời cố định thay
+vì gọi API thật. Gói Gemini miễn phí giới hạn lượt mỗi ngày cho từng model, nên hệ thống **tự xoay
+sang model kế** khi model đầu hết lượt hoặc quá tải; quản lý xem được bảng lượt ở `/ai/quota`.
+
+Ba lớp an toàn nằm trong code, không phụ thuộc mô hình có nghe lời hay không: câu xin thuốc/liều bị
+chặn **trước khi gọi API**, phản hồi có liều lượng bị thay, số điện thoại và email bị lọc khỏi mọi
+prompt. Chi tiết: [`docs/ai-safety.md`](docs/ai-safety.md).
 
 ## Cách chạy test
 
 ```bash
-pytest tests/unit            # 336 ca, ~22s  — chạy mỗi lần sửa code
-pytest tests/integration     # 179 ca, ~35s  — chạy cuối mỗi phiên làm việc
-pytest tests/e2e             #   1 ca,  ~5s  — kịch bản xuyên suốt, chạy cuối mỗi phase
-pytest                       # 516 ca, ~57s  — chạy trước mỗi commit (hồi quy)
+pytest tests/unit            # 457 ca, ~32s  — chạy mỗi lần sửa code
+pytest tests/integration     # 213 ca, ~48s  — chạy cuối mỗi phiên làm việc
+pytest tests/e2e             #   1 ca,  ~6s  — kịch bản xuyên suốt 11 bước, chạy cuối mỗi phase
+pytest                       # 671 ca, ~74s  — chạy trước mỗi commit (hồi quy)
 ```
 
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).
@@ -71,12 +88,12 @@ Kết quả từng phase: [`docs/testing/reports/`](docs/testing/reports/).
 | File | Nội dung |
 |---|---|
 | [`docs/user-stories.md`](docs/user-stories.md) | 28 user story, 99 tiêu chí chấp nhận Given/When/Then |
-| [`docs/erd.md`](docs/erd.md) | 13 bảng, sơ đồ quan hệ, mô tả cột và ràng buộc — 12 bảng đã dựng, còn `ai_logs` của P7 |
+| [`docs/erd.md`](docs/erd.md) | 14 bảng, sơ đồ quan hệ, mô tả cột và ràng buộc — tất cả đã dựng |
 | [`docs/architecture.md`](docs/architecture.md) | Ba lớp, ranh giới, luồng dữ liệu, cách xử lý lỗi |
-| [`docs/ai-safety.md`](docs/ai-safety.md) | System prompt, guardrail, 20 ca kiểm thử an toàn AI |
+| [`docs/ai-safety.md`](docs/ai-safety.md) | System prompt, ba lớp guardrail trong code, 20 ca kiểm thử an toàn AI |
 | [`docs/roadmap.md`](docs/roadmap.md) | Lộ trình P0–P8 gắn với mốc KT1/KT2/KT3/cuối kỳ |
 | [`docs/codebase-map.md`](docs/codebase-map.md) | Bản đồ file → trách nhiệm |
-| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 102 test case, checklist thủ công, báo cáo |
+| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 112 test case, checklist thủ công, báo cáo |
 | [`docs/plans/`](docs/plans/) | Kế hoạch đã duyệt của từng phase |
 | [`docs/sessions/`](docs/sessions/) | Nhật ký từng phiên làm việc |
 
@@ -88,7 +105,13 @@ lệch nhau:
 1. **Mỗi phiên làm việc để lại một log** trong `docs/sessions/`, tạo tự động bởi hook trong
    [`.claude/`](.claude/) của repo. Phiên có sửa code thì bắt buộc ghi file đã đổi và kết quả test.
 2. **Mọi ngữ cảnh nằm trong repo** — cấu hình agent, hook, kế hoạch đã duyệt, log phiên đều được
-   commit. Clone repo về máy khác là có đủ ngữ cảnh làm tiếp.
+   commit. Clone repo về máy khác là có đủ ngữ cảnh làm tiếp:
+
+   ```bash
+   git clone https://github.com/dtc245010034-rgb/Veterinary-management-system.git
+   ```
+
+   Hai thứ **không** theo repo vì là bí mật hoặc dữ liệu máy: `.env` và `petcare.db`.
 
 Chi tiết trong [`CLAUDE.md`](CLAUDE.md) mục 6. Mọi phiên làm việc bắt đầu bằng việc vào thư mục dự án
 và đọc `docs/codebase-map.md` cùng log phiên gần nhất.
