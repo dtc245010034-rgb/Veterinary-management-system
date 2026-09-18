@@ -43,12 +43,16 @@ DISCLAIMER = (
 
 | Nơi | Cách chèn | Vì sao |
 |---|---|---|
-| Cuối phản hồi AI thuộc nhóm sức khỏe | `ai/service.py` nối vào sau khi nhận kết quả | Người dùng copy tin nhắn đi nơi khác vẫn còn cảnh báo |
-| Cố định trên giao diện mọi màn hình AI | Trong template Jinja2 | **Hiện kể cả khi lời gọi AI thất bại** (US-26) |
-| Trong system prompt | Yêu cầu mô hình tự kèm | Lớp phòng vệ thứ ba, không phải lớp duy nhất |
+| Cuối phản hồi tóm tắt và hỏi đáp | `ai/service.py` nối vào sau khi nhận kết quả | Người dùng copy câu trả lời đi nơi khác vẫn còn cảnh báo |
+| Cố định trên giao diện mọi màn hình AI | Trong template Jinja2, **đặt phía trên nội dung** | **Hiện kể cả khi lời gọi AI thất bại** (US-26, ca G-19) |
+| ~~Trong system prompt~~ | **Bỏ ngày 18/09** | Code đã luôn nối câu này; dặn mô hình viết thêm chỉ làm khuyến cáo hiện **hai lần** trong cùng một câu trả lời. System prompt `qa` nay dặn ngược lại: không tự viết câu khuyến cáo |
 
 Chèn ở tầng code (`ai/service.py`) là bắt buộc. Chỉ dặn trong prompt là không đủ — mô hình có thể
 không tuân theo, và test không kiểm chứng được điều gì.
+
+**Tin nhắn nhắc lịch không nối `DISCLAIMER`**: đó là tin nhắn hẹn giờ tắm gửi cho khách, không phải
+nội dung sức khỏe. Riêng nhắc lịch tiêm thì code nối câu `NHAC_XAC_NHAN_TIEM` — "vui lòng xác nhận
+lại lịch tiêm cụ thể với bác sĩ thú y". Màn hình vẫn luôn có dòng cảnh báo cố định.
 
 ---
 
@@ -136,6 +140,18 @@ pet_ctx = pet
 `ai_logs.prompt` lưu **đúng chuỗi đã gửi đi**, nên nếu prompt sạch thì log cũng sạch. Test US-28
 kiểm tra cả hai nơi.
 
+**Hai quyết định bổ sung ngày 18/09 (chặt hơn mức US-28 đòi):**
+
+1. **Không gửi tên chủ nuôi.** US-28 chỉ cấm số điện thoại, email, địa chỉ; nhưng CLAUDE.md mục 8
+   nói "chỉ gửi dữ liệu chăm sóc thú cưng", và tin nhắn xưng "Anh/chị" thì không cần tên. Lễ tân sửa
+   lại xưng hô trước khi gửi.
+2. **Lọc văn bản tự do bằng `guardrail.xoa_lien_he()`.** Ghi chú lịch hẹn, ghi chú hồ sơ và **câu hỏi
+   lễ tân tự gõ** đều có thể lẫn số khách. Chuỗi giống số điện thoại hoặc email bị thay bằng
+   `[đã lược bỏ]` trước khi vào prompt và trước khi ghi log.
+
+   *Giới hạn đã biết:* địa chỉ nhà không có dạng nhận ra được bằng biểu thức chính quy nên không lọc
+   được ở bước này. Lớp chặn thật cho địa chỉ là việc không bao giờ đưa cột `address` vào prompt.
+
 ---
 
 ## 5. Bộ ca kiểm thử guardrail
@@ -215,9 +231,48 @@ Toàn bộ 20 ca trên chạy với `FakeProvider`, nên nhanh, tất định v�
   `FakeProvider` nhận được.
 
 Phần không kiểm chứng được bằng test tự động là mô hình thật có tuân theo system prompt hay không.
-Phần đó kiểm tra **thủ công một lần ở giai đoạn KT3**: chạy 20 ca trên với `AI_PROVIDER=gemini`, dán
-câu hỏi và phản hồi thật vào `testing/reports/`. Đây đúng là việc đề bài mô tả ở mục 6 —
+Phần đó kiểm tra **thủ công một lần ở giai đoạn KT3**: chạy các ca hỏi đáp với `AI_PROVIDER=gemini`,
+dán câu hỏi và phản hồi thật vào `testing/reports/`. Đây đúng là việc đề bài mô tả ở mục 6 —
 *"KT3: Dùng AI thiết kế prompt an toàn, test câu hỏi vượt phạm vi y tế thú y"*.
+
+Lệnh có sẵn cho việc đó, tự ghi báo cáo markdown để không phải chép tay:
+
+```
+python -m app.ai.quota --guardrail --model gemini-3.6-flash
+```
+
+**Chỉ G-01 → G-13 cần model thật** (13 lượt gọi). G-14 → G-20 là việc của code — lọc dữ liệu liên
+hệ, ghi log lỗi, không gọi API khi thiếu dữ liệu — nên chúng đã có test tự động; chạy tay lại chỉ để
+nhìn trên giao diện, dùng `FakeProvider` hoặc ngắt mạng, không tốn lượt nào.
+
+## 7. Ba lớp guardrail thật sự nằm trong code (cài đặt ngày 18/09)
+
+| Lớp | Ở đâu | Chặn cái gì |
+|---|---|---|
+| **Chặn trước khi gọi** | `guardrail.la_cau_xin_thuoc()` | Câu hỏi có từ thuốc/liều/tên thuốc, hoặc số kèm `mg`/`ml`/`viên`. Bị từ chối bằng câu cố định, **không gửi đi API**, nhưng vẫn ghi `ai_logs` với `model = NULL` |
+| **Soát phản hồi** | `guardrail.chua_lieu_luong()` | Mô hình lỡ trả về số kèm đơn vị liều thì **cả phản hồi** bị thay bằng câu từ chối. Cắt bớt phần có số sẽ để lại lời khuyên y tế đứt đoạn, đọc còn nguy hiểm hơn |
+| **Lọc dữ liệu cá nhân** | `guardrail.xoa_lien_he()` | Số điện thoại và email trong mọi văn bản tự do, trước khi vào prompt và trước khi ghi log |
+
+**Cố ý không làm:** nhận diện câu "ngoài phạm vi" (hỏi code, hỏi thời tiết) bằng từ khóa. Câu hỏi hợp
+lệ rất dễ bị chặn nhầm — thử một bản lọc theo từ khóa thì "Nhân viên nào đang chăm bé Mực?" đã dính
+vì chuỗi "viên". Phạm vi để system prompt lo; TC-094 vì vậy mang trạng thái 🟡 chứ không phải ✅.
+
+**Cũng không làm được:** chặn mô hình **nêu tên bệnh**. Không thể liệt kê hết tên bệnh thú y, và so
+theo danh sách thì vừa sót vừa chặn nhầm. Chỗ này chỉ có system prompt, dòng cảnh báo cố định trên
+giao diện, và lượt chạy tay G-04 → G-07 làm bằng chứng.
+
+## 8. Model và cơ chế xoay ca (18/09)
+
+Gói miễn phí giới hạn khoảng 20 lượt/ngày cho **mỗi model**, reset theo **giờ Pacific**. Tên model
+cũng chết theo thời gian: `gemini-2.0-flash` (đặt từ P0) và `gemini-2.5-flash` (đặt 13/09) đều đã bị
+Google đóng — cả hai chỉ lộ ra khi gọi thật.
+
+Vì vậy `GEMINI_MODELS` là một **danh sách theo thứ tự ưu tiên**, và `app/ai/quota.py` tự đổi model
+khi model đầu hỏng hoặc hết lượt. Chi tiết luật xoay và cách đếm lượt nằm trong chính file đó.
+
+Điều này **không làm thay đổi guardrail**: ba lớp ở mục 7 chạy trong code của chúng ta nên model nào
+trả lời cũng đi qua chúng. Cái đổi theo model là chất lượng tuân thủ system prompt — vì vậy
+`ai_logs.model` ghi lại model đã trả lời, và báo cáo chạy tay ghim một model cho cả lượt.
 
 Nói thẳng về giới hạn: không thể bảo đảm mô hình ngôn ngữ không bao giờ vượt rào. Vì vậy lớp phòng
 vệ thật nằm ở chỗ khác — `DISCLAIMER` hiển thị cố định trên giao diện, và hệ thống được định vị rõ

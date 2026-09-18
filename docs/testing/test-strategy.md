@@ -14,14 +14,18 @@ bị bỏ qua — và một hệ thống test bị bỏ qua thì bằng không c
 
 | Tầng | Phạm vi | Chạy khi nào | Ngân sách | Lệnh |
 |---|---|---|---|---|
-| **Unit** | Hàm trong `app/services/`, `app/ai/prompts.py`. Không HTTP, DB in-memory hoặc không DB | Mỗi lần sửa code | < 30s | `pytest tests/unit` |
-| **Integration** | Router + DB in-memory qua `TestClient`. Có phân quyền, có validation | Cuối mỗi phiên làm việc | < 45s | `pytest tests/integration` |
-| **Regression** | Chạy lại **toàn bộ** suite | Trước mỗi commit | < 90s | `pytest` |
+| **Unit** | Hàm trong `app/services/` và `app/ai/`. Không HTTP, DB in-memory hoặc không DB | Mỗi lần sửa code | < 40s | `pytest tests/unit` |
+| **Integration** | Router + DB in-memory qua `TestClient`. Có phân quyền, có validation | Cuối mỗi phiên làm việc | < 60s | `pytest tests/integration` |
+| **Regression** | Chạy lại **toàn bộ** suite | Trước mỗi commit | < 100s | `pytest` |
 | **Hệ thống hoàn chỉnh** | `tests/e2e/test_full_flow.py` + [`smoke-checklist.md`](smoke-checklist.md) bấm tay | Cuối mỗi phase P1–P8 | vài phút | `pytest tests/e2e` |
 
 > **Ngân sách nới ngày 13/09 cho khớp thực đo** — người dùng chốt. Ba con số cũ (15s / 30s / 60s)
 > đặt từ P0 khi suite mới có vài chục test; tới P6 là 516 test thì cả ba đều vượt, và một ngân sách
 > luôn vượt thì không ai còn nhìn nó nữa.
+>
+> **Nới lần hai ngày 18/09**, cùng lý do: P7 thêm 134 test (tầng AI), suite đi từ 522 lên 671 ca nên
+> hai ngân sách cũ vượt ngay cả khi máy rảnh. Thực đo 18/09: unit 457 ca **32,3s**, integration 213 ca
+> **48,3s**, e2e **6,4s**, toàn bộ **73,7s**. Vẫn không có test nào đáng cắt.
 >
 > Thực đo 11–13/09: unit 336 ca **21,5s – 26,9s** tùy tải máy; integration 179 ca **34,7s – 42,7s**;
 > toàn bộ **57s – 72s**. Không có test nào đáng cắt: chậm nhất 1,03s (test hook), còn lại dưới 0,3s.
@@ -43,12 +47,12 @@ khi thêm code mới. Hiểu như vậy thì không phải nuôi hai bộ test s
 ## 2. Cấu trúc thư mục test
 
 Cây dưới đây chỉ nêu các file chính; danh sách đầy đủ, luôn khớp file thật, nằm ở
-[`../codebase-map.md`](../codebase-map.md). File đánh dấu *(P7)* là dự kiến, chưa có.
+[`../codebase-map.md`](../codebase-map.md).
 
 ```
 tests/
 ├── conftest.py                fixture dùng chung: db in-memory, client,
-│                              tài khoản mẫu, FakeProvider (P7), clock cố định
+│                              tài khoản mẫu, FakeProvider, clock cố định
 ├── unit/
 │   ├── test_architecture.py   canh ranh giới dự án — xem mục 3b
 │   ├── test_models_*.py       ràng buộc CSDL từng bảng
@@ -56,7 +60,11 @@ tests/
 │   │                          care_records, vaccinations, billing
 │   ├── test_scheduling.py     quy tắc trùng lịch, tính end_at, đổi/hủy lịch
 │   ├── test_stats_service.py  doanh thu, khách quay lại
-│   └── test_prompts.py        dựng prompt, lọc dữ liệu cá nhân, DISCLAIMER  (P7)
+│   ├── test_prompts.py        dựng prompt, ba system prompt, chèn DISCLAIMER
+│   ├── test_guardrail.py      chặn câu xin thuốc, soát liều lượng, xóa SĐT/email
+│   ├── test_ai_service.py     ba tính năng AI ở tầng nghiệp vụ, ghi ai_logs
+│   ├── test_ai_quota.py       xoay ca model, ngày quota theo giờ Pacific
+│   └── test_gemini.py         đọc phản hồi và phân loại lỗi HTTP (chỉ thay urlopen)
 ├── integration/
 │   ├── test_auth.py           đăng nhập
 │   ├── test_users.py          phân quyền, quản lý tài khoản
@@ -67,7 +75,7 @@ tests/
 │   ├── test_vaccinations.py   mũi tiêm và danh sách đến hạn
 │   ├── test_invoices.py       lập hóa đơn, ghi nhận thanh toán
 │   ├── test_stats.py          trang thống kê
-│   └── test_ai.py             20 ca guardrail trong ../ai-safety.md (P7)
+│   └── test_ai.py             ba tính năng AI qua HTTP, phân quyền, Post/Redirect/Get
 └── e2e/
     └── test_full_flow.py      một kịch bản xuyên suốt trên DB file thật
 ```

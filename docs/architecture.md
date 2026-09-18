@@ -27,25 +27,27 @@ hethongquanlythucung/
 │   ├── auth.py              session cookie, người dùng hiện tại, dependency kiểm tra vai trò
 │   ├── templates.py         cấu hình Jinja2 dùng chung
 │   ├── seed.py              dữ liệu mẫu: python -m app.seed
-│   ├── models/              SQLAlchemy — 13 bảng theo ERD, mỗi nhóm một file (ai_logs: P7)
+│   ├── models/              SQLAlchemy — 14 bảng theo ERD, mỗi nhóm một file
 │   ├── services/            LOGIC NGHIỆP VỤ — không import gì từ FastAPI
 │   │   ├── scheduling.py    đặt/đổi/hủy lịch, kiểm tra trùng lịch
 │   │   ├── billing.py       lập hóa đơn, ghi nhận thanh toán
 │   │   ├── stats.py         lượt dịch vụ, doanh thu, khách quay lại
 │   │   └── …                users, owners, catalog, care_records, vaccinations, clock, text, errors
-│   ├── ai/                  (P7 — chưa có)
-│   │   ├── provider.py      interface AIProvider
-│   │   ├── gemini.py        GeminiProvider — gọi API thật
-│   │   ├── fake.py          FakeProvider — trả lời cố định, dùng khi test
+│   ├── ai/                  TẦNG AI — router chỉ được import service.py
+│   │   ├── provider.py      interface AIProvider + 5 lớp lỗi đã phân loại
+│   │   ├── gemini.py        GeminiProvider — gọi REST bằng urllib
+│   │   ├── fake.py          FakeProvider — cài được lỗi theo từng model, dùng khi test
 │   │   ├── prompts.py       system prompt + câu khuyến cáo chuẩn
+│   │   ├── guardrail.py     chặn câu xin thuốc, soát liều lượng, xóa SĐT/email
+│   │   ├── quota.py         xoay ca model, đếm lượt theo ngày Pacific + CLI
 │   │   └── service.py       3 use case: reminder, summary, qa
 │   ├── routers/             chỉ HTTP: auth, users, owners, pets, services, appointments,
-│   │                        care_records, vaccinations, invoices, stats; ai (P7)
-│   ├── templates/           Jinja2
-│   └── static/              style.css — một file CSS, chưa có JS riêng
+│   │                        care_records, vaccinations, invoices, stats, ai
+│   ├── templates/           Jinja2 (JS ít, viết thẳng trong trang cần tới)
+│   └── static/              style.css — một file CSS, không có file JS riêng
 ├── tests/
 │   ├── conftest.py          fixture dùng chung
-│   ├── unit/                test services/ và ai/prompts.py
+│   ├── unit/                test services/ và ai/ (prompts, guardrail, quota, service, gemini)
 │   ├── integration/         test qua TestClient + SQLite in-memory
 │   └── e2e/test_full_flow.py  một kịch bản xuyên suốt trên DB file thật
 ├── docs/
