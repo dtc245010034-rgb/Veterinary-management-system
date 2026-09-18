@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block tieu_de %}Hỏi đáp chăm sóc{% endblock %}
+
+{% block noi_dung %}
+<h1>Trợ lý AI — hỏi đáp chăm sóc</h1>
+
+<p class="canh-bao">
+  Chỉ hỏi những việc chăm sóc thường ngày: tắm, chải lông, cắt móng, dinh dưỡng cơ bản.
+  <strong>AI không chẩn đoán bệnh, không tư vấn thuốc và không thay thế bác sĩ thú y.</strong>
+</p>
+
+{% if loi %}<div class="loi" role="alert"><p>{{ loi }}</p></div>{% endif %}
+
+<form class="the" method="post" action="/ai/hoi-dap" data-mot-lan>
+  <label>Câu hỏi <span class="bat-buoc">*</span>
+    <textarea name="cau_hoi" rows="3" required
+              placeholder="Ví dụ: Bao lâu nên tắm cho chó một lần?">{{ cau_hoi }}</textarea>
+  </label>
+  <button type="submit" class="chinh">Hỏi AI</button>
+  <p class="phu nhan-nho">
+    Mỗi lượt hỏi dùng một lượt gọi miễn phí trong ngày, nên tránh bấm nhiều lần.
+    Câu hỏi được lưu lại trong nhật ký AI.
+  </p>
+</form>
+
+<script>
+  // Chặn bấm đúp: mỗi lần gửi thừa là một lượt quota miễn phí bị đốt.
+  document.querySelectorAll('form[data-mot-lan]').forEach(function (form) {
+    form.addEventListener('submit', function () {
+      var nut = form.querySelector('button[type=submit]');
+      if (nut) { nut.disabled = true; nut.textContent = 'Đang hỏi AI…'; }
+    });
+  });
+</script>
+{% endblock %}

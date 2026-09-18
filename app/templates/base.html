@@ -28,6 +28,9 @@
     <a href="/services">Dịch vụ</a>
     {# US-02 cho cả ba vai trò toàn quyền ở mục tiêm phòng, nên link này không lọc vai trò. #}
     <a href="/vaccinations">Tiêm phòng</a>
+    {# Hỏi đáp và tóm tắt mở cho cả ba vai trò (người dùng chốt 18/09); riêng soạn tin nhắc
+       là việc của quầy nên nút đó chỉ hiện ở lưới lịch và trang tiêm phòng. #}
+    <a href="/ai/hoi-dap">Trợ lý AI</a>
     {# US-02 không cho `caretaker` quyền nào ở mục hóa đơn, kể cả xem. #}
     {% if user.role in ('manager', 'receptionist') %}
       <a href="/invoices">Hóa đơn</a>

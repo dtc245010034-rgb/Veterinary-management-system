@@ -1,6 +1,6 @@
 # P7 — Tích hợp AI, xoay ca model Gemini và ước tính quota
 
-> **Phase:** P7 · **Mốc:** KT3 · **Duyệt ngày:** 2026-09-18 · **Trạng thái:** chặng 0 và chặng 1 xong 18/09 (smoke chặng 0 còn 6 ô chờ tick), đang mở chặng 2
+> **Phase:** P7 · **Mốc:** KT3 · **Duyệt ngày:** 2026-09-18 · **Trạng thái:** chặng 0, 1, 2 xong 18/09 (smoke chặng 0 và 2 chờ người dùng tick), đang mở chặng 3
 >
 > Thiết kế qua hai vòng brainstorming 17–18/09; người dùng chốt Q1–Q7, duyệt kèm đề xuất Q8–Q10 và bảy
 > tối ưu O1–O7. Chia bốn chặng (0–3). Theo [`../roadmap.md`](../roadmap.md).
@@ -152,11 +152,11 @@ Hai bảng mới tạo được bằng `create_all` trên CSDL đang có — kh�
 - Templates: `ai_ket_qua.html` (dùng chung; nhắc lịch có textarea + Sao chép + Chốt), `ai_hoi_dap.html`, `ai_quota.html`. **`DISCLAIMER` cố định ở đầu nội dung**, hiện cả khi lỗi. Mỗi kết quả ghi "Trả lời bởi: <model>".
 - Nút gắn thêm: `appointments.html` (soạn tin nhắc — chỉ lịch còn sửa được), `vaccinations.html`, `pet_detail.html`. Menu + thẻ trang chủ "Trợ lý AI" cho cả 3 vai trò.
 
-- [ ] Router, templates, nút, menu, CSS
-- [ ] `tests/integration/test_ai.py`: TC-084, 085, 086, 089, 090, 091, 099, 100; caretaker gọi nhắc lịch → 403; không phải quản lý mở `/ai/quota` → 403; F5 trang kết quả không sinh log mới; AI lỗi → không 500, lịch còn nguyên; `?tu=//evil.com` bị bỏ qua
-- [ ] e2e bước 10 (tóm tắt AI bằng link/nút lấy từ HTML, FakeProvider) → **TC-101 đủ 11/11**
-- [ ] Tách khối smoke P7 theo chặng **trước khi** đưa người dùng tick; rà luồng trình duyệt lượt `fake`
-- [ ] Báo cáo `…-P7-chang2.md`
+- [x] Router, templates, nút, menu, CSS
+- [x] `tests/integration/test_ai.py`: TC-084, 085, 086, 089, 090, 091, 099, 100; caretaker gọi nhắc lịch → 403; không phải quản lý mở `/ai/quota` → 403; F5 trang kết quả không sinh log mới; AI lỗi → không 500, lịch còn nguyên; `?tu=//evil.com` bị bỏ qua
+- [x] e2e bước 10 (tóm tắt AI bằng link/nút lấy từ HTML, FakeProvider) → **TC-101 đủ 11/11**
+- [x] Tách khối smoke P7 theo chặng **trước khi** đưa người dùng tick; rà luồng trình duyệt lượt `fake`
+- [x] Báo cáo `…-P7-chang2.md` — 671 test xanh, rà luồng server thật không lỗi
 
 ## Chặng 3 — Gemini thật (khoảng 15 lượt quota)
 

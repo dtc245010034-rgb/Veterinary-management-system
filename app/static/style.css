@@ -294,3 +294,26 @@ a.nguy-hiem {
   border: 1px solid #fecdca; border-radius: 7px;
   background: #fff; text-decoration: none;
 }
+
+/* --- Trợ lý AI (P7) --------------------------------------------------------- */
+
+/* Phản hồi AI giữ nguyên xuống dòng do mô hình sinh ra, nhưng vẫn phải tự ngắt dòng
+   theo bề ngang khung — `pre` mặc định để chữ tràn ngang. */
+.ai-noi-dung {
+  white-space: pre-wrap;
+  font: inherit;
+  background: var(--nen);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 0 0 12px;
+  line-height: 1.55;
+}
+
+/* Nhãn chỉ dành cho trình đọc màn hình: ô nhập đã có tiêu đề ngay phía trên. */
+.an-nhan {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

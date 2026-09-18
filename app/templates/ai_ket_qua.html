@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block tieu_de %}Kết quả trợ lý AI{% endblock %}
+
+{% block noi_dung %}
+<h1>{{ log.ten_tinh_nang if log else "Trợ lý AI" }}</h1>
+
+{# Dòng khuyến cáo nằm TRONG template chứ không trong phản hồi AI, và đặt trên nội dung.
+   Nhờ vậy nó hiện cả khi lời gọi AI thất bại (US-26, ca G-19) và không phải cuộn xuống mới
+   thấy — xem docs/ai-safety.md mục 2. #}
+<p class="canh-bao">
+  Nội dung do AI soạn, chỉ mang tính tham khảo.
+  <strong>AI không thay thế chẩn đoán của bác sĩ thú y.</strong>
+</p>
+
+{% if loi %}
+  <div class="loi" role="alert"><p>{{ loi }}</p></div>
+{% else %}
+  {% if ban_chot is defined %}
+    <div class="the">
+      <h2>Bản đã chốt</h2>
+      <p class="phu nhan-nho">Đây là bản lễ tân đã sửa. Sao chép rồi gửi cho khách.</p>
+      <pre class="ai-noi-dung" id="ban-chot">{{ ban_chot }}</pre>
+      <button type="button" class="chinh" data-sao-chep="ban-chot">Sao chép</button>
+    </div>
+  {% elif log.feature == 'reminder' %}
+    <form class="the" method="post" action="/ai/ket-qua/{{ log.id }}/chot">
+      <h2>Tin nhắn nháp</h2>
+      <p class="phu nhan-nho">Sửa trực tiếp trước khi gửi — bản sửa mới là bản được dùng.</p>
+      <label class="an-nhan" for="noi-dung">Nội dung tin nhắn</label>
+      <textarea id="noi-dung" name="noi_dung" rows="6">{{ log.response }}</textarea>
+      <input type="hidden" name="tu" value="{{ quay_lai }}">
+      <div class="hang-nut">
+        <button type="submit" class="chinh">Chốt tin nhắn</button>
+        <button type="button" data-sao-chep="noi-dung">Sao chép</button>
+      </div>
+    </form>
+  {% else %}
+    <div class="the">
+      <pre class="ai-noi-dung" id="noi-dung">{{ log.response }}</pre>
+      <button type="button" data-sao-chep="noi-dung">Sao chép</button>
+    </div>
+  {% endif %}
+
+  <p class="phu nhan-nho">
+    Trả lời bởi: <code>{{ log.model or "không gọi API — hệ thống tự trả lời" }}</code>
+    · lúc {{ log.created_at.strftime("%H:%M %d/%m/%Y") }}
+  </p>
+{% endif %}
+
+<p><a href="{{ quay_lai }}">← Quay lại</a></p>
+
+<script>
+  // Nút sao chép: lấy chữ từ ô nhập hoặc khối văn bản có cùng id.
+  document.querySelectorAll('[data-sao-chep]').forEach(function (nut) {
+    nut.addEventListener('click', function () {
+      var o = document.getElementById(nut.dataset.saoChep);
+      var chu = o.value !== undefined ? o.value : o.textContent;
+      navigator.clipboard.writeText(chu).then(function () {
+        nut.textContent = 'Đã sao chép';
+        setTimeout(function () { nut.textContent = 'Sao chép'; }, 2000);
+      });
+    });
+  });
+</script>
+{% endblock %}

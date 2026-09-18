@@ -204,7 +204,7 @@ bắt được cả lỗi ở tầng lưu trữ:
 7. ✅ Đăng nhập lễ tân → lập hóa đơn *(P5)*
 8. ✅ Ghi nhận thanh toán một phần → trạng thái `partial` *(P5)*
 9. ✅ Ghi nhận nốt phần còn lại → trạng thái `paid` *(P5)*
-10. ⬜ Gọi AI tóm tắt hồ sơ → có nội dung và có `DISCLAIMER` *(P7)*
+10. ✅ Gọi AI tóm tắt hồ sơ → có nội dung và có `DISCLAIMER`, tải lại trang không gọi AI lần nữa *(P7)*
 11. ✅ Đăng nhập quản lý → xem thống kê → doanh thu khớp số đã thu *(P6)*
 
 Một test đi qua gần hết hệ thống, nên nó bắt được lỗi tích hợp mà unit test không thấy: sai thứ tự

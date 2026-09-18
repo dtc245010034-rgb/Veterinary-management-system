@@ -4,9 +4,11 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-18 (P7 chặng 1 — nền AI, xoay ca model, quota) · **Trạng thái:** P0→P6 xong — chủ nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh toán và thống kê đều chạy được. Tiếp theo: **P7 tích hợp AI**. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+**Cập nhật lần cuối:** 2026-09-18 (P7 chặng 2 — router và ba trang AI) · **Trạng thái:** P0→P6 xong — chủ nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh toán và thống kê đều chạy được. Tiếp theo: **P7 tích hợp AI**. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
 
-> **Làm tiếp:** P7 **chặng 2** — router, ba trang AI, e2e bước 10. Kế hoạch:
+> **Làm tiếp:** P7 **chặng 3** — chạy bộ ca guardrail với Gemini thật
+> (`python -m app.ai.quota --guardrail --model gemini-3.6-flash`), rồi người dùng tick smoke.
+> Chặng 0, 1, 2 xong ngày 18/09; ba tính năng AI đã chạy được trên trình duyệt với `FakeProvider`. Kế hoạch:
 > [`plans/2026-09-18-p7-tich-hop-ai.md`](plans/2026-09-18-p7-tich-hop-ai.md). Chặng 0 (vá S1→S5) và
 > chặng 1 (nền AI) xong ngày 18/09; **chưa có giao diện AI nào**. Gọi thật đã chạy được:
 > `gemini-3.6-flash`, tắt token suy nghĩ còn ~2,2s. Xem nhanh bằng `python -m app.ai.quota`.
@@ -64,7 +66,7 @@
 | `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 102 test case — 80 ✅ · 1 🟡 · 20 ⬜ · 1 ➖ ngoài phạm vi (13/09) |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
 | `testing/reports/README.md` | Mẫu báo cáo kiểm thử cuối phase |
-| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 20: mỗi phase một file, cộng năm báo cáo rà luồng bằng trình duyệt, một báo cáo trả nợ và một báo cáo dọn việc tồn |
+| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 21: mỗi phase một file, cộng năm báo cáo rà luồng bằng trình duyệt, một báo cáo trả nợ và một báo cáo dọn việc tồn |
 
 ### Ứng dụng (`app/`) — từ P1
 
@@ -110,6 +112,7 @@
 | `routers/vaccinations.py` | `/vaccinations` danh sách đến hạn; `/pets/{id}/vaccinations` ghi mũi tiêm |
 | `routers/invoices.py` | `/invoices` danh sách, `/invoices/{id}` chi tiết, thu tiền, hủy hóa đơn. Cả router chặn `caretaker`. `GET /invoices/{id}/huy` là trang xác nhận, `POST` cùng đường dẫn mới hủy thật |
 | `routers/stats.py` | `/stats?tu_ngay=&den_ngay=` — cả router chỉ `manager` (TC-006). Ô ngày trống → kỳ mặc định, tính lùi từ "Đến ngày" nếu đã chọn; ngày sai dạng → trang báo lỗi 400 tiếng Việt, giữ ngày đã nhập |
+| `routers/ai.py` | `/ai/...` — soạn tin nhắc, tóm tắt, hỏi đáp, trang kết quả dùng chung, trang quota (chỉ `manager`). Theo mẫu **Post/Redirect/Get**: tải lại trang kết quả không gọi AI lần nữa. Chỉ import `app/ai/service.py` |
 | `routers/appointments.py` | `/appointments` lưới lịch + đặt/đổi/hủy; `/appointments/cua-toi` lịch riêng của nhân viên chăm sóc |
 | `templates/base.html` | Bố cục chung, menu hiện theo vai trò |
 | `templates/xac_nhan.html` | Trang hỏi lại dùng chung cho mọi thao tác làm mất dữ liệu. Nhận `tieu_de`, `thong_tin`, `canh_bao`, `hanh_dong` (URL POST), `quay_lai`, `nut`. Cố ý không dùng `confirm()` của JavaScript |
@@ -122,6 +125,9 @@
 | `templates/vaccinations.html` | Danh sách đến hạn tiêm, có nhãn **Quá hạn** và dòng khuyến cáo bác sĩ thú y |
 | `templates/invoices.html` | Danh sách hóa đơn, chưa thu lên đầu |
 | `templates/invoice_detail.html` | Chi tiết hóa đơn: các dòng, lịch sử thanh toán, form thu tiền, nút hủy |
+| `templates/ai_ket_qua.html` | Trang kết quả dùng chung cho ba tính năng. Nhắc lịch có ô sửa + nút Chốt + nút Sao chép; khuyến cáo đặt **trên** nội dung nên hiện cả khi AI lỗi |
+| `templates/ai_hoi_dap.html` | Ô hỏi đáp, chặn bấm đúp bằng JS |
+| `templates/ai_quota.html` | Bảng lượt gọi từng model cho quản lý, kèm nút đặt lại trạng thái |
 | `templates/stats.html` | Form chọn kỳ, bốn thẻ số (lượt, doanh thu, chưa thu, tỉ lệ quay lại), bảng theo dịch vụ, trạng thái rỗng; một dòng giải thích ba mốc ngày |
 | `templates/appointments.html` | Lưới lịch, form đặt lịch, cột thao tác đổi/hủy, khung trống khi bị từ chối. Dùng chung cho `/appointments` và `/appointments/cua-toi` |
 | `static/style.css` | Toàn bộ CSS, một file, không build tool |
@@ -163,10 +169,11 @@
 | `integration/test_care_records.py` | Ghi hồ sơ và trang thú cưng qua HTTP (TC-053, TC-054, TC-057, TC-058) |
 | `integration/test_vaccinations.py` | Ghi mũi tiêm, danh sách đến hạn, link menu, khuyến cáo bác sĩ (TC-059, TC-063, TC-064, TC-020) |
 | `integration/test_invoices.py` | Hóa đơn qua HTTP: nút trên lưới lịch, thu tiền, hủy, phân quyền (TC-065, TC-068→070, TC-072) |
+| `integration/test_ai.py` | Ba tính năng AI qua HTTP: phân quyền, Post/Redirect/Get, AI lỗi không vỡ trang, `ai_logs` sạch dữ liệu liên hệ (TC-084→100) |
 | `integration/test_stats.py` | Trang thống kê qua HTTP: TC-006 và lễ tân → 403, kỳ mặc định, kỳ trống, ngày ngược, ngày sai định dạng |
 | `integration/test_seed.py` | Chạy `python -m app.seed` trong tiến trình riêng trên CSDL tạm; ngày lập hóa đơn = ngày buổi chăm sóc, ngày thu = ngày lập |
 | `integration/test_appointments.py` | Đặt/đổi/hủy lịch qua HTTP, lịch theo vai trò (TC-035, TC-043, TC-050→052, TC-009) |
-| `e2e/test_full_flow.py` | **Kịch bản xuyên suốt TC-101 bước 1→9** trên CSDL file thật, đi bằng link và nút lấy từ HTML — không tự dựng URL. Chứa `TrinhDuyet`, trình duyệt tí hon gửi form đúng như trình duyệt |
+| `e2e/test_full_flow.py` | **Kịch bản xuyên suốt TC-101 đủ 11 bước** trên CSDL file thật, đi bằng link và nút lấy từ HTML — không tự dựng URL. Chứa `TrinhDuyet`, trình duyệt tí hon gửi form đúng như trình duyệt |
 
 ### Cấu hình
 

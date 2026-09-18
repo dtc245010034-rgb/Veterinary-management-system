@@ -16,7 +16,7 @@
 {% if danh_sach %}
   <table>
     <thead>
-      <tr><th>Hạn nhắc</th><th>Thú cưng</th><th>Chủ nuôi</th><th>Số điện thoại</th><th>Vắc-xin</th><th>Mũi gần nhất</th></tr>
+      <tr><th>Hạn nhắc</th><th>Thú cưng</th><th>Chủ nuôi</th><th>Số điện thoại</th><th>Vắc-xin</th><th>Mũi gần nhất</th>{% if user.role in ('manager', 'receptionist') %}<th></th>{% endif %}</tr>
     </thead>
     <tbody>
       {% for v in danh_sach %}
@@ -30,6 +30,14 @@
           <td>{{ v.pet.owner.phone }}</td>
           <td>{{ v.vaccine_name }}</td>
           <td>{{ v.given_at.strftime("%d/%m/%Y") }}{% if v.dose_no %} · mũi {{ v.dose_no }}{% endif %}</td>
+          {% if user.role in ('manager', 'receptionist') %}
+          <td class="thao-tac">
+            <form method="post" action="/ai/nhac-lich/tiem/{{ v.id }}">
+              <input type="hidden" name="tu" value="/vaccinations">
+              <button type="submit">Soạn tin nhắc (AI)</button>
+            </form>
+          </td>
+          {% endif %}
         </tr>
       {% endfor %}
     </tbody>

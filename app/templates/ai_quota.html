@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block tieu_de %}Lượt gọi AI{% endblock %}
+
+{% block noi_dung %}
+<h1>Lượt gọi AI còn lại</h1>
+<p class="phu">
+  Gói miễn phí giới hạn lượt gọi mỗi ngày cho từng model. Hết lượt model này, hệ thống tự
+  chuyển sang model kế trong danh sách. Quota reset theo giờ Mỹ, không theo nửa đêm giờ Việt Nam.
+</p>
+
+{% if da_dat_lai is not none %}
+  <p class="canh-bao">Đã đặt lại trạng thái của {{ da_dat_lai }} model. Số lượt đã đếm giữ nguyên.</p>
+{% endif %}
+
+<table>
+  <thead>
+    <tr><th>Model</th><th>Đã dùng</th><th>Hạn mức</th><th>Trạng thái</th></tr>
+  </thead>
+  <tbody>
+  {% for dong in bang %}
+    <tr class="{{ 'dong-canh-bao' if dong.trang_thai }}">
+      <td><code>{{ dong.model }}</code>{% if dong.dang_dung %} <span class="nhan nhan-booked">đang dùng</span>{% endif %}</td>
+      <td class="phai">{{ dong.da_dung }}</td>
+      <td class="phai">
+        {{ dong.gioi_han }}
+        <span class="phu-nho">{{ "Google báo" if dong.gioi_han_that else "ước tính" }}</span>
+      </td>
+      <td>{{ dong.trang_thai or "sẵn sàng" }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<p class="phu nhan-nho">
+  Lượt reset lúc <strong>{{ moc_reset.strftime("%H:%M ngày %d/%m") }}</strong> giờ Việt Nam.
+  Số "ước tính" là do hệ thống tự đếm: nó không thấy lượt gọi từ ứng dụng khác dùng chung khóa.
+</p>
+
+<form class="the" method="post" action="/ai/quota/dat-lai">
+  <h2>Đặt lại trạng thái</h2>
+  <p class="phu nhan-nho">
+    Dùng khi hệ thống đoán sai — ví dụ mạng cửa hàng hỏng làm mọi model bị đánh dấu quá tải oan.
+    Chỉ xóa trạng thái chặn của hôm nay, <strong>không</strong> xóa số lượt đã đếm.
+  </p>
+  <button type="submit">Đặt lại</button>
+</form>
+{% endblock %}

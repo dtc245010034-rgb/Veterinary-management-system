@@ -13,6 +13,14 @@
 {% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
 
 <h2>Lịch sử chăm sóc</h2>
+
+{% if lich_su %}
+<form class="hang-nut" method="post" action="/ai/tom-tat/{{ thu_cung.id }}">
+  <input type="hidden" name="tu" value="/pets/{{ thu_cung.id }}">
+  <button type="submit">Tóm tắt bằng AI</button>
+  <span class="phu-nho">AI đọc {{ lich_su|length }} hồ sơ dưới đây và tóm tắt lại; không gửi thông tin liên hệ của chủ nuôi.</span>
+</form>
+{% endif %}
 {% if lich_su %}
   <table>
     <thead>

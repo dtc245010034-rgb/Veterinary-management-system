@@ -76,6 +76,13 @@
                 <a class="chinh-nhe" href="/appointments/{{ a.id }}/ho-so">Ghi hồ sơ</a>
               {% endif %}
               {% if user.role in ('manager', 'receptionist') %}
+                {# Soạn tin nhắc chỉ có nghĩa với buổi chưa diễn ra (US-24). #}
+                {% if a.status in ('booked', 'rescheduled') and a.start_at > bay_gio %}
+                <form method="post" action="/ai/nhac-lich/lich-hen/{{ a.id }}">
+                  <input type="hidden" name="tu" value="{{ duong_dan }}?ngay={{ ngay.isoformat() }}">
+                  <button type="submit">Soạn tin nhắc (AI)</button>
+                </form>
+                {% endif %}
                 {% if a.status in ('booked', 'rescheduled') %}
                 <form method="post" action="/appointments/{{ a.id }}/doi">
                   <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">

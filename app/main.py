@@ -17,6 +17,7 @@ from app.auth import ChuaDangNhap
 from app.config import SECRET_KEY_MAC_DINH, settings
 import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
 from app.db import Base, engine
+from app.routers import ai as ai_router
 from app.routers import appointments as appointments_router
 from app.routers import auth as auth_router
 from app.routers import care_records as care_records_router
@@ -61,6 +62,7 @@ app.include_router(pets_router.router)
 app.include_router(vaccinations_router.router)
 app.include_router(invoices_router.router)
 app.include_router(stats_router.router)
+app.include_router(ai_router.router)
 
 
 @app.exception_handler(ChuaDangNhap)

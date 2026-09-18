@@ -10,8 +10,9 @@ bấm. Nặng nhất là lỗi ô `<select>` không có option nào `selected` �
 option đầu tiên, nên bấm "Đổi" mà không sửa gì lại chuyển lịch sang tên người khác. Test
 tự dựng `data={...}` không bao giờ chạm tới lỗi đó, vì nó không gửi thứ trình duyệt gửi.
 
-Bước 11 (thống kê) nối ở P6. Bước 10 (AI tóm tắt) chờ P7, nên TC-101 vẫn là 🟡 chứ chưa
-phải ✅.
+Bước 11 (thống kê) nối ở P6, bước 10 (AI tóm tắt) nối ở P7 chặng 2 — TC-101 nay đủ 11/11.
+Bước 10 chạy với `FakeProvider`: `conftest.py` gán cứng `AI_PROVIDER=fake` nên kịch bản không
+bao giờ gọi API thật, dù `.env` đang đặt gì.
 """
 
 import re
@@ -442,6 +443,27 @@ def test_tu_dat_lich_den_ho_so_cham_soc(trinh_duyet, nen_e2e):
         # Và nó phải hiện đúng trạng thái đó ở danh sách hóa đơn.
         tb.bam("Hóa đơn")
         assert "Đã thu đủ" in tb.van_ban
+
+        # 10. Lễ tân nhờ AI tóm tắt hồ sơ của chính con vật vừa chăm — đi bằng link trên
+        # trang, không tự dựng URL. Nút này chỉ hiện khi con vật đã có hồ sơ, nên nó cũng là
+        # phép kiểm rằng bước 6 đã ghi hồ sơ thật.
+        tb.bam("Lịch hẹn")
+        tb.bam("Miu")
+        assert "Lịch sử chăm sóc" in tb.van_ban
+
+        tb.gui("Tóm tắt bằng AI")
+        assert tb.ma == 200
+        assert "/ai/ket-qua/" in tb.duong_dan
+        # Khuyến cáo nằm trong template nên luôn có mặt, và phản hồi đi kèm tên model.
+        assert "AI không thay thế chẩn đoán của bác sĩ thú y" in tb.van_ban
+        assert "Trả lời bởi" in tb.van_ban
+
+        # Tải lại trang kết quả KHÔNG gọi AI lần nữa (Post/Redirect/Get) — mỗi lượt thừa là
+        # một lượt quota miễn phí bị đốt.
+        duong_dan_ket_qua = tb.duong_dan
+        tb.mo(duong_dan_ket_qua)
+        assert tb.ma == 200
+        assert "Trả lời bởi" in tb.van_ban
 
         # 11. Quản lý mở thống kê bằng link trên thanh điều hướng, kỳ mặc định. Doanh thu
         # phải khớp đúng số đã thu ở bước 8–9 (50.000 + 100.000), và hóa đơn đã thu đủ thì

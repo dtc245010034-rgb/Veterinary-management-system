@@ -145,9 +145,9 @@ Toàn bộ chạy với `FakeProvider`. Mã `G-xx` tham chiếu bộ ca trong [`
 |---|---|---|---|---|---|
 | TC-082 | US-24 | Tin nhắn nhắc lịch nêu đúng tên thú cưng, dịch vụ, ngày giờ | U | `tests/unit/test_ai_service.py`, `tests/unit/test_prompts.py` | ✅ |
 | TC-083 | US-24 | Nhắc lịch tiêm nêu vắc-xin, hạn, kèm khuyến cáo bác sĩ thú y | U | `tests/unit/test_ai_service.py`, `tests/unit/test_prompts.py` | ✅ |
-| TC-084 | US-24 | Lễ tân sửa nội dung trước khi gửi → bản sửa được dùng | I | | ⬜ |
-| TC-085 | US-24 | Lời gọi AI lỗi → thông báo rõ ràng, trang không vỡ, lịch còn nguyên (G-17) | I | | ⬜ |
-| TC-086 | US-25 | Tóm tắt hồ sơ nhiều bản ghi → có nội dung, nêu mốc chính | I | | ⬜ |
+| TC-084 | US-24 | Lễ tân sửa nội dung trước khi gửi → bản sửa được dùng | I | `tests/integration/test_ai.py` | ✅ |
+| TC-085 | US-24 | Lời gọi AI lỗi → thông báo rõ ràng, trang không vỡ, lịch còn nguyên (G-17) | I | `tests/integration/test_ai.py` | ✅ |
+| TC-086 | US-25 | Tóm tắt hồ sơ nhiều bản ghi → có nội dung, nêu mốc chính | I | `tests/integration/test_ai.py`, `tests/e2e/test_full_flow.py` | ✅ |
 | TC-087 | US-25 | Thú cưng chưa có hồ sơ → báo chưa đủ dữ liệu, **không gọi API** (G-20) | U | `tests/unit/test_ai_service.py` | ✅ |
 | TC-088 | US-25 | Tóm tắt luôn kèm `DISCLAIMER` | U | `tests/unit/test_ai_service.py`, `tests/unit/test_prompts.py` | ✅ |
 
@@ -155,9 +155,9 @@ Toàn bộ chạy với `FakeProvider`. Mã `G-xx` tham chiếu bộ ca trong [`
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-089 | US-26 | Câu hỏi trong phạm vi → có trả lời, kết thúc bằng `DISCLAIMER` (G-01→G-03) | I | | ⬜ |
-| TC-090 | US-26 | `DISCLAIMER` hiện trên giao diện **kể cả khi lời gọi AI lỗi** (G-19) | I | | ⬜ |
-| TC-091 | US-26 | Mỗi lượt hỏi đáp sinh một bản ghi `ai_logs` | I | | ⬜ |
+| TC-089 | US-26 | Câu hỏi trong phạm vi → có trả lời, kết thúc bằng `DISCLAIMER` (G-01→G-03) | I | `tests/integration/test_ai.py` | ✅ |
+| TC-090 | US-26 | `DISCLAIMER` hiện trên giao diện **kể cả khi lời gọi AI lỗi** (G-19) | I | `tests/integration/test_ai.py` | ✅ |
+| TC-091 | US-26 | Mỗi lượt hỏi đáp sinh một bản ghi `ai_logs` | I | `tests/integration/test_ai.py`, `tests/unit/test_ai_service.py` | ✅ |
 | TC-092 | US-27 | Câu hỏi dấu hiệu bệnh lý → khuyên đi khám, không kết luận bệnh (G-04→G-07) | U | `tests/unit/test_ai_service.py` | ✅ |
 | TC-093 | US-27 | Xin liều thuốc → không trả về số kèm `mg`/`ml`/`viên` (G-08→G-10) | U | `tests/unit/test_guardrail.py`, `tests/unit/test_ai_service.py` | ✅ |
 | TC-094 | US-27 | Câu hỏi ngoài phạm vi → từ chối lịch sự, nêu rõ phạm vi (G-11, G-12) | U | `tests/unit/test_prompts.py` | 🟡 code chỉ kiểm được system prompt **có** luật này; mô hình tuân thủ hay không thì chạy tay ở chặng 3 |
@@ -170,8 +170,8 @@ Toàn bộ chạy với `FakeProvider`. Mã `G-xx` tham chiếu bộ ca trong [`
 |---|---|---|---|---|---|
 | TC-097 | US-28 | Prompt nhắc lịch không chứa số điện thoại, email, địa chỉ (G-14) | U | `tests/unit/test_ai_service.py`, `tests/unit/test_guardrail.py` | ✅ |
 | TC-098 | US-28 | Prompt tóm tắt không chứa dữ liệu liên hệ (G-15) | U | `tests/unit/test_ai_service.py` | ✅ |
-| TC-099 | US-28 | `ai_logs.prompt` đã lưu cũng không chứa dữ liệu liên hệ (G-16) | I | | ⬜ |
-| TC-100 | US-28 | Lời gọi AI lỗi → `ai_logs.is_error = true` (G-18) | I | | ⬜ |
+| TC-099 | US-28 | `ai_logs.prompt` đã lưu cũng không chứa dữ liệu liên hệ (G-16) | I | `tests/integration/test_ai.py` | ✅ |
+| TC-100 | US-28 | Lời gọi AI lỗi → `ai_logs.is_error = true` (G-18) | I | `tests/integration/test_ai.py`, `tests/unit/test_ai_service.py` | ✅ |
 
 ### I.4 Xoay ca model và quota — thêm ở P7 chặng 1
 
@@ -196,7 +196,7 @@ thực tế. Chi tiết: [`../plans/2026-09-18-p7-tich-hop-ai.md`](../plans/2026
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | 🟡 bước 1→9, 11 |
+| TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | ✅ đủ 11/11 bước (bước 10 nối ở P7 chặng 2) |
 | TC-102 | nhiều | Checklist bấm tay theo [`smoke-checklist.md`](smoke-checklist.md) | thủ công | — | ⬜ |
 
 TC-101 kéo lên sớm từ P5 (kế hoạch: [`../plans/2026-09-05-e2e-xuyen-suot.md`](../plans/2026-09-05-e2e-xuyen-suot.md)).
