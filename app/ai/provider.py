@@ -69,5 +69,8 @@ class AIProvider(Protocol):
     Việc chọn model và xử lý hết lượt nằm ở app/ai/quota.py — provider chỉ biết gọi.
     """
 
+    # False: không phải API có hạn mức (AI giả lập) — quota.py không xoay ca, không đếm lượt.
+    tinh_quota: bool
+
     def tra_loi(self, model: str, system: str, user: str, timeout: float) -> str:
         ...

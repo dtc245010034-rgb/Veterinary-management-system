@@ -63,6 +63,11 @@ lượt chạy thật; ⬜ duy nhất là TC-102 (smoke bấm tay). G-01 → G-1
 G-14 → G-20 đạt trên server thật. Lượt mô phỏng mất mạng lộ **một lỗi thật**: lỗi kết nối bị đếm
 khống vào quota, đã sửa kèm test đỏ-trước. **P7 chỉ còn smoke chờ người dùng tick.**
 
+Sau lượt rà soát toàn hệ thống 19/09 ([báo cáo](testing/reports/2026-09-19-ra-luong-P1-P7.md)): tìm
+**18 lỗi** (3 cao · 8 trung bình · 7 thấp) mà 677 test xanh không bắt được; **đã sửa 3 lỗi cao**
+(thu tiền đồng thời, S7, lỗi 500) và lỗi **chế độ AI giả lập** người dùng gặp khi bấm smoke (M-09).
+**726 test xanh**, ma trận **116 ca: 114 ✅ · 1 ⬜ · 1 ➖**. Còn 15 lỗi trung bình/thấp chờ người dùng chọn.
+
 ---
 
 ## Chi tiết từng phase
@@ -215,8 +220,14 @@ Hai lỗ hổng tìm được khi rà soát hệ thống ngày 18/09 (chặng 0 
 
 - **S6 — đặt lịch ngoài giờ mở cửa.** `scheduling.dat_lich` không kiểm giờ làm việc: đặt được lúc 3
   giờ sáng hoặc để buổi lấn qua nửa đêm. Chỉ phần gợi ý khung trống tôn trọng `GIO_MO_CUA`/`GIO_DONG_CUA`.
-- **S7 — ngày sai định dạng khi POST.** `routers/appointments._doc_ngay` trả về hôm nay khi chuỗi ngày
-  hỏng, nên một form gửi ngày sai sẽ âm thầm đặt lịch vào hôm nay thay vì báo lỗi.
+- ✅ *Sửa 19/09 (TC-114).* **S7 — ngày sai định dạng khi POST.** `routers/appointments._doc_ngay` trả về
+  hôm nay khi chuỗi ngày hỏng. Lượt rà 19/09 cho thấy rủi ro không thấp như đã đánh giá: nó đã dời một
+  lịch thật sang 23:30 hôm đó. Nay đặt/đổi lịch đọc ngày bằng `_doc_ngay_bat_buoc` và báo 400.
+
+**Lỗi còn lại từ lượt rà soát 19/09** — 8 trung bình, 7 thấp, chờ người dùng chọn; danh sách và
+cách tái hiện: [`testing/reports/2026-09-19-ra-luong-P1-P7.md`](testing/reports/2026-09-19-ra-luong-P1-P7.md).
+Ba lỗi cao đã sửa cùng ngày ([kế hoạch](plans/2026-09-19-sua-loi-cao-ra-soat.md)). S6 ở trên chính
+là M-06 trong báo cáo đó.
 
 Đáp ứng yêu cầu đề bài mục 6: *"Cuối kỳ: Dùng AI viết README, báo cáo, slide và review dữ liệu cá nhân."*
 

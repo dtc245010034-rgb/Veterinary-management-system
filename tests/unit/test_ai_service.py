@@ -354,6 +354,17 @@ def test_lay_provider_mac_dinh_la_fake_va_chi_doi_khi_cau_hinh_noi_gemini(monkey
     assert isinstance(nv.lay_provider(), GeminiProvider)
 
 
+def test_che_do_fake_cua_ung_dung_khong_tinh_quota_con_gemini_thi_co(monkeypatch):
+    """AI giả của chế độ AI_PROVIDER=fake không được đếm vào quota Gemini (lỗi 19/09)."""
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "ai_provider", "fake")
+    assert nv.lay_provider().tinh_quota is False
+
+    monkeypatch.setattr(settings, "ai_provider", "gemini")
+    assert nv.lay_provider().tinh_quota is True
+
+
 def test_bang_quota_va_dat_lai_quota_di_qua_service_cho_router_dung(db, nen, frozen_clock):
     """Router chỉ được import app/ai/service.py, nên hai việc này phải có cửa ở đây."""
     from app.ai import quota

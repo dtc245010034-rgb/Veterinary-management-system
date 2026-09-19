@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.models.service import Service
 from app.models.service_package import PackageItem, ServicePackage
-from app.services.errors import LoiNghiepVu
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 
 
 def _bat_buoc(gia_tri: str | None, ten_truong: str) -> str:
@@ -96,7 +96,7 @@ def sua_dich_vu(db: Session, dich_vu_id: int, **truong) -> Service:
 def lay_dich_vu(db: Session, dich_vu_id: int) -> Service:
     s = db.get(Service, dich_vu_id)
     if s is None:
-        raise LoiNghiepVu("Không tìm thấy dịch vụ.")
+        raise LoiKhongTimThay("Không tìm thấy dịch vụ.")
     return s
 
 
@@ -167,7 +167,7 @@ def tao_goi(
 def lay_goi(db: Session, goi_id: int) -> ServicePackage:
     g = db.get(ServicePackage, goi_id)
     if g is None:
-        raise LoiNghiepVu("Không tìm thấy gói dịch vụ.")
+        raise LoiKhongTimThay("Không tìm thấy gói dịch vụ.")
     return g
 
 

@@ -192,6 +192,18 @@ thực tế. Chi tiết: [`../plans/2026-09-18-p7-tich-hop-ai.md`](../plans/2026
 | TC-111 | Ngân sách thời gian cắt chuỗi thử, không để treo trang | U | `tests/unit/test_ai_quota.py` | ✅ |
 | TC-112 | Bảng quota in đúng mẫu, phân biệt số thật với số ước tính | U | `tests/unit/test_ai_quota.py` | ✅ |
 
+## K. Lỗi tìm được khi rà soát toàn hệ thống — 19/09
+
+Ba lỗi mức cao trong [`reports/2026-09-19-ra-luong-P1-P7.md`](reports/2026-09-19-ra-luong-P1-P7.md), cộng
+lỗi chế độ AI giả lập người dùng gặp khi bấm smoke (TC-116). Tất cả lọt qua bộ test đang xanh; mỗi ca dưới đây có test đỏ-trước và đột biến bị bắt.
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-113 | US-20 | Hai lần thu cùng lúc không vượt số còn nợ (H-01) | U | `test_billing_service.py::test_hai_lan_thu_chong_nhau_khong_vuot_so_con_no`, `…::test_hai_may_thu_that_su_dong_thoi_khong_vuot_so_con_no` | ✅ |
+| TC-114 | US-10, US-12 | Ngày sai định dạng hoặc trống khi đặt/đổi lịch → báo lỗi, không quy về hôm nay (H-02, S7) | I | `test_appointments.py::test_doi_lich_ngay_sai_dinh_dang_…`, `…::test_dat_lich_ngay_sai_dinh_dang_…` | ✅ |
+| TC-116 | US-27 | Chế độ `AI_PROVIDER=fake`: nhãn "AI giả lập — không gọi Gemini", không xoay/đếm quota Gemini, các trang AI hiện dòng cảnh báo (người dùng gặp khi smoke 19/09) | U, I | `test_ai_quota.py::test_ai_gia_lap_…`, `test_ai_service.py::test_che_do_fake_…`, `test_ai.py::test_che_do_gia_lap_…`, `…::test_trang_ai_bao_…` | ✅ |
+| TC-115 | nhiều | Bản ghi không còn tồn tại → trang lỗi 404 tiếng Việt, không bao giờ 500, trên mọi đường dẫn theo id (H-03) | I | `tests/integration/test_khong_tim_thay.py` | ✅ |
+
 ## J. Hệ thống hoàn chỉnh — chạy cuối mỗi phase từ P5
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
@@ -221,8 +233,9 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | H. Thống kê | US-22, US-23 | TC-076 → TC-081 | 6 |
 | I. AI | US-24 → US-28 | TC-082 → TC-100 | 19 |
 | I.4 Xoay model, quota | — (vận hành) | TC-103 → TC-112 | 10 |
+| K. Lỗi rà soát 19/09 | US-10, US-12, US-20, US-27 | TC-113 → TC-116 | 4 |
 | J. Xuyên suốt | — | TC-101, TC-102 | 2 |
-| | **28/28 US** | | **112** |
+| | **28/28 US** | | **116** |
 
 ### Theo yêu cầu đề bài mục 4
 
@@ -235,4 +248,4 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | Hạ tầng AI (xoay model, quota) | TC-103 → TC-112 | 10 |
 
 **Kết luận: 28/28 user story có test case. Bốn hạng mục đề bài yêu cầu đích danh đều được phủ, trong
-đó lịch hẹn và AI — hai phần khó nhất — chiếm 50/112 test case.**
+đó lịch hẹn và AI — hai phần khó nhất — chiếm 50/116 test case.**

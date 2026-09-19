@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user import VAI_TRO, User
 from app.security import hash_password
-from app.services.errors import LoiNghiepVu
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 
 
 def danh_sach_tai_khoan(db: Session) -> list[User]:
@@ -65,7 +65,7 @@ def mo_khoa_tai_khoan(db: Session, ma_tai_khoan: int) -> User:
 def _dat_trang_thai(db: Session, ma_tai_khoan: int, dang_hoat_dong: bool) -> User:
     tai_khoan = db.get(User, ma_tai_khoan)
     if tai_khoan is None:
-        raise LoiNghiepVu("Không tìm thấy tài khoản.")
+        raise LoiKhongTimThay("Không tìm thấy tài khoản.")
 
     tai_khoan.is_active = dang_hoat_dong
     db.commit()

@@ -36,6 +36,9 @@ class FakeProvider:
     loi_theo_model: dict[str, LoiAI | list[LoiAI]] = field(default_factory=dict)
     loi_chung: LoiAI | None = None
     da_goi: list[LoiGoi] = field(default_factory=list)
+    # Test dùng lớp này ĐÓNG VAI Gemini để kiểm luật xoay ca và đếm lượt, nên mặc định có
+    # tính quota. Chế độ AI_PROVIDER=fake của ứng dụng thì tắt — xem service.lay_provider.
+    tinh_quota: bool = True
 
     def tra_loi(self, model: str, system: str, user: str, timeout: float) -> str:
         self.da_goi.append(LoiGoi(model=model, system=system, user=user))

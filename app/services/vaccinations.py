@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session, aliased
 from app.models.pet import Pet
 from app.models.vaccination import Vaccination
 from app.services import clock
-from app.services.errors import LoiNghiepVu
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 from app.services.text import chuan_hoa
 
 # Khoảng nhìn trước của danh sách đến hạn, tính từ hôm nay — US-18.
@@ -40,7 +40,7 @@ def ghi_mui_tiem(
     ở tương lai, hạn nhắc không sớm hơn ngày tiêm.
     """
     if db.get(Pet, thu_cung_id) is None:
-        raise LoiNghiepVu("Không tìm thấy thú cưng.")
+        raise LoiKhongTimThay("Không tìm thấy thú cưng.")
 
     ten = (ten_vac_xin or "").strip()
     if not ten:

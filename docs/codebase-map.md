@@ -4,14 +4,22 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-19 (P7 chặng 3 — chạy Gemini thật, thêm `LoiKetNoi`) · **Trạng thái:** P0→P6 xong; P7 xong cả bốn chặng, chờ người dùng tick smoke — ba tính năng AI chạy được trên giao diện và đã kiểm chứng với Gemini thật. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+**Cập nhật lần cuối:** 2026-09-20 (đóng phiên 19/09: P7 chặng 3, rà soát P1→P7, sửa 3 lỗi cao + chế độ AI giả lập) · **Trạng thái:** P0→P6 xong; P7 xong cả bốn chặng, chờ người dùng tick smoke — ba tính năng AI chạy được và đã kiểm chứng với Gemini thật. **726 test xanh.** Tiến độ từng phase: [`roadmap.md`](roadmap.md)
 
-> **Làm tiếp:** người dùng tick smoke P7 (khối chặng 2, chặng 3, guardrail trong
-> [`testing/smoke-checklist.md`](testing/smoke-checklist.md)) và đọc lại cột **Đạt?** trong
-> [`testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md`](testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md).
-> Sau đó lập kế hoạch **P8** theo [`roadmap.md`](roadmap.md). Kế hoạch P7:
-> [`plans/2026-09-18-p7-tich-hop-ai.md`](plans/2026-09-18-p7-tich-hop-ai.md). Bối cảnh:
-> [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md).
+> **Làm tiếp — theo thứ tự:**
+> 1. **Người dùng chọn lỗi sửa tiếp** trong 15 lỗi còn lại của
+>    [`testing/reports/2026-09-19-ra-luong-P1-P7.md`](testing/reports/2026-09-19-ra-luong-P1-P7.md):
+>    M-01 (chuyển hướng mở `?tu=`) và M-04 (mật khẩu 1 ký tự) là bảo mật; M-02 (không sửa được chủ nuôi,
+>    thú cưng, tài khoản) là việc lớn nhất; M-03, M-08 thuộc AI. **Hỏi trước rồi mới sửa** — mỗi lỗi có
+>    test đỏ-trước và đột biến.
+> 2. **Người dùng tick smoke P7** (chặng 2 dùng `AI_PROVIDER=fake`; chặng 3 và guardrail phải đổi
+>    `.env` sang `gemini` — trang AI không được có dòng "Đang chạy chế độ AI giả lập").
+> 3. **P8** theo [`roadmap.md`](roadmap.md) — S6 chính là M-06.
+>
+> **Trạng thái máy:** `petcare.db` còn dữ liệu rà mang tiền tố "Rà 19/09"; bản trước lượt rà ở
+> `petcare.backup-2026-09-19.db` (không vào git). `.env` đang `AI_PROVIDER=fake`. Tài khoản
+> `ra1909yeu` (mật khẩu `1`, dùng để thử M-04) đã **khóa**. Bối cảnh đầy đủ:
+> [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) — bốn phần, đọc phần 4 trước.
 
 ### `app/ai/` — tầng AI, từ P7
 
@@ -19,7 +27,7 @@
 |---|---|
 | `ai/provider.py` | Interface `AIProvider` + sáu lớp lỗi đã phân loại (lớp gốc `LoiAI`, `LoiQuaTai`, `LoiKetNoi` — mất mạng, không tính lượt — `LoiHetQuota`, `LoiModelKhongCo`, `LoiCauHinh`). Phân loại lỗi là điều kiện để xoay ca model |
 | `ai/gemini.py` | Một lần gọi REST `generateContent` qua `urllib`, không thêm thư viện. Đọc `details` của lỗi 429 để phân biệt hết lượt **theo phút** và **theo ngày**; tách lỗi không kết nối được (`LoiKetNoi`) khỏi timeout; gửi `thinkingBudget` theo cấu hình |
-| `ai/fake.py` | `FakeProvider`: ghi lại mọi `(model, system, user)`, cài được phản hồi và lỗi **theo từng model** — nền tảng của test xoay ca và test US-28 |
+| `ai/fake.py` | `FakeProvider`: ghi lại mọi `(model, system, user)`, cài được phản hồi và lỗi **theo từng model** — nền tảng của test xoay ca và test US-28. `tinh_quota` mặc định `True` (đóng vai Gemini trong test); chế độ fake của ứng dụng dùng `tinh_quota=False` |
 | `ai/prompts.py` | `DISCLAIMER`, ba system prompt, câu từ chối thuốc, câu nhắc xác nhận lịch tiêm, các hàm dựng prompt. Thuần, không chạm CSDL |
 | `ai/guardrail.py` | `la_cau_xin_thuoc()` (chặn trước khi gọi), `chua_lieu_luong()` (soát phản hồi), `xoa_lien_he()` (bỏ SĐT/email khỏi văn bản tự do). So theo **từ nguyên vẹn** trên chuỗi đã bỏ dấu |
 | `ai/quota.py` | Ngày quota theo **giờ Pacific**, luật xoay ca model, đếm lượt, bảng quota, `goi_co_xoay()`. Kèm CLI `python -m app.ai.quota` (`--hoi`, `--guardrail`, `--model`, `--dat-lai`) |
@@ -58,25 +66,25 @@
 | `codebase-map.md` | File này |
 | `roadmap.md` | Lộ trình P0→P8 gắn với mốc KT1/KT2/KT3/cuối kỳ, kèm Definition of Done |
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
-| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 12: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7 |
+| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 15: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập |
 | `sessions/README.md` | Quy ước log phiên làm việc |
 | `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 12 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
-| `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 112 test case — 110 ✅ · 0 🟡 · 1 ⬜ (TC-102 smoke) · 1 ➖ ngoài phạm vi (19/09) |
+| `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 116 test case — 114 ✅ · 0 🟡 · 1 ⬜ (TC-102 smoke) · 1 ➖ ngoài phạm vi (19/09, thêm TC-113 → TC-116 sau lượt rà soát) |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
 | `testing/reports/README.md` | Mẫu báo cáo kiểm thử cuối phase |
-| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 22: mỗi phase một file, cộng năm báo cáo rà luồng bằng trình duyệt, một báo cáo trả nợ, một báo cáo dọn việc tồn và một báo cáo chạy Gemini thật (sinh bởi `python -m app.ai.quota --guardrail`) |
+| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 23: mỗi phase một file, cộng sáu báo cáo rà luồng bằng trình duyệt (bản 19/09 kèm ảnh trong `anh-2026-09-19/`), một báo cáo trả nợ, một báo cáo dọn việc tồn và một báo cáo chạy Gemini thật (sinh bởi `python -m app.ai.quota --guardrail`) |
 
 ### Ứng dụng (`app/`) — từ P1
 
 | File | Vai trò |
 |---|---|
-| `main.py` | Khởi tạo FastAPI, session middleware, đăng ký router, **từ chối khởi động khi `SECRET_KEY` còn mặc định** (S1), 2 trình xử lý lỗi (403/404 ra trang có bố cục, chưa đăng nhập thì chuyển về `/login`) |
+| `main.py` | Khởi tạo FastAPI, session middleware, đăng ký router, **từ chối khởi động khi `SECRET_KEY` còn mặc định** (S1), 3 trình xử lý lỗi (403/404 ra trang có bố cục, chưa đăng nhập thì chuyển về `/login`, `LoiNghiepVu` lọt khỏi router → trang 404/400 thay vì 500 — H-03) |
 | `config.py` | Đọc `.env` qua pydantic-settings: `DATABASE_URL`, `SECRET_KEY`, `AI_PROVIDER`, `GEMINI_API_KEY`. Hằng `SECRET_KEY_MAC_DINH` để `main.py` chặn khởi động với khóa công khai (S1) |
 | `db.py` | `Base`, `engine`, `SessionLocal`, `get_db()`. Bật `PRAGMA foreign_keys` cho từng kết nối SQLite |
 | `security.py` | `hash_password()`, `verify_password()` — bcrypt trực tiếp, không qua passlib |
 | `app/auth.py` | Session cookie, `nguoi_dung_hien_tai`, `yeu_cau_vai_tro()`, ngoại lệ `ChuaDangNhap`. Ghi kèm thư mục để không lẫn với `routers/auth.py` |
-| `templates.py` | Cấu hình Jinja2 dùng chung, và filter `tien` (`{{ so|tien }}`) |
+| `templates.py` | Cấu hình Jinja2 dùng chung, filter `tien` (`{{ so|tien }}`), và hàm `che_do_ai_gia_lap()` cho template biết đang chạy `AI_PROVIDER=fake` |
 | `seed.py` | 4 tài khoản, 3 chủ nuôi, 5 thú cưng, 5 dịch vụ, 2 gói, 8 lịch hẹn, 3 hồ sơ chăm sóc, 5 mũi tiêm, 2 hóa đơn, 2 lần thanh toán. Hóa đơn và lần trả mang **ngày của buổi chăm sóc** (lập trong `clock.freeze`), không phải ngày chạy seed. Hóa đơn dựng **qua `billing.py`** chứ không gán trạng thái tay. Chạy `python -m app.seed`, không sinh trùng |
 | `models/__init__.py` | Gom mọi model — `create_all` chỉ tạo bảng đã được import |
 | `models/user.py` | Bảng `users` + hằng `VAI_TRO`, `TEN_VAI_TRO` |
@@ -89,7 +97,7 @@
 | `models/appointment.py` | Bảng `appointments`, hằng `TRANG_THAI`, 2 index phục vụ kiểm trùng |
 | `services/clock.py` | `now()` và `freeze()` — điểm lấy thời gian duy nhất của hệ thống. `freeze()` dùng khi test và ở `seed.py` |
 | `services/text.py` | `chuan_hoa()` — bỏ dấu tiếng Việt cho tìm kiếm, xử lý riêng chữ `đ` |
-| `services/errors.py` | `LoiNghiepVu` — lỗi nghiệp vụ, thông điệp hiển thị thẳng cho người dùng |
+| `services/errors.py` | `LoiNghiepVu` — lỗi nghiệp vụ, thông điệp hiển thị thẳng cho người dùng. Lớp con `LoiKhongTimThay` cho mọi lần tra theo id không thấy bản ghi (H-03) |
 | `models/care_record.py` | Bảng `care_records` — hồ sơ chăm sóc, quan hệ 1–1 với lịch hẹn (`appointment_id` UNIQUE) |
 | `models/vaccination.py` | Bảng `vaccinations` — mũi tiêm và hạn nhắc lại; property `qua_han` |
 | `services/users.py` | Nghiệp vụ tài khoản nhân viên: tạo, khóa, mở khóa, danh sách. Chặn quản lý tự khóa mình |
@@ -114,6 +122,7 @@
 | `routers/ai.py` | `/ai/...` — soạn tin nhắc, tóm tắt, hỏi đáp, trang kết quả dùng chung, trang quota (chỉ `manager`). Theo mẫu **Post/Redirect/Get**: tải lại trang kết quả không gọi AI lần nữa. Chỉ import `app/ai/service.py` |
 | `routers/appointments.py` | `/appointments` lưới lịch + đặt/đổi/hủy; `/appointments/cua-toi` lịch riêng của nhân viên chăm sóc |
 | `templates/base.html` | Bố cục chung, menu hiện theo vai trò |
+| `templates/_ai_gia_lap.html` | Dòng cảnh báo "Đang chạy chế độ AI giả lập", `include` vào ba trang AI. Có từ 19/09 sau khi người dùng tưởng câu mẫu của `fake` là Gemini trả lời sai |
 | `templates/xac_nhan.html` | Trang hỏi lại dùng chung cho mọi thao tác làm mất dữ liệu. Nhận `tieu_de`, `thong_tin`, `canh_bao`, `hanh_dong` (URL POST), `quay_lai`, `nut`. Cố ý không dùng `confirm()` của JavaScript |
 | `templates/login.html` · `home.html` · `users.html` · `error.html` | Các trang từ P1 |
 | `templates/owners.html` | Danh sách, tra cứu, form thêm chủ nuôi |
@@ -171,6 +180,7 @@
 | `integration/test_ai.py` | Ba tính năng AI qua HTTP: phân quyền, Post/Redirect/Get, AI lỗi không vỡ trang, `ai_logs` sạch dữ liệu liên hệ (TC-084→100) |
 | `integration/test_stats.py` | Trang thống kê qua HTTP: TC-006 và lễ tân → 403, kỳ mặc định, kỳ trống, ngày ngược, ngày sai định dạng |
 | `integration/test_seed.py` | Chạy `python -m app.seed` trong tiến trình riêng trên CSDL tạm; ngày lập hóa đơn = ngày buổi chăm sóc, ngày thu = ngày lập |
+| `integration/test_khong_tim_thay.py` | Quét mọi đường dẫn theo id với bản ghi không tồn tại: không bao giờ 500; chín chỗ từng lỗi phải ra 404 (TC-115, H-03) |
 | `integration/test_appointments.py` | Đặt/đổi/hủy lịch qua HTTP, lịch theo vai trò (TC-035, TC-043, TC-050→052, TC-009) |
 | `e2e/test_full_flow.py` | **Kịch bản xuyên suốt TC-101 đủ 11 bước** trên CSDL file thật, đi bằng link và nút lấy từ HTML — không tự dựng URL. Chứa `TrinhDuyet`, trình duyệt tí hon gửi form đúng như trình duyệt |
 

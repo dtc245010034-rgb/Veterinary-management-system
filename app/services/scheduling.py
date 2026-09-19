@@ -34,7 +34,7 @@ from app.models.pet import Pet
 from app.models.service import Service
 from app.models.user import User
 from app.services import clock
-from app.services.errors import LoiNghiepVu
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 
 # Giờ làm việc của cửa hàng. Đây là GIẢ ĐỊNH — cửa hàng thật sẽ cần cấu hình được,
 # và mỗi nhân viên có thể có ca khác nhau. Đặt ở đây để gợi ý khung trống không đề xuất
@@ -144,11 +144,11 @@ def dat_lich(
     """TC-032 → TC-042."""
     thu_cung = db.get(Pet, thu_cung_id)
     if thu_cung is None:
-        raise LoiNghiepVu("Không tìm thấy thú cưng.")
+        raise LoiKhongTimThay("Không tìm thấy thú cưng.")
 
     dich_vu = db.get(Service, dich_vu_id)
     if dich_vu is None:
-        raise LoiNghiepVu("Không tìm thấy dịch vụ.")
+        raise LoiKhongTimThay("Không tìm thấy dịch vụ.")
     if not dich_vu.is_active:
         raise LoiNghiepVu(f"Dịch vụ “{dich_vu.name}” đã ngưng bán, không đặt lịch mới được.")
 
@@ -214,7 +214,7 @@ def _chan_neu_trung(
 def _kiem_nhan_vien(db: Session, nhan_vien_id: int) -> User:
     nhan_vien = db.get(User, nhan_vien_id)
     if nhan_vien is None:
-        raise LoiNghiepVu("Không tìm thấy nhân viên.")
+        raise LoiKhongTimThay("Không tìm thấy nhân viên.")
     if nhan_vien.role != "caretaker":
         raise LoiNghiepVu("Chỉ nhân viên chăm sóc mới được phân lịch.")
     if not nhan_vien.is_active:
@@ -324,7 +324,7 @@ def huy_lich(db: Session, lich_id: int, ly_do: str) -> Appointment:
 def lay_lich(db: Session, lich_id: int) -> Appointment:
     a = db.get(Appointment, lich_id)
     if a is None:
-        raise LoiNghiepVu("Không tìm thấy lịch hẹn.")
+        raise LoiKhongTimThay("Không tìm thấy lịch hẹn.")
     return a
 
 

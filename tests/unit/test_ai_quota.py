@@ -271,6 +271,18 @@ def test_mat_mang_khong_tinh_luot_vi_loi_goi_chua_toi_server(db, frozen_clock, b
     assert dem == {"m1": 0, "m2": 0, "m3": 0, "m4": 0}
 
 
+def test_ai_gia_lap_khong_xoay_khong_dem_va_ghi_model_fake(db, frozen_clock, bon_model):
+    """Lỗi 19/09: chạy với AI_PROVIDER=fake, câu trả lời mẫu bị gắn nhãn "gemini-3.5-flash" và
+    mỗi câu hỏi cộng một lượt Gemini khống (3.5-flash 6 → 11 dù không gọi thật lần nào)."""
+    fake = FakeProvider(phan_hoi="câu mẫu", tinh_quota=False)
+
+    noi_dung, model = goi(db, fake)
+
+    assert (noi_dung, model) == ("câu mẫu", "fake")
+    assert fake.cac_model_da_thu == ["fake"]
+    assert all(d.request_count == 0 for d in db.query(AiQuota).all())
+
+
 # --- Bảng hiển thị và đặt lại -------------------------------------------------------
 
 

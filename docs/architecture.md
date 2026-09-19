@@ -92,6 +92,8 @@ Ba nhóm, ba cách xử lý khác nhau:
 |---|---|---|
 | Lỗi nhập liệu | Thiếu tên, cân nặng âm | FastAPI bắt thiếu trường ở `Form(...)` → 422; sai giá trị thì `services/` ném `LoiNghiepVu`, router render lại trang với mã 400 và thông báo tiếng Việt |
 | Lỗi nghiệp vụ | Trùng lịch, hủy lịch đã có hóa đơn | `services/` ném exception riêng, router bắt và trả 400 kèm thông báo tiếng Việt |
+| Không tìm thấy bản ghi | Mở trang xóa của thú cưng người khác vừa xóa | `services/` ném `LoiKhongTimThay` (lớp con của `LoiNghiepVu`). Router không bắt thì trình xử lý chung trong `main.py` đổi thành trang 404 tiếng Việt; `LoiNghiepVu` nào khác lọt ra thành trang 400. **Không lỗi nghiệp vụ nào được thành 500** (sửa 19/09, TC-115) |
+| Ghi đồng thời | Hai máy thu tiền cùng một hóa đơn | `billing.ghi_nhan_thanh_toan` giành khóa ghi trên dòng hóa đơn trước khi đọc số còn nợ — pysqlite không mở transaction cho `SELECT` nên đọc-rồi-ghi không tự an toàn (sửa 19/09, TC-113) |
 | Lỗi hạ tầng | Gemini hết quota, mất mạng | `ai/service.py` bắt, ghi `ai_logs` với `is_error = true`, trả thông báo lỗi thân thiện. **Trang không được vỡ** (US-24) |
 
 Nguyên tắc: lỗi AI không bao giờ được làm hỏng chức năng quản lý. Không sinh được tin nhắn nhắc lịch

@@ -19,14 +19,14 @@ lập. Thứ giữ cho nó không mâu thuẫn là ba luật dưới đây, ph�
 
 from decimal import Decimal
 
-from sqlalchemy import case, select
+from sqlalchemy import case, select, update
 from sqlalchemy.orm import Session
 
 from app.models.appointment import Appointment
 from app.models.invoice import Invoice, InvoiceItem
 from app.models.payment import HINH_THUC, Payment
 from app.services import clock
-from app.services.errors import LoiNghiepVu
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 
 # Thứ tự hiện trên màn hình: việc chưa làm xong nằm trên. Hóa đơn đã hủy xuống cuối.
 _THU_TU_TRANG_THAI = {"unpaid": 0, "partial": 1, "paid": 2, "cancelled": 3}
@@ -44,7 +44,7 @@ def lap_hoa_don(db: Session, lich_id: int, ghi_chu: str | None = None) -> Invoic
     """
     lich = db.get(Appointment, lich_id)
     if lich is None:
-        raise LoiNghiepVu("Không tìm thấy lịch hẹn.")
+        raise LoiKhongTimThay("Không tìm thấy lịch hẹn.")
 
     if lich.status != "done":
         raise LoiNghiepVu(
@@ -114,6 +114,18 @@ def ghi_nhan_thanh_toan(
     thật lệch nhau âm thầm.
     """
     hd = lay_hoa_don(db, hoa_don_id)
+
+    # Giành khóa ghi trên hóa đơn TRƯỚC khi đọc số còn nợ, rồi đọc lại. pysqlite không mở
+    # transaction cho SELECT, nên hai lần thu cùng lúc từng cùng đọc "còn nợ 100.000đ" rồi
+    # cùng ghi — hóa đơn thành nợ âm (lỗi H-01, rà 19/09). Câu UPDATE mở transaction và bắt
+    # lần thu kia chờ tới khi lần này commit xong.
+    db.execute(
+        update(Invoice)
+        .where(Invoice.id == hd.id)
+        .values(status=Invoice.status)
+        .execution_options(synchronize_session=False)
+    )
+    db.refresh(hd)
 
     if hd.status == "cancelled":
         raise LoiNghiepVu("Hóa đơn đã hủy nên không ghi nhận thanh toán được.")
@@ -199,7 +211,7 @@ def danh_sach(db: Session) -> list[Invoice]:
 def lay_hoa_don(db: Session, hoa_don_id: int) -> Invoice:
     hd = db.get(Invoice, hoa_don_id)
     if hd is None:
-        raise LoiNghiepVu("Không tìm thấy hóa đơn.")
+        raise LoiKhongTimThay("Không tìm thấy hóa đơn.")
     return hd
 
 

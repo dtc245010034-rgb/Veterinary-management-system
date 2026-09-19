@@ -227,6 +227,35 @@ def test_hoi_dap_tra_loi_va_luon_kem_khuyen_cao(client, db, nen, fake_ai):
     assert prompts.DISCLAIMER in trang.text
 
 
+def test_che_do_gia_lap_ghi_ro_tren_trang_ket_qua_khong_gan_ten_gemini(client, db, nen):
+    """Người dùng 19/09 hỏi thời tiết ở chế độ fake, thấy câu mẫu kèm "Trả lời bởi:
+    gemini-3.5-flash" và tưởng Gemini trả lời sai."""
+    from app.ai.fake import FakeProvider
+    from app.ai.service import lay_provider
+
+    client.app.dependency_overrides[lay_provider] = lambda: FakeProvider(tinh_quota=False)
+    dang_nhap(client, "letan")
+
+    r = client.post("/ai/hoi-dap", data={"cau_hoi": "Hôm nay thời tiết Hà Nội thế nào"},
+                    follow_redirects=False)
+    trang = theo_chuyen_huong(client, r)
+
+    assert "AI giả lập — không gọi Gemini" in trang.text
+    assert "gemini-" not in trang.text
+
+
+def test_trang_ai_bao_dang_chay_che_do_gia_lap_chi_khi_cau_hinh_la_fake(client, nen, monkeypatch):
+    from app.config import settings
+
+    dang_nhap(client, "quanly")
+    monkeypatch.setattr(settings, "ai_provider", "fake")
+    for duong in ("/ai/hoi-dap", "/ai/quota"):
+        assert "Đang chạy chế độ AI giả lập" in client.get(duong).text, duong
+
+    monkeypatch.setattr(settings, "ai_provider", "gemini")
+    assert "Đang chạy chế độ AI giả lập" not in client.get("/ai/hoi-dap").text
+
+
 def test_moi_luot_hoi_dap_sinh_mot_ban_ghi_ai_logs(client, db, nen, fake_ai):
     """TC-091."""
     dang_nhap(client, "letan")

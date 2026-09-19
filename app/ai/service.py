@@ -26,7 +26,7 @@ from app.models.appointment import Appointment
 from app.models.pet import Pet
 from app.models.vaccination import Vaccination
 from app.services import care_records, clock
-from app.services.errors import LoiNghiepVu
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 from app.services.scheduling import TRANG_THAI_SUA_DUOC
 
 # Số hồ sơ đưa vào một prompt tóm tắt. Con vật nuôi mười năm có thể có hàng trăm buổi; gửi
@@ -50,7 +50,7 @@ def lay_provider() -> AIProvider:
         from app.ai.gemini import GeminiProvider
 
         return GeminiProvider()
-    return FakeProvider()
+    return FakeProvider(tinh_quota=False)
 
 
 # --- Ba tính năng -----------------------------------------------------------------
@@ -60,7 +60,7 @@ def nhac_lich_hen(db: Session, provider: AIProvider, nguoi_dung_id: int, lich_id
     """US-24: soạn nháp tin nhắn nhắc một lịch hẹn sắp tới."""
     lich = db.get(Appointment, lich_id)
     if lich is None:
-        raise LoiNghiepVu("Không tìm thấy lịch hẹn.")
+        raise LoiKhongTimThay("Không tìm thấy lịch hẹn.")
     if lich.status not in TRANG_THAI_SUA_DUOC:
         raise LoiNghiepVu(
             f"Lịch ở trạng thái “{lich.ten_trang_thai}” nên không cần nhắc nữa."
@@ -90,7 +90,7 @@ def nhac_lich_tiem(db: Session, provider: AIProvider, nguoi_dung_id: int, mui_id
     """
     mui = db.get(Vaccination, mui_id)
     if mui is None:
-        raise LoiNghiepVu("Không tìm thấy mũi tiêm.")
+        raise LoiKhongTimThay("Không tìm thấy mũi tiêm.")
     if mui.next_due_at is None:
         raise LoiNghiepVu("Mũi tiêm này không có hạn nhắc lại nên không soạn nhắc được.")
 
@@ -113,7 +113,7 @@ def tom_tat_ho_so(db: Session, provider: AIProvider, nguoi_dung_id: int, thu_cun
     """US-25: tóm tắt lịch sử chăm sóc. Chưa có hồ sơ thì KHÔNG gọi API (ca G-20)."""
     thu_cung = db.get(Pet, thu_cung_id)
     if thu_cung is None:
-        raise LoiNghiepVu("Không tìm thấy thú cưng.")
+        raise LoiKhongTimThay("Không tìm thấy thú cưng.")
 
     ho_so = care_records.lich_su(db, thu_cung_id)[:SO_HO_SO_TOM_TAT]
     if not ho_so:
@@ -259,5 +259,5 @@ def dat_lai_quota(db: Session) -> int:
 def lay_log(db: Session, log_id: int) -> AiLog:
     log = db.get(AiLog, log_id)
     if log is None:
-        raise LoiNghiepVu("Không tìm thấy kết quả AI này.")
+        raise LoiKhongTimThay("Không tìm thấy kết quả AI này.")
     return log

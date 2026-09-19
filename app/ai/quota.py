@@ -47,6 +47,9 @@ from app.ai.provider import (
 MUI_GIO_CUA_HANG = ZoneInfo("Asia/Ho_Chi_Minh")
 MUI_GIO_QUOTA = ZoneInfo("America/Los_Angeles")
 
+# Tên ghi vào ai_logs.model khi provider không phải API có hạn mức (chế độ AI_PROVIDER=fake).
+MODEL_GIA_LAP = "fake"
+
 HET_MODEL = (
     "Trợ lý AI đang bận hoặc đã hết lượt miễn phí hôm nay. Vui lòng thử lại sau."
 )
@@ -284,6 +287,14 @@ def goi_co_xoay(
     NGÂN SÁCH THỜI GIAN: cả chuỗi model chỉ được dùng `AI_TONG_GIAY` giây. Không có nó thì
     bốn model cùng quá hạn chờ sẽ treo trang bằng tổng bốn lần chờ.
     """
+    if not provider.tinh_quota:
+        # AI giả lập không có hạn mức: không xoay qua tên model Gemini, không đếm lượt. Trước
+        # 19/09 câu trả lời mẫu mang nhãn "gemini-3.5-flash" và mỗi câu hỏi cộng một lượt khống.
+        noi_dung = provider.tra_loi(
+            model=MODEL_GIA_LAP, system=system, user=user, timeout=settings.ai_moi_lan_giay
+        )
+        return noi_dung, MODEL_GIA_LAP
+
     han_chot = clock.now() + timedelta(seconds=settings.ai_tong_giay)
     loi_cuoi: LoiAI | None = None
 

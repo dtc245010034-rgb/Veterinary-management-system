@@ -36,6 +36,8 @@ GIAY_CHO = re.compile(r"(\d+(?:\.\d+)?)s")
 class GeminiProvider:
     """Cài đặt `AIProvider` cho Gemini. Một lần gọi, không tự thử lại."""
 
+    tinh_quota = True
+
     def __init__(self, api_key: str | None = None):
         self.api_key = api_key if api_key is not None else settings.gemini_api_key
 

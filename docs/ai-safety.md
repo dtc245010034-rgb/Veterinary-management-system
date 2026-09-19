@@ -276,6 +276,11 @@ khi model đầu hỏng hoặc hết lượt. Chi tiết luật xoay và cách �
 trả lời cũng đi qua chúng. Cái đổi theo model là chất lượng tuân thủ system prompt — vì vậy
 `ai_logs.model` ghi lại model đã trả lời, và báo cáo chạy tay ghim một model cho cả lượt.
 
+**Chế độ `AI_PROVIDER=fake` không đi qua cơ chế xoay** (sửa 19/09): provider giả của ứng dụng có
+`tinh_quota=False`, nên `goi_co_xoay` gọi thẳng một lần, ghi `ai_logs.model = "fake"`, không đếm
+lượt Gemini; các trang AI hiện dòng "Đang chạy chế độ AI giả lập". Trước đó câu trả lời mẫu mang
+nhãn một model Gemini thật và mỗi câu hỏi cộng một lượt khống.
+
 Nói thẳng về giới hạn: không thể bảo đảm mô hình ngôn ngữ không bao giờ vượt rào. Vì vậy lớp phòng
 vệ thật nằm ở chỗ khác — `DISCLAIMER` hiển thị cố định trên giao diện, và hệ thống được định vị rõ
 ràng là công cụ tham khảo cho nhân viên cửa hàng, không phải công cụ tư vấn y tế cho khách.

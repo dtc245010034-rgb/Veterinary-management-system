@@ -11,3 +11,11 @@ class LoiNghiepVu(Exception):
     Thông điệp của lớp này được hiển thị thẳng cho người dùng, nên phải viết bằng tiếng
     Việt và nói rõ phải làm gì tiếp.
     """
+
+
+class LoiKhongTimThay(LoiNghiepVu):
+    """Tra theo id mà bản ghi không còn — ví dụ người khác vừa xóa nó.
+
+    Là lớp con nên mọi `except LoiNghiepVu` đang có giữ nguyên hành vi. Router nào quên
+    bắt thì `app/main.py` đổi nó thành trang 404, không để thành lỗi 500 (lỗi H-03).
+    """

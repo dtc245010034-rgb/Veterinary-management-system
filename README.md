@@ -9,7 +9,8 @@ chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham 
 Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P6 xong, đang làm P7** — quản lý chủ nuôi, thú
 cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh toán và
 thống kê đều chạy được. **Ba tính năng AI đã dùng được trên giao diện** và đã kiểm chứng với Gemini
-thật (13/13 ca guardrail đạt); còn smoke bấm tay của P7 và P8 hoàn thiện — xem tiến độ từng phase trong
+thật (13/13 ca guardrail đạt). Lượt rà soát toàn hệ thống 19/09 tìm 18 lỗi, đã sửa 3 lỗi cao; còn
+smoke bấm tay của P7, 15 lỗi trung bình/thấp và P8 hoàn thiện — xem tiến độ từng phase trong
 [`docs/roadmap.md`](docs/roadmap.md).
 
 Chạy lần đầu phải sao chép `.env.example` thành `.env` và đặt `SECRET_KEY` riêng — ứng dụng từ chối
@@ -74,10 +75,10 @@ prompt. Chi tiết: [`docs/ai-safety.md`](docs/ai-safety.md).
 ## Cách chạy test
 
 ```bash
-pytest tests/unit            # 457 ca, ~32s  — chạy mỗi lần sửa code
-pytest tests/integration     # 213 ca, ~48s  — chạy cuối mỗi phiên làm việc
-pytest tests/e2e             #   1 ca,  ~6s  — kịch bản xuyên suốt 11 bước, chạy cuối mỗi phase
-pytest                       # 671 ca, ~74s  — chạy trước mỗi commit (hồi quy)
+pytest tests/unit            # 467 ca, ~35–40s — chạy mỗi lần sửa code
+pytest tests/integration     # 258 ca, ~52–61s — chạy cuối mỗi phiên làm việc
+pytest tests/e2e             #   1 ca,  ~6s    — kịch bản xuyên suốt 11 bước, chạy cuối mỗi phase
+pytest                       # 726 ca, ~90s    — chạy trước mỗi commit (hồi quy)
 ```
 
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).
@@ -93,7 +94,7 @@ Kết quả từng phase: [`docs/testing/reports/`](docs/testing/reports/).
 | [`docs/ai-safety.md`](docs/ai-safety.md) | System prompt, ba lớp guardrail trong code, 20 ca kiểm thử an toàn AI |
 | [`docs/roadmap.md`](docs/roadmap.md) | Lộ trình P0–P8 gắn với mốc KT1/KT2/KT3/cuối kỳ |
 | [`docs/codebase-map.md`](docs/codebase-map.md) | Bản đồ file → trách nhiệm |
-| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 112 test case, checklist thủ công, báo cáo |
+| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 116 test case, checklist thủ công, báo cáo |
 | [`docs/plans/`](docs/plans/) | Kế hoạch đã duyệt của từng phase |
 | [`docs/sessions/`](docs/sessions/) | Nhật ký từng phiên làm việc |
 

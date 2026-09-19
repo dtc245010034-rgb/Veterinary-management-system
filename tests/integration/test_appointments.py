@@ -253,6 +253,45 @@ def test_doi_lich_trung_qua_api_giu_nguyen_gio_cu(client, db, nen):
     assert db.get(Appointment, ma).start_at.strftime("%H:%M") == "09:00"
 
 
+@pytest.mark.parametrize("ngay_sai", ["abc", "2026-13-45", ""])
+def test_doi_lich_ngay_sai_dinh_dang_bao_loi_khong_doi_ve_hom_nay(client, db, nen, ngay_sai):
+    """Lỗi H-02 (S7) tìm được khi rà 19/09: ngày hỏng từng bị quy thành hôm nay, và lịch
+    thật đã bị dời sang 23:30 hôm đó mà không một dòng cảnh báo."""
+    dang_nhap(client, "letan")
+    dat(client, nen, gio="09:00")
+    ma = id_lich(db)
+
+    r = client.post(
+        f"/appointments/{ma}/doi",
+        data={"ngay": ngay_sai, "gio": "23:30", "nhan_vien_id": str(nen["nv1"].id)},
+    )
+
+    assert r.status_code == 400
+    assert "Ngày không đúng định dạng" in r.text
+    db.expire_all()
+    assert db.get(Appointment, ma).start_at == datetime(2026, 3, 12, 9, 0)
+
+
+@pytest.mark.parametrize("ngay_sai", ["2026-13-45", ""])
+def test_dat_lich_ngay_sai_dinh_dang_bao_loi_khong_dat_vao_hom_nay(client, db, nen, ngay_sai):
+    dang_nhap(client, "letan")
+
+    r = client.post(
+        "/appointments",
+        data={
+            "thu_cung_id": str(nen["pet1"].id),
+            "dich_vu_id": str(nen["dv"].id),
+            "nhan_vien_id": str(nen["nv1"].id),
+            "ngay": ngay_sai,
+            "gio": "15:00",
+        },
+    )
+
+    assert r.status_code == 400
+    assert "Ngày không đúng định dạng" in r.text
+    assert db.scalars(select(Appointment)).first() is None
+
+
 def test_huy_lich_qua_api_luu_ly_do(client, db, nen):
     """TC-048 qua HTTP."""
     dang_nhap(client, "letan")

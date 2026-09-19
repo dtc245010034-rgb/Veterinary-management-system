@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app.models.owner import Owner
 from app.models.pet import Pet
 from app.services import clock
-from app.services.errors import LoiNghiepVu
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 from app.services.text import chuan_hoa
 
 
@@ -82,7 +82,7 @@ def danh_sach_chu_nuoi(db: Session) -> list[Owner]:
 def lay_chu_nuoi(db: Session, chu_nuoi_id: int) -> Owner:
     o = db.get(Owner, chu_nuoi_id)
     if o is None:
-        raise LoiNghiepVu("Không tìm thấy chủ nuôi.")
+        raise LoiKhongTimThay("Không tìm thấy chủ nuôi.")
     return o
 
 
@@ -192,7 +192,7 @@ def sua_thu_cung(db: Session, thu_cung_id: int, **truong) -> Pet:
 def lay_thu_cung(db: Session, thu_cung_id: int) -> Pet:
     p = db.get(Pet, thu_cung_id)
     if p is None:
-        raise LoiNghiepVu("Không tìm thấy thú cưng.")
+        raise LoiKhongTimThay("Không tìm thấy thú cưng.")
     return p
 
 

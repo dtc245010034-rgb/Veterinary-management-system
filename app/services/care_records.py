@@ -21,7 +21,7 @@ from app.models.appointment import Appointment
 from app.models.care_record import CareRecord
 from app.models.user import User
 from app.services import clock
-from app.services.errors import LoiNghiepVu
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 
 # Ai được ghi hồ sơ — theo bảng phân quyền US-02. Lễ tân chỉ xem.
 VAI_TRO_GHI_DUOC = ("manager", "caretaker")
@@ -51,7 +51,7 @@ def ghi_ho_so(
     """
     lich = db.get(Appointment, lich_id)
     if lich is None:
-        raise LoiNghiepVu("Không tìm thấy lịch hẹn.")
+        raise LoiKhongTimThay("Không tìm thấy lịch hẹn.")
 
     _kiem_quyen(db, lich, nguoi_ghi_id)
 
@@ -89,7 +89,7 @@ def ghi_ho_so(
 def _kiem_quyen(db: Session, lich: Appointment, nguoi_ghi_id: int) -> None:
     nguoi_ghi = db.get(User, nguoi_ghi_id)
     if nguoi_ghi is None:
-        raise LoiNghiepVu("Không tìm thấy tài khoản.")
+        raise LoiKhongTimThay("Không tìm thấy tài khoản.")
 
     if nguoi_ghi.role not in VAI_TRO_GHI_DUOC:
         raise LoiNghiepVu("Chỉ nhân viên chăm sóc và quản lý mới ghi được hồ sơ.")
@@ -101,7 +101,7 @@ def _kiem_quyen(db: Session, lich: Appointment, nguoi_ghi_id: int) -> None:
 def lay_ho_so(db: Session, ho_so_id: int) -> CareRecord:
     hs = db.get(CareRecord, ho_so_id)
     if hs is None:
-        raise LoiNghiepVu("Không tìm thấy hồ sơ chăm sóc.")
+        raise LoiKhongTimThay("Không tìm thấy hồ sơ chăm sóc.")
     return hs
 
 

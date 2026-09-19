@@ -1,0 +1,9 @@
+{# Dùng chung cho các trang AI. Người dùng 19/09 chạy với AI_PROVIDER=fake, nhận câu mẫu cố định
+   và tưởng Gemini trả lời sai — giao diện không có dấu hiệu nào cho biết đang giả lập. #}
+{% if che_do_ai_gia_lap() %}
+<p class="canh-bao">
+  <strong>Đang chạy chế độ AI giả lập</strong> (<code>AI_PROVIDER=fake</code>): mọi câu trả lời là
+  một câu mẫu cố định, không gọi Gemini và không tính lượt. Muốn hỏi AI thật, đặt
+  <code>AI_PROVIDER=gemini</code> trong <code>.env</code> rồi khởi động lại server.
+</p>
+{% endif %}

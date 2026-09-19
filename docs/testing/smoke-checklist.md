@@ -327,6 +327,10 @@ miễn phí nào**, nên bấm thoải mái.
 
 ## P7 chặng 3 — Chạy với Gemini thật (`AI_PROVIDER=gemini`)
 
+> **Trước khi bấm:** sửa `.env` thành `AI_PROVIDER=gemini` và khởi động lại server. Trang Trợ lý AI
+> **không được** có dòng "Đang chạy chế độ AI giả lập" — còn dòng đó thì mọi câu hỏi chỉ nhận một
+> câu mẫu cố định (người dùng đã gặp ngày 19/09 khi hỏi thời tiết Hà Nội).
+
 > Agent đã chạy tương đương qua HTTP ngày 19/09 và mọi ô dưới đây đều đạt; bằng chứng ở
 > [`reports/2026-09-19-P7-gemini-gemini-3.6-flash.md`](reports/2026-09-19-P7-gemini-gemini-3.6-flash.md).
 > Các ô vẫn để trống cho người dùng tự bấm và xác nhận bằng mắt. Ô "số lượt tăng đúng" chỉ đạt

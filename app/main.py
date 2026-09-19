@@ -28,6 +28,7 @@ from app.routers import services as services_router
 from app.routers import stats as stats_router
 from app.routers import users as users_router
 from app.routers import vaccinations as vaccinations_router
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 from app.templates import templates
 
 
@@ -104,3 +105,16 @@ async def xu_ly_loi_http(request: Request, exc: LoiHTTPStarlette):
         )
 
     return HTMLResponse(str(exc.detail), status_code=exc.status_code)
+
+
+@app.exception_handler(LoiNghiepVu)
+async def xu_ly_loi_nghiep_vu_lot_khoi_router(request: Request, exc: LoiNghiepVu):
+    """Lưới an toàn cho router quên `try/except`: trang lỗi tiếng Việt thay vì 500.
+
+    Lỗi H-03 (rà 19/09): chín đường dẫn trả "Internal Server Error" khi bản ghi đã bị xóa.
+    Vá từng route thì route viết sau lại quên — bắt một lần ở đây cho cả lớp lỗi.
+    """
+    ma = status.HTTP_404_NOT_FOUND if isinstance(exc, LoiKhongTimThay) else status.HTTP_400_BAD_REQUEST
+    return templates.TemplateResponse(
+        request, "error.html", {"ma_loi": ma, "thong_diep": str(exc)}, status_code=ma
+    )

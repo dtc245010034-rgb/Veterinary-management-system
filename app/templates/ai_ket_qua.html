@@ -3,6 +3,7 @@
 
 {% block noi_dung %}
 <h1>{{ log.ten_tinh_nang if log else "Trợ lý AI" }}</h1>
+{% include "_ai_gia_lap.html" %}
 
 {# Dòng khuyến cáo nằm TRONG template chứ không trong phản hồi AI, và đặt trên nội dung.
    Nhờ vậy nó hiện cả khi lời gọi AI thất bại (US-26, ca G-19) và không phải cuộn xuống mới
@@ -42,7 +43,11 @@
   {% endif %}
 
   <p class="phu nhan-nho">
+    {% if log.model == "fake" %}
+    Trả lời bởi: <strong>AI giả lập — không gọi Gemini</strong>
+    {% else %}
     Trả lời bởi: <code>{{ log.model or "không gọi API — hệ thống tự trả lời" }}</code>
+    {% endif %}
     · lúc {{ log.created_at.strftime("%H:%M %d/%m/%Y") }}
   </p>
 {% endif %}

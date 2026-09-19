@@ -4,6 +4,8 @@ from pathlib import Path
 
 from fastapi.templating import Jinja2Templates
 
+from app.config import settings
+
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 
@@ -18,3 +20,6 @@ def _tien(so) -> str:
 
 
 templates.env.filters["tien"] = _tien
+
+# Hàm chứ không phải giá trị: đọc `settings` lúc render, nên test đổi cấu hình được.
+templates.env.globals["che_do_ai_gia_lap"] = lambda: settings.ai_provider != "gemini"

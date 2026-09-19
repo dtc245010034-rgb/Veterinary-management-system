@@ -36,6 +36,10 @@ def gio(h: int, p: int = 0, ngay: int = 12) -> datetime:
 
 @pytest.fixture
 def nen(db, frozen_clock):
+    return _dung_nen(db)
+
+
+def _dung_nen(db) -> dict:
     o = Owner(full_name="Đỗ Thị Hằng", phone="0912345678")
     db.add(o)
     db.flush()
@@ -232,6 +236,99 @@ def test_tra_dung_bang_so_con_no_thi_duoc_chap_nhan(db, nen):
 
     assert hd.status == "paid"
     assert hd.con_no == Decimal("0")
+
+
+def test_hai_lan_thu_chong_nhau_khong_vuot_so_con_no(db, nen):
+    """Lỗi H-01 tìm được khi rà 19/09: hai máy thu cùng lúc → nợ âm, doanh thu đội lên.
+
+    Dựng đúng thứ tự đã gây lỗi: lần thu thứ hai ĐỌC hóa đơn trước khi lần thứ nhất commit,
+    rồi mới ghi. Session thứ hai là một request khác, không phải mock.
+    """
+    from sqlalchemy.orm import Session
+
+    hd = nv.lap_hoa_don(db, lich_xong(db, nen).id)
+    may_hai = Session(bind=db.get_bind())
+    try:
+        # Giữ tham chiếu như một request đang chạy dở giữ hóa đơn nó vừa đọc. Không giữ thì
+        # identity map bỏ đối tượng cũ, lần đọc sau lấy số mới và test xanh giả — đã gặp.
+        da_doc = nv.lay_hoa_don(may_hai, hd.id)
+        assert da_doc.con_no == GIA_GOC  # máy hai đã đọc số cũ
+
+        nv.ghi_nhan_thanh_toan(db, hd.id, Decimal("100000"))  # máy một thu và commit
+
+        with pytest.raises(LoiNghiepVu, match="còn nợ"):
+            nv.ghi_nhan_thanh_toan(may_hai, hd.id, Decimal("100000"))
+    finally:
+        may_hai.close()
+
+    db.refresh(hd)
+    assert hd.da_tra == Decimal("100000")
+    assert hd.con_no == Decimal("50000")
+
+
+def test_hai_may_thu_that_su_dong_thoi_khong_vuot_so_con_no(tmp_path, frozen_clock):
+    """H-01 với hai luồng thật trên CSDL file — test trên chỉ chạy tuần tự.
+
+    Test tuần tự vẫn xanh nếu bỏ câu UPDATE giành khóa và chỉ giữ `refresh`: đọc lại xong
+    vẫn có thể bị lần thu kia chen vào trước khi ghi. Ở đây máy một đã ghi nhưng giữ
+    transaction mở 0,5 giây trước khi commit; máy hai thu đúng lúc đó.
+    """
+    import threading
+    import time
+
+    from sqlalchemy import create_engine, event
+    from sqlalchemy.orm import sessionmaker
+
+    import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
+    from app.db import Base
+
+    engine = create_engine(
+        f"sqlite:///{tmp_path / 'dong_thoi.db'}", connect_args={"check_same_thread": False}
+    )
+    Base.metadata.create_all(engine)
+    Phien = sessionmaker(bind=engine, autoflush=False)
+
+    with Phien() as s:
+        nen = _dung_nen(s)
+        hd_id = nv.lap_hoa_don(s, lich_xong(s, nen).id).id
+
+    may_mot, may_hai = Phien(), Phien()
+    mot_da_ghi = threading.Event()
+
+    @event.listens_for(may_mot, "before_commit")
+    def _giu_transaction_mo(session):
+        mot_da_ghi.set()
+        time.sleep(0.5)
+
+    ket_qua: dict[str, object] = {}
+
+    def thu(ten, phien, cho=None):
+        if cho is not None:
+            cho.wait(5)
+        try:
+            nv.ghi_nhan_thanh_toan(phien, hd_id, Decimal("100000"))
+            ket_qua[ten] = "thu được"
+        except LoiNghiepVu as loi:
+            ket_qua[ten] = str(loi)
+
+    luong = [
+        threading.Thread(target=thu, args=("mot", may_mot)),
+        threading.Thread(target=thu, args=("hai", may_hai, mot_da_ghi)),
+    ]
+    try:
+        for t in luong:
+            t.start()
+        for t in luong:
+            t.join(15)
+
+        assert ket_qua["mot"] == "thu được"
+        assert "còn nợ" in ket_qua["hai"]
+        with Phien() as s:
+            assert nv.lay_hoa_don(s, hd_id).da_tra == Decimal("100000")
+    finally:
+        may_mot.close()
+        may_hai.close()
+        engine.dispose()
 
 
 @pytest.mark.parametrize("so_tien", [Decimal("0"), Decimal("-1000")])

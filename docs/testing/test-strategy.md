@@ -27,6 +27,14 @@ bị bỏ qua — và một hệ thống test bị bỏ qua thì bằng không c
 > hai ngân sách cũ vượt ngay cả khi máy rảnh. Thực đo 18/09: unit 457 ca **32,3s**, integration 213 ca
 > **48,3s**, e2e **6,4s**, toàn bộ **73,7s**. Vẫn không có test nào đáng cắt.
 >
+> **Thực đo 19/09** (chưa nới lần ba — chờ người dùng quyết): unit 463–467 ca **30,6s – 40,2s**,
+> integration 213–258 ca **52,2s – 61,1s**, e2e **6,0s – 17,5s**, toàn bộ 726 ca **81s – 95s**. Dao
+> động lớn theo tải máy trong cùng một ngày.
+>
+> **Bài học của lượt rà soát 19/09:** 677 test xanh vẫn lọt ba lỗi cao — hai request **đồng thời**,
+> **id không tồn tại** ở một số router, **ngày sai định dạng** khi đổi lịch. Ba dạng này nay có test
+> riêng (TC-113 → TC-115); bộ test xanh không thay được lượt rà bằng trình duyệt.
+>
 > Thực đo 11–13/09: unit 336 ca **21,5s – 26,9s** tùy tải máy; integration 179 ca **34,7s – 42,7s**;
 > toàn bộ **57s – 72s**. Không có test nào đáng cắt: chậm nhất 1,03s (test hook), còn lại dưới 0,3s.
 > Gần **một nửa** thời gian tầng unit (10,8s / 23s) là fixture `db` dựng CSDL mới bằng `create_all`
@@ -75,7 +83,8 @@ tests/
 │   ├── test_vaccinations.py   mũi tiêm và danh sách đến hạn
 │   ├── test_invoices.py       lập hóa đơn, ghi nhận thanh toán
 │   ├── test_stats.py          trang thống kê
-│   └── test_ai.py             ba tính năng AI qua HTTP, phân quyền, Post/Redirect/Get
+│   ├── test_ai.py             ba tính năng AI qua HTTP, phân quyền, Post/Redirect/Get
+│   └── test_khong_tim_thay.py mọi đường dẫn theo id gặp bản ghi không tồn tại → 404/400, không 500
 └── e2e/
     └── test_full_flow.py      một kịch bản xuyên suốt trên DB file thật
 ```

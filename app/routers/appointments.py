@@ -129,7 +129,7 @@ def dat_lich(
             thu_cung_id=thu_cung_id,
             dich_vu_id=dich_vu_id,
             nhan_vien_id=nhan_vien_id,
-            bat_dau=datetime.combine(ngay_chon, _doc_gio(gio)),
+            bat_dau=datetime.combine(_doc_ngay_bat_buoc(ngay), _doc_gio(gio)),
             nguoi_tao_id=user.id,
             ghi_chu=ghi_chu,
         )
@@ -155,7 +155,7 @@ def doi_lich(
         nv.doi_lich(
             db,
             lich_id,
-            bat_dau=datetime.combine(ngay_chon, _doc_gio(gio)),
+            bat_dau=datetime.combine(_doc_ngay_bat_buoc(ngay), _doc_gio(gio)),
             nhan_vien_id=nhan_vien_id,
         )
     except LoiNghiepVu as loi:
@@ -233,6 +233,18 @@ def _doc_ngay(chuoi: str) -> date:
         return date.fromisoformat(chuoi)
     except ValueError:
         return clock.now().date()
+
+
+def _doc_ngay_bat_buoc(chuoi: str) -> date:
+    """Cho đặt và đổi lịch — hai thao tác lấy ngày này làm ngày hẹn thật.
+
+    Không được quy về hôm nay như `_doc_ngay`: ngày hỏng từng dời một lịch có thật sang
+    23:30 hôm đó mà không báo gì (lỗi H-02 / S7, rà 19/09).
+    """
+    try:
+        return date.fromisoformat((chuoi or "").strip())
+    except ValueError:
+        raise LoiNghiepVu("Ngày không đúng định dạng.")
 
 
 def _doc_gio(chuoi: str) -> time:
