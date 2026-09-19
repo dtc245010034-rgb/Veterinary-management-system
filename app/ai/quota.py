@@ -11,6 +11,7 @@ CÁCH GIẢI: giữ một bảng đếm theo (model, ngày quota) và thử lầ
 |---|---|---|
 | Thành công | dùng kết quả | có |
 | 503 / timeout (`LoiQuaTai`) | model nghỉ `AI_NGHI_GIAY` giây, thử model kế | có — lời gọi đã tới server |
+| Mất mạng (`LoiKetNoi`) | như 503 | không — lời gọi chưa tới server |
 | 429 theo phút | nghỉ đúng `retryDelay` Google báo | không |
 | 429 theo ngày | bỏ model tới khi quota reset, ghi lại hạn mức THẬT | không |
 | 404 (`LoiModelKhongCo`) | loại hẳn model, ghi lý do | không |
@@ -36,6 +37,7 @@ from app.ai.provider import (
     LoiAI,
     LoiCauHinh,
     LoiHetQuota,
+    LoiKetNoi,
     LoiModelKhongCo,
     LoiQuaTai,
 )
@@ -301,7 +303,8 @@ def goi_co_xoay(
             # Khóa API sai hoặc request sai: mọi model đều sẽ hỏng y hệt.
             raise
         except LoiQuaTai as loi:
-            ghi_lan_goi(db, model)  # lời gọi đã tới server nên nhiều khả năng vẫn tính lượt
+            if not isinstance(loi, LoiKetNoi):
+                ghi_lan_goi(db, model)  # lời gọi đã tới server nên nhiều khả năng vẫn tính lượt
             ghi_qua_tai(db, model)
             loi_cuoi = loi
         except LoiHetQuota as loi:

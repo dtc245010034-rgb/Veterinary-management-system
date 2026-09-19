@@ -8,8 +8,8 @@ chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham 
 
 Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P6 xong, đang làm P7** — quản lý chủ nuôi, thú
 cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh toán và
-thống kê đều chạy được. **Ba tính năng AI đã dùng được trên giao diện**; còn lượt chạy kiểm chứng với
-Gemini thật (P7 chặng 3) và P8 hoàn thiện — xem tiến độ từng phase trong
+thống kê đều chạy được. **Ba tính năng AI đã dùng được trên giao diện** và đã kiểm chứng với Gemini
+thật (13/13 ca guardrail đạt); còn smoke bấm tay của P7 và P8 hoàn thiện — xem tiến độ từng phase trong
 [`docs/roadmap.md`](docs/roadmap.md).
 
 Chạy lần đầu phải sao chép `.env.example` thành `.env` và đặt `SECRET_KEY` riêng — ứng dụng từ chối
@@ -38,7 +38,7 @@ python -m venv .venv
 # source .venv/bin/activate       # macOS / Linux
 pip install -r requirements.txt
 
-copy .env.example .env            # tùy chọn; mặc định đã chạy được
+copy .env.example .env            # bắt buộc; sửa SECRET_KEY thành chuỗi ngẫu nhiên của riêng bạn
 python -m app.seed                # dữ liệu mẫu: tài khoản, chủ nuôi, thú cưng, lịch, hóa đơn…
 uvicorn app.main:app --reload
 ```

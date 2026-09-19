@@ -4,22 +4,21 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-18 (P7 chặng 2 — router và ba trang AI) · **Trạng thái:** P0→P6 xong — chủ nuôi, thú cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng, hồ sơ chăm sóc, nhắc tiêm, hóa đơn, thanh toán và thống kê đều chạy được. Tiếp theo: **P7 tích hợp AI**. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+**Cập nhật lần cuối:** 2026-09-19 (P7 chặng 3 — chạy Gemini thật, thêm `LoiKetNoi`) · **Trạng thái:** P0→P6 xong; P7 xong cả bốn chặng, chờ người dùng tick smoke — ba tính năng AI chạy được trên giao diện và đã kiểm chứng với Gemini thật. Tiến độ từng phase: [`roadmap.md`](roadmap.md)
 
-> **Làm tiếp:** P7 **chặng 3** — chạy bộ ca guardrail với Gemini thật
-> (`python -m app.ai.quota --guardrail --model gemini-3.6-flash`), rồi người dùng tick smoke.
-> Chặng 0, 1, 2 xong ngày 18/09; ba tính năng AI đã chạy được trên trình duyệt với `FakeProvider`. Kế hoạch:
-> [`plans/2026-09-18-p7-tich-hop-ai.md`](plans/2026-09-18-p7-tich-hop-ai.md). Chặng 0 (vá S1→S5) và
-> chặng 1 (nền AI) xong ngày 18/09; **chưa có giao diện AI nào**. Gọi thật đã chạy được:
-> `gemini-3.6-flash`, tắt token suy nghĩ còn ~2,2s. Xem nhanh bằng `python -m app.ai.quota`.
-> Bối cảnh: [`sessions/2026-09-18-01.md`](sessions/2026-09-18-01.md).
+> **Làm tiếp:** người dùng tick smoke P7 (khối chặng 2, chặng 3, guardrail trong
+> [`testing/smoke-checklist.md`](testing/smoke-checklist.md)) và đọc lại cột **Đạt?** trong
+> [`testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md`](testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md).
+> Sau đó lập kế hoạch **P8** theo [`roadmap.md`](roadmap.md). Kế hoạch P7:
+> [`plans/2026-09-18-p7-tich-hop-ai.md`](plans/2026-09-18-p7-tich-hop-ai.md). Bối cảnh:
+> [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md).
 
 ### `app/ai/` — tầng AI, từ P7
 
 | File | Vai trò |
 |---|---|
-| `ai/provider.py` | Interface `AIProvider` + năm lớp lỗi đã phân loại (`LoiQuaTai`, `LoiHetQuota`, `LoiModelKhongCo`, `LoiCauHinh`). Phân loại lỗi là điều kiện để xoay ca model |
-| `ai/gemini.py` | Một lần gọi REST `generateContent` qua `urllib`, không thêm thư viện. Đọc `details` của lỗi 429 để phân biệt hết lượt **theo phút** và **theo ngày**; gửi `thinkingBudget` theo cấu hình |
+| `ai/provider.py` | Interface `AIProvider` + sáu lớp lỗi đã phân loại (lớp gốc `LoiAI`, `LoiQuaTai`, `LoiKetNoi` — mất mạng, không tính lượt — `LoiHetQuota`, `LoiModelKhongCo`, `LoiCauHinh`). Phân loại lỗi là điều kiện để xoay ca model |
+| `ai/gemini.py` | Một lần gọi REST `generateContent` qua `urllib`, không thêm thư viện. Đọc `details` của lỗi 429 để phân biệt hết lượt **theo phút** và **theo ngày**; tách lỗi không kết nối được (`LoiKetNoi`) khỏi timeout; gửi `thinkingBudget` theo cấu hình |
 | `ai/fake.py` | `FakeProvider`: ghi lại mọi `(model, system, user)`, cài được phản hồi và lỗi **theo từng model** — nền tảng của test xoay ca và test US-28 |
 | `ai/prompts.py` | `DISCLAIMER`, ba system prompt, câu từ chối thuốc, câu nhắc xác nhận lịch tiêm, các hàm dựng prompt. Thuần, không chạm CSDL |
 | `ai/guardrail.py` | `la_cau_xin_thuoc()` (chặn trước khi gọi), `chua_lieu_luong()` (soát phản hồi), `xoa_lien_he()` (bỏ SĐT/email khỏi văn bản tự do). So theo **từ nguyên vẹn** trên chuỗi đã bỏ dấu |
@@ -53,20 +52,20 @@
 | File | Vai trò |
 |---|---|
 | `user-stories.md` | 28 user story, 99 tiêu chí Given/When/Then, bảng đối chiếu với đề bài |
-| `erd.md` | 13 bảng, sơ đồ Mermaid, mô tả cột và ràng buộc |
+| `erd.md` | 14 bảng, sơ đồ Mermaid, mô tả cột và ràng buộc |
 | `architecture.md` | Cây thư mục, ranh giới ba lớp, 3 sequence diagram, cách xử lý lỗi |
-| `ai-safety.md` | System prompt 3 tính năng, `DISCLAIMER`, 20 ca guardrail G-01→G-20 |
+| `ai-safety.md` | System prompt 3 tính năng (có phép canh khớp `prompts.py`), `DISCLAIMER`, 20 ca guardrail G-01→G-20, kết quả chạy Gemini thật 19/09 |
 | `codebase-map.md` | File này |
 | `roadmap.md` | Lộ trình P0→P8 gắn với mốc KT1/KT2/KT3/cuối kỳ, kèm Definition of Done |
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
 | `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 12: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7 |
 | `sessions/README.md` | Quy ước log phiên làm việc |
-| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 11 |
+| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 12 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
-| `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 102 test case — 80 ✅ · 1 🟡 · 20 ⬜ · 1 ➖ ngoài phạm vi (13/09) |
+| `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 112 test case — 110 ✅ · 0 🟡 · 1 ⬜ (TC-102 smoke) · 1 ➖ ngoài phạm vi (19/09) |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
 | `testing/reports/README.md` | Mẫu báo cáo kiểm thử cuối phase |
-| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 21: mỗi phase một file, cộng năm báo cáo rà luồng bằng trình duyệt, một báo cáo trả nợ và một báo cáo dọn việc tồn |
+| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 22: mỗi phase một file, cộng năm báo cáo rà luồng bằng trình duyệt, một báo cáo trả nợ, một báo cáo dọn việc tồn và một báo cáo chạy Gemini thật (sinh bởi `python -m app.ai.quota --guardrail`) |
 
 ### Ứng dụng (`app/`) — từ P1
 
@@ -143,7 +142,7 @@
 | `unit/test_text.py` | Chuẩn hóa chuỗi tiếng Việt, gồm bẫy chữ `đ` |
 | `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
 | `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa |
-| `unit/test_architecture.py` | **Canh ranh giới dự án** (14 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file (so **đuôi đường dẫn**, không so mỗi tên file — xem kẽ hở đã vá 13/09), hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật |
+| `unit/test_architecture.py` | **Canh ranh giới dự án** (15 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file (so **đuôi đường dẫn**, không so mỗi tên file — xem kẽ hở đã vá 13/09), hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật, ba system prompt in trong `ai-safety.md` khớp từng chữ với `prompts.py` |
 | `unit/test_khoi_dong.py` | Lifespan từ chối khởi động với `SECRET_KEY` mặc định (S1). Gọi thẳng `lifespan`, engine in-memory |
 | `unit/test_prompts.py` | Dựng prompt, ba system prompt, chèn `DISCLAIMER` (TC-082, 083, 088, 096) |
 | `unit/test_guardrail.py` | Ba phép chặn trong code, nặng về **ca âm**: "nhân viên" không được coi là hỏi liều (TC-093) |
@@ -192,4 +191,3 @@ mục "Hiện có" và ghi rõ vai trò thật, rồi xóa dòng ở đây.
 | Đường dẫn | Vai trò dự kiến | Phase |
 |---|---|---|
 | ~~`app/schemas/`~~ | **Bỏ.** Qua P1→P3 form đọc thẳng bằng `Form()` và kiểm ở `services/` là đủ; thêm một tầng Pydantic nữa chỉ để lặp lại phép kiểm đã có | — |
-| `app/routers/ai.py` | Ba tính năng AI | P7 |

@@ -38,7 +38,7 @@ mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ kh�
 | P4 | ✅ xong | 05–06/09 | [`P4-chang1`](testing/reports/2026-09-05-P4-chang1.md), [`P4-chang2`](testing/reports/2026-09-05-P4-chang2.md), [`rà luồng`](testing/reports/2026-09-06-ra-luong-P4-chang2.md) |
 | P5 | ✅ xong | 06–08/09 | [`P5-chang1`](testing/reports/2026-09-06-P5-chang1.md), [`rà luồng chặng 1`](testing/reports/2026-09-07-ra-luong-P5-chang1.md), [`P5-chang2`](testing/reports/2026-09-07-P5-chang2.md), [`rà luồng chặng 2`](testing/reports/2026-09-08-ra-luong-P5-chang2.md) |
 | P6 | ✅ xong | 11–13/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md), [`rà luồng`](testing/reports/2026-09-11-ra-luong-P6.md) |
-| **P7** | 🟡 **đang làm** — chặng 0, 1, 2 xong; còn chặng 3 (chạy Gemini thật) và smoke | 18/09 | [`chặng 0`](testing/reports/2026-09-18-P7-chang0.md), [`chặng 1`](testing/reports/2026-09-18-P7-chang1.md), [`chặng 2`](testing/reports/2026-09-18-P7-chang2.md) |
+| **P7** | 🟡 **chờ smoke** — chặng 0→3 xong; còn người dùng tick smoke chặng 2, 3, guardrail | 18–19/09 | [`chặng 0`](testing/reports/2026-09-18-P7-chang0.md), [`chặng 1`](testing/reports/2026-09-18-P7-chang1.md), [`chặng 2`](testing/reports/2026-09-18-P7-chang2.md), [`Gemini thật`](testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md) |
 | P8 | ⬜ chưa làm | — | — |
 
 Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡 · 27 ⬜** trên 102 ca, smoke
@@ -57,6 +57,11 @@ mở rộng lên **112 ca** (thêm TC-103 → TC-112 cho xoay ca model và quota
 1 ➖**. 🟡 là TC-094 (phạm vi câu hỏi do system prompt lo, không chặn bằng từ khóa); ⬜ là TC-102
 (smoke bấm tay). **TC-101 đủ 11/11 bước.** ERD **14/14 bảng**. Ba tính năng AI chạy được trên giao
 diện với `FakeProvider`; còn lượt chạy với Gemini thật và hai khối smoke chờ người dùng tick.
+
+Sau P7 chặng 3 (19/09): **677 test xanh**, ma trận **110 ✅ · 0 🟡 · 1 ⬜ · 1 ➖**. TC-094 lên ✅ nhờ
+lượt chạy thật; ⬜ duy nhất là TC-102 (smoke bấm tay). G-01 → G-13 đạt cả 13 trên `gemini-3.6-flash`,
+G-14 → G-20 đạt trên server thật. Lượt mô phỏng mất mạng lộ **một lỗi thật**: lỗi kết nối bị đếm
+khống vào quota, đã sửa kèm test đỏ-trước. **P7 chỉ còn smoke chờ người dùng tick.**
 
 ---
 
@@ -163,8 +168,8 @@ thú y."*
 
 > **Tiến độ P7 (18/09):** chặng 0 vá năm lỗ hổng hệ thống · chặng 1 dựng `app/ai/` kèm **xoay ca
 > model** và **ước tính quota** (việc phát sinh, người dùng yêu cầu sau khi gọi thử khóa thật) ·
-> chặng 2 dựng giao diện và nối bước 10 của e2e. Còn **chặng 3**: chạy 13 ca G-01 → G-13 với Gemini
-> thật bằng `python -m app.ai.quota --guardrail --model gemini-3.6-flash`, rồi tick smoke hai khối.
+> chặng 2 dựng giao diện và nối bước 10 của e2e. **Chặng 3 xong 19/09**: 13/13 ca G-01 → G-13 đạt
+> với Gemini thật, G-14 → G-20 đạt trên server thật; còn người dùng tick smoke.
 
 **Năm việc P6 để lại — dọn xong hết ngày 13/09**, trước khi mở P7. Kế hoạch và bằng chứng:
 [`plans/2026-09-13-viec-ton-p6.md`](plans/2026-09-13-viec-ton-p6.md) ·

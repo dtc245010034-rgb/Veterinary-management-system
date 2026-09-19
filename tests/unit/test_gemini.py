@@ -15,7 +15,7 @@ import urllib.error
 import pytest
 
 from app.ai.gemini import GeminiProvider
-from app.ai.provider import LoiCauHinh, LoiHetQuota, LoiModelKhongCo, LoiQuaTai
+from app.ai.provider import LoiCauHinh, LoiHetQuota, LoiKetNoi, LoiModelKhongCo, LoiQuaTai
 
 PHAN_HOI_THAT = {
     "candidates": [
@@ -188,11 +188,35 @@ def test_loi_khoa_hoac_request_sai_thanh_loi_cau_hinh(monkeypatch, ma):
         GeminiProvider(api_key="k").tra_loi(model="m", system="S", user="U", timeout=5)
 
 
-def test_mat_mang_thanh_loi_qua_tai_de_con_kip_thu_model_khac(monkeypatch):
-    gia_lap(monkeypatch, loi=urllib.error.URLError("getaddrinfo failed"))
+@pytest.mark.parametrize(
+    "ly_do",
+    ["getaddrinfo failed", ConnectionRefusedError(10061, "actively refused")],
+    ids=["dns", "tu-choi-ket-noi"],
+)
+def test_mat_mang_thanh_loi_ket_noi_bao_tieng_viet(monkeypatch, ly_do):
+    """Vẫn là `LoiQuaTai` để còn kịp thử model khác, nhưng là loại con riêng để không đếm lượt.
 
-    with pytest.raises(LoiQuaTai, match="Không gọi được AI"):
+    Thông điệp hiện thẳng cho người dùng nên không được lộ chuỗi tiếng Anh của urllib —
+    ngày 19/09 trang lỗi từng in nguyên `<urlopen error [WinError 10061] ...>`.
+    """
+    gia_lap(monkeypatch, loi=urllib.error.URLError(ly_do))
+
+    with pytest.raises(LoiKetNoi) as loi:
         GeminiProvider(api_key="k").tra_loi(model="m", system="S", user="U", timeout=5)
+
+    assert isinstance(loi.value, LoiQuaTai)
+    assert "Không kết nối được" in str(loi.value)
+    assert "urlopen" not in str(loi.value) and "getaddrinfo" not in str(loi.value)
+
+
+def test_qua_han_cho_do_urllib_boc_lai_van_la_qua_tai_chu_khong_phai_mat_mang(monkeypatch):
+    """Quá hạn chờ thì request có thể đã tới server rồi — phải còn được tính lượt."""
+    gia_lap(monkeypatch, loi=urllib.error.URLError(TimeoutError("timed out")))
+
+    with pytest.raises(LoiQuaTai) as loi:
+        GeminiProvider(api_key="k").tra_loi(model="m", system="S", user="U", timeout=5)
+
+    assert not isinstance(loi.value, LoiKetNoi)
 
 
 def test_qua_han_cho_thanh_loi_qua_tai(monkeypatch):

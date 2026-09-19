@@ -507,3 +507,24 @@ def test_erd_khop_model_tung_cot():
                 lech.append(f"{ten}.{cot}: FK trong ERD {fk_erd and fk_erd.group(1)}, code {fk_code}")
 
     assert not lech, "docs/erd.md lệch model:\n  " + "\n  ".join(lech)
+
+
+@pytest.mark.parametrize(
+    "muc, ten_hang",
+    [("3.1", "SYSTEM_NHAC_LICH"), ("3.2", "SYSTEM_TOM_TAT"), ("3.3", "SYSTEM_HOI_DAP")],
+)
+def test_system_prompt_in_trong_ai_safety_khop_tung_chu_voi_code(muc, ten_hang):
+    """`ai-safety.md` là tài liệu nộp ở KT3 — prompt in trong đó phải là prompt đang chạy.
+
+    Lỗi thật 19/09: mục 3.3 vẫn in dòng "Luôn kết thúc câu trả lời bằng lời nhắc…" đã bỏ khỏi
+    code từ 18/09 (quyết định Q10), và mục 3.1 thiếu dòng xưng hô "Anh/chị". Thêm một lần của
+    lớp lỗi "tài liệu nói thứ code không làm" (CLAUDE.md mục 9, bài học 2).
+
+    NẾU TEST NÀY ĐỎ: chép lại nguyên văn hằng số trong app/ai/prompts.py vào khối ``` của mục đó.
+    """
+    from app.ai import prompts
+
+    tai_lieu = _doc(GOC / "docs" / "ai-safety.md").replace("\r\n", "\n")
+    khoi = re.search(rf"^### {re.escape(muc)} .*?\n```\n(.*?)\n```", tai_lieu, re.S | re.M)
+    assert khoi, f"Không tìm thấy khối prompt của mục {muc} — tài liệu đã đổi cách viết?"
+    assert khoi.group(1) == getattr(prompts, ten_hang)

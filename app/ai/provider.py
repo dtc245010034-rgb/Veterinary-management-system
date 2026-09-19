@@ -20,6 +20,14 @@ class LoiQuaTai(LoiAI):
     """Model đang quá tải hoặc lời gọi quá hạn chờ (HTTP 5xx, timeout). Thử model khác."""
 
 
+class LoiKetNoi(LoiQuaTai):
+    """Không kết nối được tới máy chủ AI: mất mạng, lỗi DNS, bị từ chối kết nối.
+
+    Khác 503 và timeout ở một điểm: lời gọi **chưa tới server**, nên không được tính lượt
+    (luật đếm của app/ai/quota.py). Vẫn là `LoiQuaTai` để luật xoay ca giữ nguyên.
+    """
+
+
 class LoiHetQuota(LoiAI):
     """Hết lượt (HTTP 429).
 

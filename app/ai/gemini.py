@@ -21,6 +21,7 @@ import urllib.request
 from app.ai.provider import (
     LoiCauHinh,
     LoiHetQuota,
+    LoiKetNoi,
     LoiModelKhongCo,
     LoiQuaTai,
 )
@@ -66,8 +67,16 @@ class GeminiProvider:
                 return _doc_noi_dung(json.load(phan_hoi))
         except urllib.error.HTTPError as loi:
             raise _doi_loi_http(loi) from loi
-        except (urllib.error.URLError, socket.timeout, TimeoutError) as loi:
-            # Mất mạng hoặc quá hạn chờ: model khác có thể vẫn kịp trả lời trong ngân sách.
+        except urllib.error.URLError as loi:
+            if isinstance(loi.reason, (socket.timeout, TimeoutError)):
+                raise LoiQuaTai(f"Không gọi được AI: {loi}") from loi
+            # Chưa tới được server: không tính lượt. Chuỗi gốc của urllib là tiếng Anh nên
+            # chỉ giữ trong chuỗi ngoại lệ (`from loi`), không đưa lên màn hình.
+            raise LoiKetNoi(
+                "Không kết nối được tới máy chủ AI, vui lòng kiểm tra kết nối mạng."
+            ) from loi
+        except (socket.timeout, TimeoutError) as loi:
+            # Quá hạn chờ: model khác có thể vẫn kịp trả lời trong ngân sách.
             raise LoiQuaTai(f"Không gọi được AI: {loi}") from loi
 
 

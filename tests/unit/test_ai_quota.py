@@ -19,6 +19,7 @@ from app.ai.provider import (
     LoiAI,
     LoiCauHinh,
     LoiHetQuota,
+    LoiKetNoi,
     LoiModelKhongCo,
     LoiQuaTai,
 )
@@ -253,6 +254,21 @@ def test_qua_tai_van_tinh_luot_nhung_429_va_404_thi_khong(db, frozen_clock, bon_
     assert dem["m2"] == 0
     assert dem["m3"] == 0
     assert dem["m4"] == 1  # model trả lời được
+
+
+def test_mat_mang_khong_tinh_luot_vi_loi_goi_chua_toi_server(db, frozen_clock, bon_model):
+    """Tìm ra khi chạy chặng 3 ngày 19/09: một lần bấm lúc mất mạng cộng khống 4 lượt.
+
+    Lỗi kết nối vẫn xoay ca và cho model nghỉ như quá tải, chỉ không được đếm.
+    """
+    fake = FakeProvider(loi_chung=LoiKetNoi("Không kết nối được tới máy chủ AI."))
+
+    with pytest.raises(LoiAI):
+        goi(db, fake)
+
+    dem = {d.model: d.request_count for d in db.query(AiQuota).all()}
+    assert fake.cac_model_da_thu == ["m1", "m2", "m3", "m4"]
+    assert dem == {"m1": 0, "m2": 0, "m3": 0, "m4": 0}
 
 
 # --- Bảng hiển thị và đặt lại -------------------------------------------------------
