@@ -76,4 +76,4 @@ Mỗi lỗi soát cả **lớp lỗi**, không chỉ ca vừa thấy (bài học
 - [x] Cập nhật `codebase-map.md` (file mới, khối "Làm tiếp"), `roadmap.md`, ma trận `test-cases.md`
 - [x] Điền log phiên `../sessions/2026-09-20-05.md`
 - [x] **Không tick ô smoke nào** — người dùng tự bấm
-- [ ] Hỏi người dùng có commit không
+- [x] Hỏi người dùng có commit không — *đồng ý, commit `0f17f52`; chưa push*

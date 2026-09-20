@@ -25,7 +25,7 @@
 > đơn, **không nợ âm**, không còn bản ghi rác "Rà 19/09". Bản trước khi khôi phục giữ ở
 > `petcare.truoc-khoi-phuc-2026-09-20.db`, bản gốc trước lượt rà 19/09 ở
 > `petcare.backup-2026-09-19.db` (cả hai **không vào git**). `.env` đang `AI_PROVIDER=gemini`.
-> **Toàn bộ phiên 20/09 chưa commit.**
+> Phiên 20/09 đã commit ở `0f17f52` (34 file), working tree sạch — **chưa push** lên GitHub.
 >
 > **Đọc để lấy lại ngữ cảnh:** [`sessions/2026-09-20-05.md`](sessions/2026-09-20-05.md) (phiên gần
 > nhất, hai phần) → [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) (năm phần, nền của mọi
