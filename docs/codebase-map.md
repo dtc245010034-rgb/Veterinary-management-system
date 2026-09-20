@@ -4,22 +4,32 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-20 (đóng phiên 19/09: P7 chặng 3, rà soát P1→P7, sửa 3 lỗi cao + chế độ AI giả lập) · **Trạng thái:** P0→P6 xong; P7 xong cả bốn chặng, chờ người dùng tick smoke — ba tính năng AI chạy được và đã kiểm chứng với Gemini thật. **726 test xanh.** Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+**Cập nhật lần cuối:** 2026-09-20 (phiên 20/09 — vá dữ liệu D-01, sửa 4 lỗi ưu tiên, **người dùng tick đủ smoke P7**) · **Trạng thái:** **P0→P7 xong cả tám phase; chỉ còn P8.** **776 test xanh.** Tiến độ từng phase: [`roadmap.md`](roadmap.md)
 
 > **Làm tiếp — theo thứ tự:**
-> 1. **Người dùng chọn lỗi sửa tiếp** trong 15 lỗi còn lại của
+> 1. **Mở P8 — phase cuối, việc lớn nhất còn lại.** Theo [`roadmap.md`](roadmap.md) mục P8:
+>    README hoàn chỉnh · báo cáo · slide · rà dữ liệu cá nhân trong `ai_logs` · CI GitHub Actions ·
+>    dựng lại trên máy sạch · câu hướng dẫn form đặt lịch khi CSDL trống. **6 ô smoke P8** còn trống
+>    chính là danh sách việc sẵn có: xem cuối [`testing/smoke-checklist.md`](testing/smoke-checklist.md).
+> 2. **Hoặc sửa tiếp trong 11 lỗi còn lại** của
 >    [`testing/reports/2026-09-19-ra-luong-P1-P7.md`](testing/reports/2026-09-19-ra-luong-P1-P7.md):
->    M-01 (chuyển hướng mở `?tu=`) và M-04 (mật khẩu 1 ký tự) là bảo mật; M-02 (không sửa được chủ nuôi,
->    thú cưng, tài khoản) là việc lớn nhất; M-03, M-08 thuộc AI. **Hỏi trước rồi mới sửa** — mỗi lỗi có
->    test đỏ-trước và đột biến.
-> 2. **Người dùng tick smoke P7** (chặng 2 dùng `AI_PROVIDER=fake`; chặng 3 và guardrail phải đổi
->    `.env` sang `gemini` — trang AI không được có dòng "Đang chạy chế độ AI giả lập").
-> 3. **P8** theo [`roadmap.md`](roadmap.md) — S6 chính là M-06.
+>    M-03 (giới hạn độ dài câu hỏi AI), M-05 (kiểm SĐT/email), **M-06 = S6** (đặt được lịch 3 giờ sáng,
+>    lịch lấn 33 giờ — nghiệp vụ lịch hẹn, trọng tâm đề bài), M-07 (cảnh báo SĐT trùng), L-01 → L-07,
+>    và **D-02**. **L-01 đã tái hiện bằng ảnh 20/09**: lễ tân thiếu thẻ Dịch vụ; chăm sóc thiếu thẻ
+>    Chủ nuôi và Dịch vụ. **Hỏi trước rồi mới sửa** — mỗi lỗi phải có test đỏ-trước và đột biến.
+> 3. **Một việc kiểm còn nợ:** M-08 (tin nhắc tiêm lặp khuyến cáo) mới kiểm ở mức **prompt**, chưa
+>    chạy với Gemini thật — chế độ `fake` không tự sinh câu khuyến cáo nên không dựng lại được cảnh
+>    lặp. Muốn chắc thì chạy một lượt nhắc lịch tiêm với Gemini thật (tốn 1 lượt quota).
 >
-> **Trạng thái máy:** `petcare.db` còn dữ liệu rà mang tiền tố "Rà 19/09"; bản trước lượt rà ở
-> `petcare.backup-2026-09-19.db` (không vào git). `.env` đang `AI_PROVIDER=fake`. Tài khoản
-> `ra1909yeu` (mật khẩu `1`, dùng để thử M-04) đã **khóa**. Bối cảnh đầy đủ:
-> [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) — bốn phần, đọc phần 4 trước.
+> **Trạng thái máy (20/09, cuối phiên):** `petcare.db` **đã sạch** — khôi phục từ bản sao lưu, 2 hóa
+> đơn, **không nợ âm**, không còn bản ghi rác "Rà 19/09". Bản trước khi khôi phục giữ ở
+> `petcare.truoc-khoi-phuc-2026-09-20.db`, bản gốc trước lượt rà 19/09 ở
+> `petcare.backup-2026-09-19.db` (cả hai **không vào git**). `.env` đang `AI_PROVIDER=gemini`.
+> **Toàn bộ phiên 20/09 chưa commit.**
+>
+> **Đọc để lấy lại ngữ cảnh:** [`sessions/2026-09-20-05.md`](sessions/2026-09-20-05.md) (phiên gần
+> nhất, hai phần) → [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) (năm phần, nền của mọi
+> quyết định hiện tại).
 
 ### `app/ai/` — tầng AI, từ P7
 
@@ -59,21 +69,21 @@
 
 | File | Vai trò |
 |---|---|
-| `user-stories.md` | 28 user story, 99 tiêu chí Given/When/Then, bảng đối chiếu với đề bài |
+| `user-stories.md` | 28 user story, 104 tiêu chí Given/When/Then, bảng đối chiếu với đề bài |
 | `erd.md` | 14 bảng, sơ đồ Mermaid, mô tả cột và ràng buộc |
 | `architecture.md` | Cây thư mục, ranh giới ba lớp, 3 sequence diagram, cách xử lý lỗi |
 | `ai-safety.md` | System prompt 3 tính năng (có phép canh khớp `prompts.py`), `DISCLAIMER`, 20 ca guardrail G-01→G-20, kết quả chạy Gemini thật 19/09 |
 | `codebase-map.md` | File này |
 | `roadmap.md` | Lộ trình P0→P8 gắn với mốc KT1/KT2/KT3/cuối kỳ, kèm Definition of Done |
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
-| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 15: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập |
+| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 16: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập, vá dữ liệu và sửa 4 lỗi ưu tiên (20/09) |
 | `sessions/README.md` | Quy ước log phiên làm việc |
-| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 12 |
+| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 13 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
-| `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 116 test case — 114 ✅ · 0 🟡 · 1 ⬜ (TC-102 smoke) · 1 ➖ ngoài phạm vi (19/09, thêm TC-113 → TC-116 sau lượt rà soát) |
+| `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 120 test case — 118 ✅ · 0 🟡 · 1 ⬜ (TC-102 smoke) · 1 ➖ ngoài phạm vi (20/09, thêm TC-117 → TC-120 cho bốn lỗi ưu tiên) |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
 | `testing/reports/README.md` | Mẫu báo cáo kiểm thử cuối phase |
-| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 23: mỗi phase một file, cộng sáu báo cáo rà luồng bằng trình duyệt (bản 19/09 kèm ảnh trong `anh-2026-09-19/`), một báo cáo trả nợ, một báo cáo dọn việc tồn và một báo cáo chạy Gemini thật (sinh bởi `python -m app.ai.quota --guardrail`) |
+| `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 25: mỗi phase một file, cộng sáu báo cáo rà luồng bằng trình duyệt (bản 19/09 kèm ảnh trong `anh-2026-09-19/`), một báo cáo rà bổ sung bằng HTTP (20/09, bốn phần lượt 19/09 chưa chạm), một báo cáo rà bằng Chrome trước khi sửa (20/09), một báo cáo trả nợ, một báo cáo dọn việc tồn và một báo cáo chạy Gemini thật (sinh bởi `python -m app.ai.quota --guardrail`) |
 
 ### Ứng dụng (`app/`) — từ P1
 
@@ -100,7 +110,7 @@
 | `services/errors.py` | `LoiNghiepVu` — lỗi nghiệp vụ, thông điệp hiển thị thẳng cho người dùng. Lớp con `LoiKhongTimThay` cho mọi lần tra theo id không thấy bản ghi (H-03) |
 | `models/care_record.py` | Bảng `care_records` — hồ sơ chăm sóc, quan hệ 1–1 với lịch hẹn (`appointment_id` UNIQUE) |
 | `models/vaccination.py` | Bảng `vaccinations` — mũi tiêm và hạn nhắc lại; property `qua_han` |
-| `services/users.py` | Nghiệp vụ tài khoản nhân viên: tạo, khóa, mở khóa, danh sách. Chặn quản lý tự khóa mình |
+| `services/users.py` | Nghiệp vụ tài khoản nhân viên: tạo, **sửa**, khóa, mở khóa, danh sách, **đặt lại và tự đổi mật khẩu**. Chặn quản lý tự khóa mình và tự bỏ vai trò quản lý. `kiem_mat_khau()` là cửa chung của **cả ba** đường đặt mật khẩu (M-04) |
 | `services/owners.py` | Nghiệp vụ chủ nuôi và thú cưng: tạo, sửa, xóa, tra cứu |
 | `services/catalog.py` | Nghiệp vụ dịch vụ và gói. `danh_sach_dang_ban()` là danh sách P3 và P5 sẽ dùng |
 | `services/care_records.py` | Nghiệp vụ hồ sơ chăm sóc. Thao tác **duy nhất** đưa lịch hẹn về `done` |
@@ -110,21 +120,22 @@
 | `models/payment.py` | Bảng `payments` — từng lần khách trả; CHECK `amount > 0` |
 | `services/billing.py` | Nghiệp vụ hóa đơn: lập, thu tiền, hủy. Đường **duy nhất** ghi `payments` và trạng thái hóa đơn. Lập hóa đơn cho lịch có hóa đơn **đã hủy** thì mở lại chính hóa đơn đó theo giá và ngày hiện tại (S4 → S3 trong kế hoạch P7) |
 | `services/stats.py` | Thống kê theo kỳ: `thong_ke()`, `ky_mac_dinh(den_ngay)`. Có `so_lich_qua_gio_chua_ghi` — lịch đã qua giờ mà chưa ai ghi hồ sơ (S5). Ba mốc ngày cố ý khác nhau — lượt và khách theo ngày hẹn (mọi lịch chưa hủy), doanh thu theo ngày thu (`payments`), chưa thu theo ngày lập. Tính trong Python để dùng lại `Invoice.con_no`; **không** lọc dịch vụ đã ngưng bán |
-| `routers/auth.py` | `/login`, `/logout`, `/` |
-| `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager`. Chỉ HTTP, nghiệp vụ ở `services/users.py` |
-| `routers/owners.py` | `/owners`, `/owners/{id}`, `/owners/{id}/pets`, `/pets/{id}/xoa`. Hai đường dẫn xóa có **GET trang xác nhận** và POST làm việc thật — GET không đổi dữ liệu |
+| `routers/auth.py` | `/login`, `/logout`, `/`, và `/doi-mat-khau` — tự đổi mật khẩu đặt ở đây vì cả ba vai trò đều dùng được, trong khi cả router `/users` chặn người không phải quản lý |
+| `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager`. Thêm `/{id}/sua` và `/{id}/dat-lai-mat-khau` (M-02, 20/09). Chỉ HTTP, nghiệp vụ ở `services/users.py` |
+| `routers/owners.py` | `/owners`, `/owners/{id}`, `/owners/{id}/sua`, `/owners/{id}/pets`, `/pets/{id}/xoa`. Hai đường dẫn xóa có **GET trang xác nhận** và POST làm việc thật — GET không đổi dữ liệu |
 | `routers/services.py` | `/services` và `/services/goi` — chỉ `manager` sửa |
 | `routers/care_records.py` | `/appointments/{id}/ho-so` — ghi và xem hồ sơ chăm sóc |
-| `routers/pets.py` | `/pets/{id}` — trang chi tiết thú cưng, gộp lịch sử chăm sóc và hồ sơ tiêm (TC-020) |
+| `routers/pets.py` | `/pets/{id}` — trang chi tiết thú cưng, gộp lịch sử chăm sóc và hồ sơ tiêm (TC-020); `/pets/{id}/sua` (M-02) đặt ở đây để lỗi render lại đúng trang người dùng đang đứng; dùng chung `doc_ngay_form`/`doc_so_form` của `routers/owners.py` |
 | `routers/vaccinations.py` | `/vaccinations` danh sách đến hạn; `/pets/{id}/vaccinations` ghi mũi tiêm |
 | `routers/invoices.py` | `/invoices` danh sách, `/invoices/{id}` chi tiết, thu tiền, hủy hóa đơn. Cả router chặn `caretaker`. `GET /invoices/{id}/huy` là trang xác nhận, `POST` cùng đường dẫn mới hủy thật |
 | `routers/stats.py` | `/stats?tu_ngay=&den_ngay=` — cả router chỉ `manager` (TC-006). Ô ngày trống → kỳ mặc định, tính lùi từ "Đến ngày" nếu đã chọn; ngày sai dạng → trang báo lỗi 400 tiếng Việt, giữ ngày đã nhập |
-| `routers/ai.py` | `/ai/...` — soạn tin nhắc, tóm tắt, hỏi đáp, trang kết quả dùng chung, trang quota (chỉ `manager`). Theo mẫu **Post/Redirect/Get**: tải lại trang kết quả không gọi AI lần nữa. Chỉ import `app/ai/service.py` |
+| `routers/ai.py` | `/ai/...` — soạn tin nhắc, tóm tắt, hỏi đáp, trang kết quả dùng chung, trang quota (chỉ `manager`). Theo mẫu **Post/Redirect/Get**: tải lại trang kết quả không gọi AI lần nữa. Chỉ import `app/ai/service.py`. `_quay_lai()` bỏ ký tự điều khiển rồi mới xét, và coi `\` ngang `/` (M-01) |
 | `routers/appointments.py` | `/appointments` lưới lịch + đặt/đổi/hủy; `/appointments/cua-toi` lịch riêng của nhân viên chăm sóc |
 | `templates/base.html` | Bố cục chung, menu hiện theo vai trò |
 | `templates/_ai_gia_lap.html` | Dòng cảnh báo "Đang chạy chế độ AI giả lập", `include` vào ba trang AI. Có từ 19/09 sau khi người dùng tưởng câu mẫu của `fake` là Gemini trả lời sai |
 | `templates/xac_nhan.html` | Trang hỏi lại dùng chung cho mọi thao tác làm mất dữ liệu. Nhận `tieu_de`, `thong_tin`, `canh_bao`, `hanh_dong` (URL POST), `quay_lai`, `nut`. Cố ý không dùng `confirm()` của JavaScript |
-| `templates/login.html` · `home.html` · `users.html` · `error.html` | Các trang từ P1 |
+| `templates/login.html` · `home.html` · `users.html` · `error.html` | Các trang từ P1. `users.html` từ 20/09 có ô sửa họ tên + vai trò ngay trên dòng và ô đặt lại mật khẩu (M-02) |
+| `templates/doi_mat_khau.html` | Trang tự đổi mật khẩu, mở cho **mọi vai trò** (M-02, 20/09). Bắt nhập mật khẩu hiện tại — khác đường "quản lý đặt lại" ở `/users` |
 | `templates/owners.html` | Danh sách, tra cứu, form thêm chủ nuôi |
 | `templates/owner_detail.html` | Chi tiết chủ nuôi, danh sách thú cưng, form thêm thú cưng |
 | `templates/services.html` | Bảng giá, gói dịch vụ, form thêm dịch vụ và tạo gói |

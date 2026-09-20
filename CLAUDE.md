@@ -186,10 +186,13 @@ Xem [`docs/ai-safety.md`](docs/ai-safety.md). Hai điều tuyệt đối:
 Chỉ ghi vào log phiên là **chưa đủ**: luật mục 6 chỉ bắt đọc log *gần nhất*, nên bài học viết ở log
 phiên này sẽ khuất tầm nhìn ngay khi có hai phiên nữa.
 
-## Danh sách (4/5 dòng)
+## Danh sách (5/5 dòng — ĐẦY)
 
 1. **Test đỏ thì nghi test trước khi nghi code.** Ba lần lỗi nằm ở test hoặc script kiểm chứng chứ
-   không ở code. Gốc chung: viết cứng giả định về dữ liệu thay vì đọc từ fixture. — *không tự động
+   không ở code; **20/09 thêm năm lần nữa trong một phiên** — sai tên tham số (`tu_khoa` thay vì `q`),
+   curl mã hóa hỏng tiếng có dấu, regex bắt nhầm ô chọn khác, chọn bản ghi nằm ngoài kỳ đang xét, và
+   viết cứng tên có dấu trong khi fixture dùng tên không dấu. Gốc chung: **viết cứng giả định về dữ
+   liệu thay vì đọc từ fixture**, và không đối chiếu công cụ đo trước khi kết luận. — *không tự động
    hóa được*
 2. **Chỉ khẳng định thứ kiểm được thật.** Bốn lần tài liệu mô tả chức năng chưa tồn tại. Khi chia một
    phase thành nhiều chặng, tách khối checklist theo chặng **trước khi** đưa người dùng tick —
@@ -206,6 +209,11 @@ phiên này sẽ khuất tầm nhìn ngay khi có hai phiên nữa.
    vụ" xong bỏ sót "Chủ nuôi"; chặn xóa thú cưng — chặn `appointments` xong bỏ sót `vaccinations`,
    lỗi 500 quay lại nguyên vẹn. Hỏi "còn chỗ nào cùng dạng?" trước khi đóng. — *không tự động hóa
    được*
+5. **Đừng viết code qua heredoc của shell.** 20/09 ba lần: `\t`, `\n`, `\\` bị nuốt — file test nhận
+   ký tự vertical-tab thật và một chuỗi vỡ đôi dòng; lần thứ ba heredoc làm vỡ cả lệnh. Cùng họ với
+   dòng 3 ("thứ mình viết không phải thứ vào file") nhưng khác đường: đây là lúc **tạo** code, không
+   phải lúc đột biến. Viết bằng công cụ ghi file, hoặc ghi khối ra file riêng rồi ghép bằng Python;
+   **đọc lại file sau mỗi lần ghi khối nhiều dòng**. — *không tự động hóa được*
 
 Ranh giới kiến trúc và bao phủ hàm public **đã rời khỏi danh sách này** vì tự động hóa được — xem
 `test_architecture.py`. Đó là kết quả mong muốn: danh sách càng ngắn nghĩa là càng nhiều bài học đã

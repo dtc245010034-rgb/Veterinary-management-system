@@ -139,6 +139,35 @@ def trang_chi_tiet(
     )
 
 
+@router.post("/owners/{chu_nuoi_id}/sua", response_class=HTMLResponse)
+def sua_chu_nuoi(
+    request: Request,
+    chu_nuoi_id: int,
+    ho_ten: str = Form(""),
+    so_dien_thoai: str = Form(""),
+    email: str = Form(""),
+    dia_chi: str = Form(""),
+    ghi_chu: str = Form(""),
+    user: User = duoc_sua,
+    db: Session = Depends(get_db),
+):
+    """US-04 nói "thêm, **sửa**, xem" — `nv.sua_chu_nuoi` có từ P2 mà không router nào gọi (M-02)."""
+    try:
+        nv.sua_chu_nuoi(
+            db,
+            chu_nuoi_id,
+            ho_ten=ho_ten,
+            so_dien_thoai=so_dien_thoai,
+            email=email,
+            dia_chi=dia_chi,
+            ghi_chu=ghi_chu,
+        )
+    except LoiNghiepVu as loi:
+        return trang_chi_tiet(request, chu_nuoi_id, user, db, loi=str(loi))
+
+    return RedirectResponse(f"/owners/{chu_nuoi_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+
 @router.get("/owners/{chu_nuoi_id}/xoa", response_class=HTMLResponse)
 def trang_xac_nhan_xoa_chu_nuoi(
     request: Request,
@@ -204,8 +233,8 @@ def them_thu_cung(
             loai=loai,
             giong=giong,
             gioi_tinh=gioi_tinh,
-            ngay_sinh=_doc_ngay(ngay_sinh),
-            can_nang=_doc_so(can_nang),
+            ngay_sinh=doc_ngay_form(ngay_sinh),
+            can_nang=doc_so_form(can_nang),
             ghi_chu=ghi_chu,
         )
     except LoiNghiepVu as loi:
@@ -274,8 +303,12 @@ def _trang_xac_nhan(request: Request, user: User, **noi_dung):
     )
 
 
-def _doc_ngay(chuoi: str) -> date | None:
-    """Form HTML gửi chuỗi rỗng khi người dùng bỏ trống ô ngày."""
+def doc_ngay_form(chuoi: str) -> date | None:
+    """Form HTML gửi chuỗi rỗng khi người dùng bỏ trống ô ngày.
+
+    Tên công khai (không gạch dưới) vì `routers/pets.py` dùng chung khi sửa thú cưng —
+    nhập một hàm riêng tư từ module khác là nói dối về phạm vi của nó.
+    """
     chuoi = (chuoi or "").strip()
     if not chuoi:
         return None
@@ -285,7 +318,7 @@ def _doc_ngay(chuoi: str) -> date | None:
         raise LoiNghiepVu("Ngày sinh không đúng định dạng.")
 
 
-def _doc_so(chuoi: str) -> float | None:
+def doc_so_form(chuoi: str) -> float | None:
     chuoi = (chuoi or "").strip()
     if not chuoi:
         return None

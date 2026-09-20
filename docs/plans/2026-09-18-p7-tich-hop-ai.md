@@ -164,7 +164,7 @@ Hai bảng mới tạo được bằng `create_all` trên CSDL đang có — kh�
 - [x] Nhắc lịch + tóm tắt qua trình duyệt với `AI_PROVIDER=gemini` (2 lượt): đúng dữ liệu, không bịa — *19/09: đi luồng bằng HTTP theo form lấy từ HTML, không qua Chrome*
 - [x] Ca không đạt → sửa prompt/guardrail **kèm test** rồi chạy lại riêng ca đó — *không ca G nào trượt; lượt mất mạng lộ lỗi đếm khống quota → thêm `LoiKetNoi`, test đỏ-trước, 2 đột biến bị bắt*
 - [x] G-14→G-20 xác nhận trên server thật bằng `fake`/mô phỏng mất mạng (0 lượt quota), trên bản sao CSDL có cài bẫy dữ liệu liên hệ; `ai_logs` sạch
-- [ ] **Người dùng** tick smoke khối chặng 2, chặng 3, guardrail trong `smoke-checklist.md` (nút Sao chép và "nhìn thấy ngay" chỉ kiểm được bằng mắt)
+- [x] **Người dùng** tick smoke khối chặng 2, chặng 3, guardrail trong `smoke-checklist.md` — *xong 20/09, đủ 26 ô* (nút Sao chép và "nhìn thấy ngay" chỉ kiểm được bằng mắt)
 
 ## Đóng P7
 

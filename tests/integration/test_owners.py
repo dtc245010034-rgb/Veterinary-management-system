@@ -427,3 +427,120 @@ def test_form_thu_cung_giu_lai_du_lieu_da_nhap_khi_bao_loi(client, db, seed_basi
     assert 'value="Anh lông ngắn"' in r.text
     assert 'value="2025-01-15"' in r.text
     assert 'value="Sợ máy sấy"' in r.text
+
+
+from app.services import owners as owners_nv
+
+
+def _tao_chu_nuoi(db, ho_ten='Chu Nuoi Mau', sdt='0900000111'):
+    """Dựng thẳng qua service: các test dưới đây kiểm phần SỬA, không kiểm phần tạo."""
+    return owners_nv.tao_chu_nuoi(db, ho_ten=ho_ten, so_dien_thoai=sdt)
+
+
+# --- Sửa chủ nuôi và thú cưng qua HTTP (M-02) ------------------------------------
+
+
+def test_trang_chu_nuoi_co_form_sua(client, db, seed_basic):
+    """`sua_chu_nuoi` có unit test từ P2 nhưng **không router nào gọi** (M-02)."""
+    chu = _tao_chu_nuoi(db)
+    dang_nhap(client, "letan")
+
+    trang = client.get(f"/owners/{chu.id}")
+
+    assert f"/owners/{chu.id}/sua" in trang.text
+
+
+def test_le_tan_sua_duoc_thong_tin_chu_nuoi(client, db, seed_basic):
+    chu = _tao_chu_nuoi(db)
+    dang_nhap(client, "letan")
+
+    client.post(
+        f"/owners/{chu.id}/sua",
+        data={
+            "ho_ten": "Ten Da Sua", "so_dien_thoai": "0900000999",
+            "email": "moi@vidu.test", "dia_chi": "Dia chi moi", "ghi_chu": "",
+        },
+    )
+
+    db.refresh(chu)
+    assert (chu.full_name, chu.phone, chu.email) == ("Ten Da Sua", "0900000999", "moi@vidu.test")
+
+
+def test_sua_chu_nuoi_de_trong_ho_ten_thi_bao_loi_va_giu_nguyen(client, db, seed_basic):
+    chu = _tao_chu_nuoi(db)
+    ten_cu = chu.full_name
+    dang_nhap(client, "letan")
+
+    r = client.post(
+        f"/owners/{chu.id}/sua",
+        data={"ho_ten": "   ", "so_dien_thoai": chu.phone, "email": "", "dia_chi": "", "ghi_chu": ""},
+    )
+
+    assert r.status_code == 400
+    db.refresh(chu)
+    assert chu.full_name == ten_cu
+
+
+def test_nhan_vien_cham_soc_khong_sua_duoc_chu_nuoi(client, db, seed_basic):
+    """US-02: chăm sóc chỉ XEM chủ nuôi. Ô sửa không được hiện, và POST thẳng cũng phải 403."""
+    chu = _tao_chu_nuoi(db)
+    dang_nhap(client, "chamsoc1")
+
+    trang = client.get(f"/owners/{chu.id}")
+    assert f"/owners/{chu.id}/sua" not in trang.text, "chăm sóc vẫn thấy ô sửa"
+
+    r = client.post(
+        f"/owners/{chu.id}/sua",
+        data={"ho_ten": "Cuop", "so_dien_thoai": "0900000111", "email": "", "dia_chi": "", "ghi_chu": ""},
+    )
+    assert r.status_code == 403
+
+
+def test_trang_thu_cung_co_form_sua_va_sua_duoc(client, db, seed_basic):
+    chu = _tao_chu_nuoi(db)
+    thu_cung = owners_nv.tao_thu_cung(db, chu_nuoi_id=chu.id, ten="Mit", loai="Cho")
+    dang_nhap(client, "letan")
+
+    trang = client.get(f"/pets/{thu_cung.id}")
+    assert f"/pets/{thu_cung.id}/sua" in trang.text
+
+    client.post(
+        f"/pets/{thu_cung.id}/sua",
+        data={"ten": "Mit Dep", "loai": "Cho", "giong": "Corgi", "gioi_tinh": "Đực",
+              "ngay_sinh": "", "can_nang": "5.5", "ghi_chu": ""},
+    )
+
+    db.refresh(thu_cung)
+    assert (thu_cung.name, thu_cung.breed, thu_cung.weight_kg) == ("Mit Dep", "Corgi", 5.5)
+
+
+def test_sua_thu_cung_can_nang_am_bi_tu_choi(client, db, seed_basic):
+    chu = _tao_chu_nuoi(db)
+    thu_cung = owners_nv.tao_thu_cung(db, chu_nuoi_id=chu.id, ten="Mit", loai="Cho")
+    dang_nhap(client, "letan")
+
+    r = client.post(
+        f"/pets/{thu_cung.id}/sua",
+        data={"ten": "Mit", "loai": "Cho", "giong": "", "gioi_tinh": "",
+              "ngay_sinh": "", "can_nang": "-3", "ghi_chu": ""},
+    )
+
+    assert r.status_code == 400
+    db.refresh(thu_cung)
+    assert thu_cung.weight_kg is None
+
+
+def test_nhan_vien_cham_soc_khong_sua_duoc_thu_cung(client, db, seed_basic):
+    chu = _tao_chu_nuoi(db)
+    thu_cung = owners_nv.tao_thu_cung(db, chu_nuoi_id=chu.id, ten="Mit", loai="Cho")
+    dang_nhap(client, "chamsoc1")
+
+    trang = client.get(f"/pets/{thu_cung.id}")
+    assert f"/pets/{thu_cung.id}/sua" not in trang.text
+
+    r = client.post(
+        f"/pets/{thu_cung.id}/sua",
+        data={"ten": "Cuop", "loai": "Cho", "giong": "", "gioi_tinh": "",
+              "ngay_sinh": "", "can_nang": "", "ghi_chu": ""},
+    )
+    assert r.status_code == 403

@@ -11,15 +11,26 @@
   <div>
     <div class="the">
       <h2>Thông tin liên hệ</h2>
-      <dl class="thong-tin">
-        <dt>Số điện thoại</dt><dd>{{ chu_nuoi.phone }}</dd>
-        <dt>Email</dt><dd>{{ chu_nuoi.email or "—" }}</dd>
-        <dt>Địa chỉ</dt><dd>{{ chu_nuoi.address or "—" }}</dd>
-        <dt>Ghi chú</dt><dd>{{ chu_nuoi.note or "—" }}</dd>
-      </dl>
       {% if user.role in ('manager', 'receptionist') %}
+        {# Sửa ngay tại chỗ thay vì một trang riêng: chỉ năm ô, mà người dùng gần như
+           luôn sửa ngay sau khi vừa nhìn thấy số sai (M-02). Nhân viên chăm sóc chỉ xem. #}
+        <form method="post" action="/owners/{{ chu_nuoi.id }}/sua">
+          <label>Họ tên <input name="ho_ten" value="{{ chu_nuoi.full_name }}" required></label>
+          <label>Số điện thoại <input name="so_dien_thoai" value="{{ chu_nuoi.phone }}" required></label>
+          <label>Email <input name="email" type="email" value="{{ chu_nuoi.email or '' }}"></label>
+          <label>Địa chỉ <input name="dia_chi" value="{{ chu_nuoi.address or '' }}"></label>
+          <label>Ghi chú <input name="ghi_chu" value="{{ chu_nuoi.note or '' }}"></label>
+          <button type="submit" class="chinh">Lưu thay đổi</button>
+        </form>
         {# Link GET sang trang hỏi lại, không POST thẳng: xóa là không lấy lại được. #}
         <a class="lien-ket-nho" href="/owners/{{ chu_nuoi.id }}/xoa">Xóa chủ nuôi</a>
+      {% else %}
+        <dl class="thong-tin">
+          <dt>Số điện thoại</dt><dd>{{ chu_nuoi.phone }}</dd>
+          <dt>Email</dt><dd>{{ chu_nuoi.email or "—" }}</dd>
+          <dt>Địa chỉ</dt><dd>{{ chu_nuoi.address or "—" }}</dd>
+          <dt>Ghi chú</dt><dd>{{ chu_nuoi.note or "—" }}</dd>
+        </dl>
       {% endif %}
     </div>
 

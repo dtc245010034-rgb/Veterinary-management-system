@@ -50,6 +50,9 @@ chức năng thuộc quyền của mình.
 - Given đang là `manager`, When tạo tài khoản mới với vai trò hợp lệ, Then tài khoản dùng đăng nhập được ngay.
 - Given tên đăng nhập đã tồn tại, When tạo tài khoản trùng tên, Then bị từ chối với thông báo rõ ràng.
 - Given một nhân viên đã nghỉ việc, When khóa tài khoản, Then tài khoản không đăng nhập được nữa **nhưng** hồ sơ chăm sóc và lịch hẹn cũ do người đó tạo vẫn còn nguyên.
+- Given một tài khoản đang dùng, When sửa họ tên hoặc vai trò, Then thay đổi có hiệu lực ngay; **tên đăng nhập không sửa được** vì đó là khóa tra cứu trong nhật ký.
+- Given đang là `manager` và một nhân viên quên mật khẩu, When đặt lại mật khẩu cho họ, Then nhân viên đăng nhập được bằng mật khẩu mới mà không cần mật khẩu cũ.
+- Given đang đăng nhập với bất kỳ vai trò nào, When tự đổi mật khẩu, Then phải nhập đúng mật khẩu hiện tại; mật khẩu mới ngắn hơn 8 ký tự bị từ chối.
 
 ---
 
@@ -61,6 +64,7 @@ chức năng thuộc quyền của mình.
 - Given form thêm chủ nuôi, When nhập họ tên và số điện thoại hợp lệ, Then chủ nuôi được lưu và hiện trong danh sách.
 - Given form thêm chủ nuôi, When bỏ trống họ tên hoặc số điện thoại, Then bị từ chối kèm thông báo trường bắt buộc.
 - Given số điện thoại đã tồn tại trong hệ thống, When thêm chủ nuôi mới cùng số đó, Then cảnh báo trùng và hỏi có phải khách cũ không.
+- Given một chủ nuôi đã lưu, When sửa họ tên, số điện thoại, email, địa chỉ hoặc ghi chú, Then thông tin mới hiện ngay trên trang chi tiết; bỏ trống họ tên hoặc số điện thoại thì bị từ chối.
 - Given chủ nuôi đang có thú cưng, When xóa chủ nuôi, Then bị chặn với thông báo phải xử lý thú cưng trước.
 
 ### US-05 — Quản lý thú cưng
@@ -69,6 +73,7 @@ chức năng thuộc quyền của mình.
 - Given một chủ nuôi đã tồn tại, When thêm thú cưng với tên, loài, giống, ngày sinh, Then thú cưng hiện trong danh sách thú cưng của chủ nuôi đó.
 - Given form thêm thú cưng, When nhập ngày sinh ở tương lai, Then bị từ chối.
 - Given form thêm thú cưng, When nhập cân nặng âm hoặc bằng 0, Then bị từ chối.
+- Given một thú cưng đã lưu, When sửa tên, loài, giống, giới tính, ngày sinh hoặc cân nặng, Then thông tin mới hiện ngay; các phép kiểm ngày sinh và cân nặng áp dụng y như lúc thêm mới.
 - Given một thú cưng, When mở trang chi tiết, Then thấy thông tin chủ nuôi, lịch sử chăm sóc và lịch tiêm.
 
 ### US-06 — Tra cứu nhanh

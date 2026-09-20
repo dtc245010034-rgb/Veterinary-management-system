@@ -38,10 +38,22 @@ def _quay_lai(tu: str) -> str:
 
     Chỉ nhận đường dẫn nội bộ bắt đầu bằng đúng MỘT dấu `/`. `//evil.com` cũng là một URL
     hợp lệ với trình duyệt và sẽ đưa người dùng ra khỏi hệ thống.
+
+    Chặn "bắt đầu bằng `//`" là chưa đủ (M-01, đo bằng Chrome 20/09). Trình duyệt coi `\\`
+    y hệt `/`, và **bỏ hẳn** ký tự điều khiển (tab, LF, CR) khi phân giải URL — nên
+    `/\\evil.com` và `/<tab>/evil.com` đều cho ra host `evil.com`. Vì vậy phải bỏ ký tự
+    điều khiển TRƯỚC khi xét, và coi `\\` ngang hàng với `/`.
     """
-    if tu.startswith("/") and not tu.startswith("//"):
-        return tu
-    return "/"
+    # Trình duyệt bỏ qua các ký tự này khi phân giải URL, nên ta cũng phải bỏ trước khi xét —
+    # xét trên chuỗi thô là xét một thứ khác với thứ trình duyệt thấy.
+    sach = "".join(k for k in tu if ord(k) > 0x20 and ord(k) != 0x7F)
+
+    if not sach.startswith("/"):
+        return "/"
+    # Ký tự thứ hai là `/` hoặc `\` đều thành "//" trong mắt trình duyệt → URL tuyệt đối.
+    if sach[1:2] in ("/", "\\"):
+        return "/"
+    return sach
 
 
 def _ve_ket_qua(log_id: int, tu: str) -> RedirectResponse:

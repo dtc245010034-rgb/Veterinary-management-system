@@ -408,6 +408,42 @@ def test_duong_dan_quay_lai_ra_ngoai_he_thong_bi_bo_qua(client, db, nen, fake_ai
     assert 'href="/"' in trang.text
 
 
+@pytest.mark.parametrize(
+    "duong_dan_doc",
+    [
+        "/\\vi-du-ngoai.test",       # dấu `\` — trình duyệt coi `/\` y như `//`
+        "/\t/vi-du-ngoai.test",      # ký tự tab thật trong chuỗi
+        "/\n/vi-du-ngoai.test",      # xuống dòng
+        "/\r/vi-du-ngoai.test",      # về đầu dòng
+        "//vi-du-ngoai.test",        # ca đã chặn từ trước, giữ để không sửa hỏng
+        "https://vi-du-ngoai.test",  # ca đã chặn từ trước
+    ],
+)
+def test_moi_dang_duong_dan_ra_ngoai_deu_bi_bo_qua(client, db, nen, fake_ai, duong_dan_doc):
+    """Bốn dạng đầu **lọt qua** phép kiểm cũ — đo bằng Chrome ngày 20/09 (M-01).
+
+    Phép kiểm cũ chỉ chặn chuỗi bắt đầu bằng `//`. Nhưng trình duyệt coi `\\` tương đương
+    `/`, và bỏ qua ký tự điều khiển (tab, LF, CR) khi phân giải URL — nên `/\\host` và
+    `/<tab>/host` đều đưa người dùng ra máy chủ ngoài. Đo thật trong Chrome: `location.host`
+    của nút "Quay lại" ra `vi-du-ngoai.test` với cả bốn dạng.
+
+    NẾU TEST NÀY ĐỎ: `_quay_lai` nhận một chuỗi mà trình duyệt phân giải ra host ngoài.
+    """
+    dang_nhap(client, "letan")
+
+    r = client.post(
+        f"/ai/tom-tat/{nen['pet'].id}",
+        data={"tu": duong_dan_doc},
+        follow_redirects=False,
+    )
+    trang = theo_chuyen_huong(client, r)
+
+    assert "vi-du-ngoai.test" not in trang.text, (
+        f"{duong_dan_doc!r} lọt vào trang — nút Quay lại trỏ ra ngoài hệ thống"
+    )
+    assert 'href="/"' in trang.text
+
+
 def test_menu_co_link_tro_ly_ai_cho_moi_vai_tro(client, db, nen):
     for username in ("quanly", "letan", "chamsoc1"):
         dang_nhap(client, username)

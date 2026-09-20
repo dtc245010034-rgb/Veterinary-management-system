@@ -38,7 +38,7 @@ mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ kh�
 | P4 | ✅ xong | 05–06/09 | [`P4-chang1`](testing/reports/2026-09-05-P4-chang1.md), [`P4-chang2`](testing/reports/2026-09-05-P4-chang2.md), [`rà luồng`](testing/reports/2026-09-06-ra-luong-P4-chang2.md) |
 | P5 | ✅ xong | 06–08/09 | [`P5-chang1`](testing/reports/2026-09-06-P5-chang1.md), [`rà luồng chặng 1`](testing/reports/2026-09-07-ra-luong-P5-chang1.md), [`P5-chang2`](testing/reports/2026-09-07-P5-chang2.md), [`rà luồng chặng 2`](testing/reports/2026-09-08-ra-luong-P5-chang2.md) |
 | P6 | ✅ xong | 11–13/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md), [`rà luồng`](testing/reports/2026-09-11-ra-luong-P6.md) |
-| **P7** | 🟡 **chờ smoke** — chặng 0→3 xong; còn người dùng tick smoke chặng 2, 3, guardrail | 18–19/09 | [`chặng 0`](testing/reports/2026-09-18-P7-chang0.md), [`chặng 1`](testing/reports/2026-09-18-P7-chang1.md), [`chặng 2`](testing/reports/2026-09-18-P7-chang2.md), [`Gemini thật`](testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md) |
+| **P7** | ✅ **xong** — người dùng tick đủ smoke chặng 2, chặng 3 và guardrail ngày 20/09 | 18–20/09 | [`chặng 0`](testing/reports/2026-09-18-P7-chang0.md), [`chặng 1`](testing/reports/2026-09-18-P7-chang1.md), [`chặng 2`](testing/reports/2026-09-18-P7-chang2.md), [`Gemini thật`](testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md) |
 | P8 | ⬜ chưa làm | — | — |
 
 Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡 · 27 ⬜** trên 102 ca, smoke
@@ -67,6 +67,17 @@ Sau lượt rà soát toàn hệ thống 19/09 ([báo cáo](testing/reports/2026
 **18 lỗi** (3 cao · 8 trung bình · 7 thấp) mà 677 test xanh không bắt được; **đã sửa 3 lỗi cao**
 (thu tiền đồng thời, S7, lỗi 500) và lỗi **chế độ AI giả lập** người dùng gặp khi bấm smoke (M-09).
 **726 test xanh**, ma trận **116 ca: 114 ✅ · 1 ⬜ · 1 ➖**. Còn 15 lỗi trung bình/thấp chờ người dùng chọn.
+
+Ngày 20/09 ([kế hoạch](plans/2026-09-20-va-du-lieu-va-sua-4-loi.md)): vá **D-01** — dữ liệu hỏng còn sót
+trong `petcare.db` sau lượt tái hiện H-01, làm thống kê sai vĩnh viễn — bằng cách khôi phục từ bản sao lưu;
+rà lại bằng Chrome rồi sửa **bốn lỗi ưu tiên M-02, M-01, M-04, M-08** (cộng N-02). M-02 là việc lớn nhất:
+US-03 và US-04 nói "sửa" từ P1 mà chức năng sửa chưa từng tồn tại. **776 test xanh**, ma trận **120 ca:
+118 ✅ · 1 ⬜ · 1 ➖**. Còn **11 lỗi** (M-03, M-05, M-06, M-07, L-01 → L-07, D-02).
+
+**P7 đóng ngày 20/09:** người dùng bấm tay và tick đủ **26 ô smoke** còn lại (13 ô chặng 2 với
+`AI_PROVIDER=fake`, 13 ô chặng 3 và guardrail với `gemini`). Ba điều kiện DoD của P7 nay đủ cả ba.
+Smoke toàn dự án: **149 tick / 6 trống — cả 6 ô còn lại đều thuộc P8.**
+**Tám phase P0→P7 đã xong; chỉ còn P8.**
 
 ---
 
@@ -224,7 +235,7 @@ Hai lỗ hổng tìm được khi rà soát hệ thống ngày 18/09 (chặng 0 
   hôm nay khi chuỗi ngày hỏng. Lượt rà 19/09 cho thấy rủi ro không thấp như đã đánh giá: nó đã dời một
   lịch thật sang 23:30 hôm đó. Nay đặt/đổi lịch đọc ngày bằng `_doc_ngay_bat_buoc` và báo 400.
 
-**Lỗi còn lại từ lượt rà soát 19/09** — 8 trung bình, 7 thấp, chờ người dùng chọn; danh sách và
+**Lỗi còn lại từ lượt rà soát 19/09** — sau đợt sửa 20/09 còn 4 trung bình và 7 thấp, chờ người dùng chọn; danh sách và
 cách tái hiện: [`testing/reports/2026-09-19-ra-luong-P1-P7.md`](testing/reports/2026-09-19-ra-luong-P1-P7.md).
 Ba lỗi cao đã sửa cùng ngày ([kế hoạch](plans/2026-09-19-sua-loi-cao-ra-soat.md)). S6 ở trên chính
 là M-06 trong báo cáo đó.

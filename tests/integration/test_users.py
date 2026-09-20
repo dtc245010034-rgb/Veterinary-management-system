@@ -8,6 +8,7 @@ chung được kiểm ở đây qua trang /users.
 """
 
 import pytest
+from sqlalchemy import select
 
 from app.models.user import User
 
@@ -249,3 +250,137 @@ def test_nhan_vien_dang_hoat_dong_co_lich_thi_khong_hien_canh_bao(client, db, se
     r = client.get("/users")
 
     assert "lịch chưa làm" not in r.text
+
+
+# --- Mật khẩu yếu qua HTTP (M-04, N-02) ------------------------------------------
+
+
+@pytest.mark.parametrize("mat_khau", ["", "1", "1234567"])
+def test_tao_tai_khoan_mat_khau_yeu_ra_thong_bao_tieng_viet(client, db, seed_basic, mat_khau):
+    """Không chỉ bị chặn — phải chặn bằng câu người dùng đọc được.
+
+    Ô mật khẩu để trống trước đây trả JSON thô `{"detail":[{"loc":["body","password"]…}]}`
+    (N-02, đo bằng Chrome 20/09), lộ tên trường nội bộ. Ba ca ở đây đi chung một đường.
+
+    NẾU TEST NÀY ĐỎ: hoặc mật khẩu yếu lọt qua, hoặc thông báo không phải tiếng Việt.
+    """
+    dang_nhap(client, "quanly")
+
+    r = client.post(
+        "/users",
+        data={
+            "username": "nguoimoi",
+            "full_name": "Người mới",
+            "role": "receptionist",
+            "password": mat_khau,
+        },
+    )
+
+    assert r.status_code == 400, f"mật khẩu {mat_khau!r} không bị chặn"
+    assert "Mật khẩu phải dài ít nhất 8 ký tự." in r.text
+    assert "detail" not in r.text[:200], "còn trả JSON lỗi thô của framework"
+    assert db.scalar(select(User).where(User.username == "nguoimoi")) is None
+
+
+# --- Sửa tài khoản và mật khẩu qua HTTP (M-02) -----------------------------------
+
+
+def test_trang_tai_khoan_co_o_sua_va_o_dat_lai_mat_khau(client, db, seed_basic):
+    """Trước 20/09 cột thao tác chỉ có "Khóa" — không sửa được gì (M-02, ảnh Chrome)."""
+    dang_nhap(client, "quanly")
+
+    trang = client.get("/users")
+
+    assert "/sua" in trang.text, "không có ô sửa họ tên/vai trò"
+    assert "/dat-lai-mat-khau" in trang.text, "không có ô đặt lại mật khẩu"
+
+
+def test_quan_ly_sua_duoc_ho_ten_va_vai_tro_cua_nhan_vien(client, db, seed_basic):
+    letan = seed_basic["receptionist"]
+    dang_nhap(client, "quanly")
+
+    client.post(f"/users/{letan.id}/sua", data={"full_name": "Ten Moi", "role": "caretaker"})
+
+    db.refresh(letan)
+    assert (letan.full_name, letan.role) == ("Ten Moi", "caretaker")
+
+
+def test_quan_ly_dat_lai_mat_khau_roi_nhan_vien_dang_nhap_duoc(client, db, seed_basic):
+    """Phép kiểm thật sự: đăng nhập được bằng mật khẩu mới, không chỉ đổi hash."""
+    letan = seed_basic["receptionist"]
+    dang_nhap(client, "quanly")
+
+    client.post(f"/users/{letan.id}/dat-lai-mat-khau", data={"mat_khau_moi": "matkhaumoi123"})
+
+    r = client.post(
+        "/login", data={"username": "letan", "password": "matkhaumoi123"},
+        follow_redirects=False,
+    )
+    assert r.status_code == 303, "không đăng nhập được bằng mật khẩu vừa đặt lại"
+
+
+@pytest.mark.parametrize("username", ["letan", "chamsoc1"])
+@pytest.mark.parametrize("duong_dan", ["sua", "dat-lai-mat-khau"])
+def test_khong_phai_quan_ly_thi_khong_sua_duoc_tai_khoan(client, db, seed_basic, username, duong_dan):
+    """Cả router /users chặn người ngoài — hai route mới không được mở kẽ hở."""
+    letan = seed_basic["receptionist"]
+    dang_nhap(client, username)
+
+    r = client.post(
+        f"/users/{letan.id}/{duong_dan}",
+        data={"full_name": "Cuop Quyen", "role": "manager", "mat_khau_moi": "matkhaumoi123"},
+    )
+
+    assert r.status_code == 403
+
+
+def test_tu_doi_mat_khau_mo_cho_moi_vai_tro(client, db, seed_basic):
+    """Khác `/users`: trang này không chặn vai trò nào — ai cũng đổi mật khẩu của mình được."""
+    for username in ("quanly", "letan", "chamsoc1"):
+        dang_nhap(client, username)
+        assert client.get("/doi-mat-khau").status_code == 200, username
+
+
+def test_tu_doi_mat_khau_phai_nhap_dung_mat_khau_cu(client, db, seed_basic):
+    dang_nhap(client, "chamsoc1")
+
+    r = client.post(
+        "/doi-mat-khau",
+        data={"mat_khau_cu": "sai_bet", "mat_khau_moi": "matkhaumoi123", "nhap_lai": "matkhaumoi123"},
+    )
+
+    assert r.status_code == 400
+    assert "Mật khẩu hiện tại không đúng." in r.text
+
+
+def test_tu_doi_mat_khau_hai_o_khong_khop_thi_bao_loi(client, db, seed_basic):
+    dang_nhap(client, "chamsoc1")
+
+    r = client.post(
+        "/doi-mat-khau",
+        data={"mat_khau_cu": "matkhau123", "mat_khau_moi": "matkhaumoi123", "nhap_lai": "go_nham456"},
+    )
+
+    assert r.status_code == 400
+    assert "không khớp" in r.text
+
+
+def test_tu_doi_mat_khau_thanh_cong_thi_dang_nhap_bang_mat_khau_moi(client, db, seed_basic):
+    dang_nhap(client, "chamsoc1")
+
+    client.post(
+        "/doi-mat-khau",
+        data={"mat_khau_cu": "matkhau123", "mat_khau_moi": "matkhaumoi123", "nhap_lai": "matkhaumoi123"},
+    )
+
+    r = client.post(
+        "/login", data={"username": "chamsoc1", "password": "matkhaumoi123"},
+        follow_redirects=False,
+    )
+    assert r.status_code == 303
+
+
+def test_link_doi_mat_khau_hien_cho_moi_vai_tro(client, db, seed_basic):
+    for username in ("quanly", "letan", "chamsoc1"):
+        dang_nhap(client, username)
+        assert "/doi-mat-khau" in client.get("/").text, username

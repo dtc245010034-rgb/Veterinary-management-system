@@ -7,19 +7,22 @@ sơ tiêm (app/services/vaccinations.py). Vì vậy nó có router riêng thay v
 care_records.py như ở chặng 1 — đúng như cây thư mục trong docs/architecture.md.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from app.auth import nguoi_dung_hien_tai
+from app.auth import nguoi_dung_hien_tai, yeu_cau_vai_tro
 from app.db import get_db
 from app.models.user import User
+from app.routers.owners import doc_ngay_form, doc_so_form
 from app.services import care_records, clock, owners
 from app.services import vaccinations as tiem
 from app.services.errors import LoiNghiepVu
 from app.templates import templates
 
 router = APIRouter()
+
+duoc_sua = Depends(yeu_cau_vai_tro("manager", "receptionist"))
 
 
 @router.get("/pets/{thu_cung_id}", response_class=HTMLResponse)
@@ -53,3 +56,49 @@ def trang_thu_cung(
         },
         status_code=ma,
     )
+
+
+@router.post("/pets/{thu_cung_id}/sua", response_class=HTMLResponse)
+def sua_thu_cung(
+    request: Request,
+    thu_cung_id: int,
+    ten: str = Form(""),
+    loai: str = Form(""),
+    giong: str = Form(""),
+    gioi_tinh: str = Form(""),
+    ngay_sinh: str = Form(""),
+    can_nang: str = Form(""),
+    ghi_chu: str = Form(""),
+    user: User = duoc_sua,
+    db: Session = Depends(get_db),
+):
+    """US-05 "thêm, **sửa**, xem" — `owners.sua_thu_cung` có unit test từ P2 nhưng chưa
+    có đường vào từ giao diện (M-02).
+
+    Route nằm ở đây chứ không ở `owners.py` để lỗi render lại được đúng trang người dùng
+    đang đứng, không phải đẩy họ về trang chủ nuôi và mất cả form vừa gõ.
+    """
+    try:
+        owners.sua_thu_cung(
+            db,
+            thu_cung_id,
+            ten=ten,
+            loai=loai,
+            giong=giong,
+            gioi_tinh=gioi_tinh,
+            ngay_sinh=doc_ngay_form(ngay_sinh),
+            can_nang=doc_so_form(can_nang),
+            ghi_chu=ghi_chu,
+        )
+    except LoiNghiepVu as loi:
+        return trang_thu_cung(
+            request, thu_cung_id, user, db,
+            loi=str(loi),
+            ma=status.HTTP_400_BAD_REQUEST,
+            da_nhap={
+                "ten": ten, "loai": loai, "giong": giong, "gioi_tinh": gioi_tinh,
+                "ngay_sinh": ngay_sinh, "can_nang": can_nang, "ghi_chu": ghi_chu,
+            },
+        )
+
+    return RedirectResponse(f"/pets/{thu_cung_id}", status_code=status.HTTP_303_SEE_OTHER)

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block tieu_de %}Đổi mật khẩu{% endblock %}
+
+{% block noi_dung %}
+<h1>Đổi mật khẩu</h1>
+<p class="phu">Đổi mật khẩu của chính tài khoản <strong>{{ user.username }}</strong>.
+Quên mật khẩu thì nhờ quản lý đặt lại giúp.</p>
+
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+{% if xong %}<p class="thanh-cong" role="status">Đã đổi mật khẩu. Lần đăng nhập sau dùng mật khẩu mới.</p>{% endif %}
+
+<form class="the" method="post" action="/doi-mat-khau">
+  <label>Mật khẩu hiện tại <input name="mat_khau_cu" type="password" required></label>
+  <label>Mật khẩu mới <input name="mat_khau_moi" type="password" required></label>
+  <label>Nhập lại mật khẩu mới <input name="nhap_lai" type="password" required></label>
+  <p class="nhan-nho">Mật khẩu phải dài ít nhất 8 ký tự.</p>
+  <button type="submit" class="chinh">Đổi mật khẩu</button>
+</form>
+{% endblock %}

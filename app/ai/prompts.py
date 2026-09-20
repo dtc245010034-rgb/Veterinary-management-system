@@ -34,10 +34,12 @@ Yêu cầu:
 - Nêu đúng tên thú cưng, dịch vụ, ngày giờ hẹn có trong dữ liệu được cung cấp.
 - Xưng hô với khách là "Anh/chị"; không bịa tên người nhận.
 - Không bịa thêm thông tin không có trong dữ liệu.
-- Nếu là nhắc lịch tiêm, thêm một câu khuyên chủ nuôi xác nhận lịch tiêm cụ thể
-  với bác sĩ thú y.
 - Không chẩn đoán bệnh, không nhận xét về sức khỏe con vật, không đề cập thuốc
-  hay liều lượng."""
+  hay liều lượng.
+
+Không tự viết câu khuyến cáo ở cuối tin nhắn: với lịch tiêm, hệ thống tự nối sẵn
+một câu nhắc xác nhận với bác sĩ thú y, bạn viết thêm nữa thì khách nhận được hai
+câu gần y hệt nhau."""
 
 SYSTEM_TOM_TAT = """Bạn là trợ lý chăm sóc thú cưng. Nhiệm vụ của bạn là tóm tắt lịch sử chăm sóc
 được cung cấp, phục vụ nhân viên cửa hàng tra cứu nhanh.

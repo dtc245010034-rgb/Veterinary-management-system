@@ -25,6 +25,30 @@ def test_system_prompt_hoi_dap_dan_mo_hinh_dung_tu_viet_khuyen_cao():
     assert "Không tự viết câu khuyến cáo" in prompts.SYSTEM_THEO_TINH_NANG["qa"]
 
 
+def test_system_prompt_nhac_lich_khong_bao_mo_hinh_tu_them_cau_xac_nhan_tiem():
+    """M-08 — **lần thứ hai** của lớp lỗi Q10, lần này ở nhắc lịch tiêm.
+
+    Prompt dặn mô hình "thêm một câu khuyên chủ nuôi xác nhận lịch tiêm", rồi
+    `service._them_cau_nhac_tiem` lại nối `NHAC_XAC_NHAN_TIEM`. Phép chặn trùng ở đó chỉ
+    so **nguyên văn**, mà mô hình diễn đạt khác nên không bao giờ khớp. Bằng chứng thật:
+    `ai_logs #30` (gemini-3.6-flash) có hai câu gần y hệt gửi thẳng cho khách —
+    "…với bác sĩ thú y để chuẩn bị tốt nhất cho bé nhé" và "…trước khi đưa bé đến."
+
+    Cách sửa giữ đúng tiền lệ Q10: code là nguồn DUY NHẤT của câu khuyến cáo, vì chỉ code
+    mới kiểm được bằng test; mô hình được dặn đừng tự viết.
+
+    NẾU TEST NÀY ĐỎ: prompt lại sai khiến mô hình viết câu mà code cũng nối.
+    """
+    p = prompts.SYSTEM_NHAC_LICH
+
+    assert "thêm một câu khuyên" not in p, (
+        "prompt vẫn bảo mô hình tự viết câu xác nhận tiêm — code cũng nối, thành lặp hai lần"
+    )
+    assert "Không tự viết câu khuyến cáo" in p, (
+        "phải dặn rõ mô hình đừng tự viết, đúng như đã làm cho hỏi đáp (Q10)"
+    )
+
+
 def test_prompt_nhac_lich_hen_neu_du_ten_dich_vu_va_gio():
     """TC-082: thiếu một trong ba thì tin nhắn nhắc thành vô dụng."""
     p = prompts.prompt_nhac_lich_hen(

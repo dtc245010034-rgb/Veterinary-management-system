@@ -8,7 +8,7 @@
 {% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
 
 <div class="hai-cot">
-  <table>
+  <table class="bang-tai-khoan">
     <thead>
       <tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Trạng thái</th><th></th></tr>
     </thead>
@@ -16,8 +16,21 @@
     {% for nv in danh_sach %}
       <tr>
         <td>{{ nv.username }}</td>
-        <td>{{ nv.full_name }}</td>
-        <td>{{ nv.ten_vai_tro }}</td>
+        {# Ô sửa nằm ngay trên dòng, cùng lối với ô đổi giá ở bảng dịch vụ. Họ tên và vai
+           trò đi CHUNG một form: route /sua ghi đè cả hai, tách ra là mỗi lần lưu một
+           trường lại xóa trường kia. Tên đăng nhập cố ý không sửa được. #}
+        <td colspan="2">
+          <form class="sua-tai-khoan" method="post" action="/users/{{ nv.id }}/sua">
+            <input name="full_name" value="{{ nv.full_name }}" required
+                   aria-label="Họ tên của {{ nv.username }}">
+            <select name="role" aria-label="Vai trò của {{ nv.username }}">
+              {% for ma in vai_tro %}
+                <option value="{{ ma }}" {{ 'selected' if nv.role == ma }}>{{ ten_vai_tro[ma] }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit">Lưu</button>
+          </form>
+        </td>
         <td>
           {% if nv.is_active %}Đang hoạt động
           {% else %}<span class="trang-thai-khoa">Đã khóa</span>
@@ -27,6 +40,13 @@
           {% endif %}
         </td>
         <td>
+          {# Đặt lại mật khẩu KHÔNG hỏi mật khẩu cũ — đây là đường cho nhân viên đã quên.
+             Người tự đổi mật khẩu của mình thì dùng /doi-mat-khau, ở đó phải nhập mật khẩu cũ. #}
+          <form class="dat-lai-mk" method="post" action="/users/{{ nv.id }}/dat-lai-mat-khau">
+            <input name="mat_khau_moi" type="password" required
+                   placeholder="Mật khẩu mới" aria-label="Mật khẩu mới cho {{ nv.username }}">
+            <button type="submit" class="lien-ket">Đặt lại mật khẩu</button>
+          </form>
           {% if nv.id != user.id %}
             {% if nv.is_active %}
               <form method="post" action="/users/{{ nv.id }}/khoa"><button class="lien-ket">Khóa</button></form>

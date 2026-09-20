@@ -227,6 +227,43 @@ td.gio { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 5
 .doi-gia { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
 .doi-gia input { margin-top: 0; width: 78px; padding: 5px 6px; }
 
+/* Form sửa gấp lại trên trang thú cưng. Mở bằng <details>, không cần JS. */
+.khung-sua {
+  background: var(--the);
+  border: 1px solid var(--vien);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+.khung-sua summary { cursor: pointer; font-weight: 500; }
+.khung-sua form { margin-top: 12px; }
+
+/* Báo thành công — cùng khuôn với .loi, đổi màu sang màu chính. */
+.thanh-cong {
+  background: #ecfdf3;
+  border: 1px solid #a6f4c5;
+  color: var(--chinh-dam);
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+/* Ô sửa họ tên + vai trò ngay trên dòng bảng tài khoản, cùng lối với .doi-gia.
+   Xếp dọc chứ không ngang: ba ô nằm ngang làm bảng rộng quá khung và cột thao tác
+   bị bóp đến mức chữ trên nút vỡ thành ba dòng. */
+.sua-tai-khoan { display: flex; flex-direction: column; gap: 5px; align-items: flex-start; }
+.sua-tai-khoan input, .sua-tai-khoan select { margin-top: 0; width: 100%; padding: 5px 6px; }
+.sua-tai-khoan button { align-self: flex-start; }
+
+/* Ô đặt lại mật khẩu nằm cùng cột thao tác với nút Khóa. */
+.dat-lai-mk { display: flex; flex-direction: column; gap: 5px; align-items: flex-start; margin-bottom: 8px; }
+.dat-lai-mk input { margin-top: 0; width: 100%; padding: 5px 6px; }
+
+/* Cột thao tác của bảng tài khoản: chữ trên nút không được xuống dòng giữa chừng. */
+.bang-tai-khoan td:last-child { white-space: nowrap; }
+.bang-tai-khoan td { vertical-align: top; }
+
 /* Hai link hành động cạnh nhau thì phải rời nhau ra, nếu không chúng đọc như một chữ. */
 td.thao-tac a + a { margin-left: 12px; }
 

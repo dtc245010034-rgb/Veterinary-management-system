@@ -13,6 +13,8 @@ from app.auth import dang_nhap_session, dang_xuat_session, nguoi_dung_hien_tai
 from app.db import get_db
 from app.models.user import User
 from app.security import verify_password
+from app.services import users as nv
+from app.services.errors import LoiNghiepVu
 from app.templates import templates
 
 router = APIRouter()
@@ -66,3 +68,42 @@ def dang_xuat(request: Request):
 @router.get("/", response_class=HTMLResponse)
 def trang_chu(request: Request, user: User = Depends(nguoi_dung_hien_tai)):
     return templates.TemplateResponse(request, "home.html", {"user": user})
+
+
+# --- Tự đổi mật khẩu (M-02) --------------------------------------------------------
+# Nằm ở router này chứ không ở `/users`: cả ba vai trò đều dùng được, trong khi cả router
+# `/users` chặn ai không phải quản lý.
+
+
+@router.get("/doi-mat-khau", response_class=HTMLResponse)
+def trang_doi_mat_khau(request: Request, user: User = Depends(nguoi_dung_hien_tai)):
+    return templates.TemplateResponse(request, "doi_mat_khau.html", {"user": user})
+
+
+@router.post("/doi-mat-khau", response_class=HTMLResponse)
+def xu_ly_doi_mat_khau(
+    request: Request,
+    mat_khau_cu: str = Form(""),
+    mat_khau_moi: str = Form(""),
+    nhap_lai: str = Form(""),
+    user: User = Depends(nguoi_dung_hien_tai),
+    db: Session = Depends(get_db),
+):
+    def bao(thong_diep: str, ma: int = status.HTTP_400_BAD_REQUEST):
+        return templates.TemplateResponse(
+            request, "doi_mat_khau.html", {"user": user, "loi": thong_diep}, status_code=ma
+        )
+
+    # Kiểm "nhập lại" ở router vì nó thuần là chuyện của form — service không biết gì về
+    # ô nhập lại, và một mật khẩu gõ nhầm hai lần giống nhau vẫn là mật khẩu hợp lệ.
+    if mat_khau_moi != nhap_lai:
+        return bao("Hai ô mật khẩu mới không khớp nhau.")
+
+    try:
+        nv.doi_mat_khau(db, user.id, mat_khau_cu=mat_khau_cu, mat_khau_moi=mat_khau_moi)
+    except LoiNghiepVu as loi:
+        return bao(str(loi))
+
+    return templates.TemplateResponse(
+        request, "doi_mat_khau.html", {"user": user, "xong": True}
+    )

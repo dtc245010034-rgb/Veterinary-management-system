@@ -204,12 +204,29 @@ lỗi chế độ AI giả lập người dùng gặp khi bấm smoke (TC-116). 
 | TC-116 | US-27 | Chế độ `AI_PROVIDER=fake`: nhãn "AI giả lập — không gọi Gemini", không xoay/đếm quota Gemini, các trang AI hiện dòng cảnh báo (người dùng gặp khi smoke 19/09) | U, I | `test_ai_quota.py::test_ai_gia_lap_…`, `test_ai_service.py::test_che_do_fake_…`, `test_ai.py::test_che_do_gia_lap_…`, `…::test_trang_ai_bao_…` | ✅ |
 | TC-115 | nhiều | Bản ghi không còn tồn tại → trang lỗi 404 tiếng Việt, không bao giờ 500, trên mọi đường dẫn theo id (H-03) | I | `tests/integration/test_khong_tim_thay.py` | ✅ |
 
+## L. Bốn lỗi ưu tiên sửa ngày 20/09
+
+Người dùng chọn M-02, M-01, M-04, M-08 sau lượt rà bằng Chrome
+([báo cáo](reports/2026-09-20-ra-chrome-P1-P7.md) · [kế hoạch](../plans/2026-09-20-va-du-lieu-va-sua-4-loi.md)).
+Cả bốn tái hiện được trên trình duyệt **trước khi sửa**; mỗi ca có test đỏ-trước và đột biến bị bắt.
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-117 | US-27 | Đường dẫn "Quay lại" ra ngoài hệ thống: `\`, tab, LF, CR đều bị bỏ qua, không chỉ `//` (M-01) | I | `test_ai.py::test_moi_dang_duong_dan_ra_ngoai_deu_bi_bo_qua` (6 ca) | ✅ |
+| TC-118 | US-03 | Mật khẩu phải dài ≥ 8 ký tự ở **cả ba** đường đặt: tạo tài khoản, quản lý đặt lại, tự đổi (M-04); ô trống ra thông báo tiếng Việt chứ không phải JSON thô (N-02) | U, I | `test_users_service.py::test_mat_khau_ngan_hon_8_ky_tu_bi_tu_choi`, `…::test_kiem_mat_khau_*`, `…::test_dat_lai_mat_khau_van_theo_luat_do_dai`, `…::test_doi_mat_khau_van_theo_luat_do_dai`, `test_users.py::test_tao_tai_khoan_mat_khau_yeu_ra_thong_bao_tieng_viet` | ✅ |
+| TC-119 | US-03, US-04, US-05 | **Sửa được** chủ nuôi, thú cưng, tài khoản; quản lý đặt lại mật khẩu cho nhân viên; mọi vai trò tự đổi mật khẩu của mình (M-02) | U, I | `test_users_service.py::test_sua_tai_khoan_*`, `…::test_dat_lai_mat_khau_*`, `…::test_doi_mat_khau_*`, `test_users.py::test_quan_ly_sua_duoc_*`, `…::test_tu_doi_mat_khau_*`, `test_owners.py::test_le_tan_sua_duoc_thong_tin_chu_nuoi`, `…::test_trang_thu_cung_co_form_sua_va_sua_duoc` | ✅ |
+| TC-120 | US-24 | Tin nhắc lịch tiêm chỉ có **một** câu khuyến cáo: prompt không sai khiến mô hình tự viết câu mà code cũng nối (M-08) | U | `test_prompts.py::test_system_prompt_nhac_lich_khong_bao_mo_hinh_tu_them_cau_xac_nhan_tiem` | ✅ |
+
+> **TC-120 kiểm được tới đâu:** phép canh nằm ở **prompt**, không ở phản hồi thật — chế độ `fake` không
+> tự sinh câu khuyến cáo nên không dựng lại được cảnh lặp. Muốn chắc chắn thì phải chạy một lượt nhắc
+> lịch tiêm với Gemini thật và đọc kết quả (một lượt quota).
+
 ## J. Hệ thống hoàn chỉnh — chạy cuối mỗi phase từ P5
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
 | TC-101 | nhiều | Kịch bản xuyên suốt 11 bước theo [`test-strategy.md`](test-strategy.md) mục 6 | E | `tests/e2e/test_full_flow.py` | ✅ đủ 11/11 bước (bước 10 nối ở P7 chặng 2) |
-| TC-102 | nhiều | Checklist bấm tay theo [`smoke-checklist.md`](smoke-checklist.md) | thủ công | — | ⬜ |
+| TC-102 | nhiều | Checklist bấm tay theo [`smoke-checklist.md`](smoke-checklist.md) | thủ công | — | ⬜ *(P1→P7 **đã tick đủ** 20/09; 6 ô còn lại đều thuộc P8 chưa làm)* |
 
 TC-101 kéo lên sớm từ P5 (kế hoạch: [`../plans/2026-09-05-e2e-xuyen-suot.md`](../plans/2026-09-05-e2e-xuyen-suot.md)).
 Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5, bước 11 (thống kê) nối ở P6; còn bước 10
@@ -248,4 +265,4 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | Hạ tầng AI (xoay model, quota) | TC-103 → TC-112 | 10 |
 
 **Kết luận: 28/28 user story có test case. Bốn hạng mục đề bài yêu cầu đích danh đều được phủ, trong
-đó lịch hẹn và AI — hai phần khó nhất — chiếm 50/116 test case.**
+đó lịch hẹn và AI — hai phần khó nhất — chiếm 50/120 test case.**

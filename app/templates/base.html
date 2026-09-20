@@ -44,6 +44,9 @@
   <div class="nguoi-dung">
     <span class="ten">{{ user.full_name }}</span>
     <span class="vai-tro">{{ user.ten_vai_tro }}</span>
+    {# Không đặt trong <nav>: đây là việc của tài khoản cá nhân, không phải một mục chức
+       năng — và phép canh "link menu nào cũng có thẻ trang chủ" chỉ soát khối <nav>. #}
+    <a href="/doi-mat-khau">Đổi mật khẩu</a>
     <form method="post" action="/logout"><button class="lien-ket">Đăng xuất</button></form>
   </div>
 </header>

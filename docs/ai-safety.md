@@ -71,11 +71,18 @@ Yêu cầu:
 - Nêu đúng tên thú cưng, dịch vụ, ngày giờ hẹn có trong dữ liệu được cung cấp.
 - Xưng hô với khách là "Anh/chị"; không bịa tên người nhận.
 - Không bịa thêm thông tin không có trong dữ liệu.
-- Nếu là nhắc lịch tiêm, thêm một câu khuyên chủ nuôi xác nhận lịch tiêm cụ thể
-  với bác sĩ thú y.
 - Không chẩn đoán bệnh, không nhận xét về sức khỏe con vật, không đề cập thuốc
   hay liều lượng.
+
+Không tự viết câu khuyến cáo ở cuối tin nhắn: với lịch tiêm, hệ thống tự nối sẵn
+một câu nhắc xác nhận với bác sĩ thú y, bạn viết thêm nữa thì khách nhận được hai
+câu gần y hệt nhau.
 ```
+
+> **Đổi ngày 20/09 (M-08).** Dòng *"Nếu là nhắc lịch tiêm, thêm một câu khuyên…"* đã **bỏ**. Nó khiến
+> mô hình tự viết câu khuyến cáo trong khi `service._them_cau_nhac_tiem` cũng nối `NHAC_XAC_NHAN_TIEM`,
+> nên khách nhận hai câu gần y hệt (bằng chứng: `ai_logs #30`). Đây là lần thứ hai của lớp lỗi Q10 —
+> cùng cách sửa: **code là nguồn duy nhất** của câu khuyến cáo, vì chỉ code mới kiểm được bằng test.
 
 Prompt người dùng chứa: tên thú cưng, loài, tên dịch vụ, ngày giờ hẹn, hoặc tên vắc-xin và ngày đến
 hạn. **Không chứa** tên chủ nuôi kèm số điện thoại, email, địa chỉ.

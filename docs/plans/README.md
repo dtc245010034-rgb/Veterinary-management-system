@@ -41,9 +41,10 @@ Chép vào đây thì kế hoạch trở thành một phần của lịch sử d
 | 2026-09-06 | [Hóa đơn và thanh toán](2026-09-06-p5-hoa-don-va-thanh-toan.md) | P5 | Hoàn thành |
 | 2026-09-11 | [Thống kê](2026-09-11-p6-thong-ke.md) | P6 | Hoàn thành |
 | 2026-09-13 | [Dọn việc tồn của P6](2026-09-13-viec-ton-p6.md) | P6 | Hoàn thành |
-| 2026-09-18 | [Tích hợp AI, xoay ca model Gemini và ước tính quota](2026-09-18-p7-tich-hop-ai.md) | P7 | Chặng 0→3 xong 19/09; chờ người dùng tick smoke |
-| 2026-09-19 | [Rà soát toàn hệ thống P1 → P7](2026-09-19-ra-soat-P1-P7.md) | P7 | Rà xong 19/09: 3 cao · 8 trung bình · 7 thấp; 3 lỗi cao đã sửa, còn lại chờ người dùng chọn |
+| 2026-09-18 | [Tích hợp AI, xoay ca model Gemini và ước tính quota](2026-09-18-p7-tich-hop-ai.md) | P7 | ✅ **xong** — chặng 0→3 xong 19/09, người dùng tick đủ smoke 20/09, **P7 đóng** |
+| 2026-09-19 | [Rà soát toàn hệ thống P1 → P7](2026-09-19-ra-soat-P1-P7.md) | P7 | ✅ checklist hết ô trống (4 ô cuối rà bổ sung 20/09). Rà 19/09: 3 cao · 8 trung bình · 7 thấp; đã sửa 3 lỗi cao (19/09) và 4 lỗi ưu tiên (20/09), **còn 11 lỗi** chờ người dùng chọn |
 | 2026-09-19 | [Sửa ba lỗi cao sau rà soát](2026-09-19-sua-loi-cao-ra-soat.md) | P7 | Hoàn thành |
 | 2026-09-19 | [Chế độ AI giả lập: nhãn đúng, không đếm quota](2026-09-19-che-do-ai-gia-lap.md) | P7 | Hoàn thành |
+| 2026-09-20 | [Vá dữ liệu D-01 và sửa 4 lỗi ưu tiên](2026-09-20-va-du-lieu-va-sua-4-loi.md) | P7 | Hoàn thành — D-01 vá, M-02/M-01/M-04/M-08 sửa xong, 776 test xanh |
 
 > Bảng này từng dừng ở P3 trong khi thư mục đã có thêm bảy kế hoạch — bổ sung ngày 18/09.
