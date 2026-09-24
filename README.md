@@ -80,7 +80,7 @@ prompt. Chi tiết: [`docs/ai-safety.md`](docs/ai-safety.md).
 pytest tests/unit            # 489 ca, ~35–45s — chạy mỗi lần sửa code
 pytest tests/integration     # 286 ca, ~55–65s — chạy cuối mỗi phiên làm việc
 pytest tests/e2e             #   1 ca,  ~6s    — kịch bản xuyên suốt 11 bước, chạy cuối mỗi phase
-pytest                       # 797 ca, ~102s   — chạy trước mỗi commit (hồi quy)
+pytest                       # 902 ca, ~101s   — chạy trước mỗi commit (hồi quy)
 ```
 
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).

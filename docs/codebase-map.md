@@ -4,37 +4,68 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-24 (phiên 24/09 — dọn việc tồn, **sửa M-06 và toàn bộ 11 lỗi còn lại**, mở P8 phần kiểm chứng được) · **Trạng thái:** **P0→P7 xong cả tám phase; P8 đang làm. Không còn lỗi nào tồn.** **900 test xanh.** Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+**Cập nhật lần cuối:** 2026-09-25 (phiên 24/09, bốn phần — dọn việc tồn · sửa M-06 · **sửa hết 11 lỗi còn lại** · lên kế hoạch bộ đo AI) · **Trạng thái:** **P0→P7 xong cả tám phase; P8 đang làm. KHÔNG CÒN LỖI NÀO TỒN.** **902 test xanh.** Tiến độ từng phase: [`roadmap.md`](roadmap.md)
 
-> **Làm tiếp — theo thứ tự:**
-> 1. **P8 — phần còn lại đều cần người dùng hoặc cần bạn quyết.** Ba ô smoke P8 đã có bằng chứng
->    kiểm chứng bằng lệnh (xem log phiên 24/09) nhưng **agent không tick** — ô smoke là việc bấm tay.
->    Ba ô còn lại: dựng lại trên máy sạch · ma trận hết ô ⬜ (phụ thuộc chính TC-102) · dán output
->    cuối cùng vào báo cáo. **Việc lớn chưa bắt đầu: README hoàn chỉnh, báo cáo cuối kỳ, slide,
->    CI GitHub Actions.**
-> 2. ✅ **Hết lỗi tồn.** Toàn bộ 18 lỗi của lượt rà 19/09 cộng D-02 đã xử lý xong: 3 lỗi cao (19/09),
->    4 lỗi ưu tiên (20/09), M-06 và **11 lỗi còn lại** (24/09). Cả 11 lỗi cuối đều tái hiện bằng
->    Chrome trước khi sửa và nghiệm thu lại bằng Chrome sau khi sửa —
->    [báo cáo](testing/reports/2026-09-19-ra-luong-P1-P7.md) mục "Đã sửa ngày 24/09 (phần 2)".
-> 3. **Một việc kiểm còn nợ:** M-08 (tin nhắc tiêm lặp khuyến cáo) mới kiểm ở mức **prompt**, chưa
->    chạy với Gemini thật — chế độ `fake` không tự sinh câu khuyến cáo nên không dựng lại được cảnh
->    lặp. Muốn chắc thì chạy một lượt nhắc lịch tiêm với Gemini thật (tốn 1 lượt quota).
+> ## Làm tiếp — đọc mục này trước tiên
 >
-> **Đã đóng 24/09:** **11 lỗi còn lại** (M-03, M-05, M-07, L-01 → L-07, D-02) — xem mục 2 ở trên.
-> Trước đó cùng ngày: **M-06 (= S6) — giờ mở cửa**: cả buổi phải nằm trọn trong 08:00–18:00 cùng một
-> ngày, áp cho cả `dat_lich` lẫn `doi_lich`, cộng cận trên thời lượng dịch vụ ở `catalog` (TC-122,
-> 15 test, 4 lượt đột biến). Cộng việc P6 để lại (form đặt lịch trên CSDL trống nay nói rõ còn thiếu gì — TC-121)
-> và ba biến `AI_*` thiếu trong `.env.example` mà kế hoạch P7 đã tick nhầm là xong. Thêm **phép canh
-> thứ 50**: mọi biến trong `config.py` phải có mặt trong `.env.example`.
+> **1. Việc đã duyệt, chưa làm — mở ra là chạy được ngay:**
+> [`plans/2026-09-25-ragas-bo-do-ai.md`](plans/2026-09-25-ragas-bo-do-ai.md) — bộ đo chất lượng AI.
+> Người dùng đã chốt đủ 4 quyết định, kế hoạch có sẵn 14 ô checklist chưa tick. Tóm tắt: chấm
+> `G-01→G-13` **bằng luật code** (0 lượt gọi), cộng **RAGAS `Faithfulness` chỉ cho tóm tắt hồ sơ**
+> qua một wrapper gọi ngược vào `goi_co_xoay`. Giám khảo phải là model **khác** model bị chấm.
+> Đặt ở `app/ai/danh_gia.py`. `ragas` **không** vào `requirements.txt`.
 >
-> **Trạng thái máy:** `petcare.db` **sạch** — 2 hóa đơn, **không nợ âm**, không bản ghi rác. Rà 24/09:
-> **29 bản ghi `ai_logs`, không bản ghi nào chứa SĐT/email/địa chỉ chủ nuôi.** Bản sao lưu ở
-> `petcare.truoc-khoi-phuc-2026-09-20.db` và `petcare.backup-2026-09-19.db` (cả hai **không vào git**).
-> `.env` đang `AI_PROVIDER=gemini`. **Đã push tới `abd4b8c` ngày 24/09 — không còn commit nào tồn ở máy**; kiểm lại trên remote: không có `.env` và không có file `.db` nào.
+> **2. Việc lớn của P8 chưa bắt đầu:** README hoàn chỉnh · **báo cáo cuối kỳ** · **slide** ·
+> **CI GitHub Actions**. CI làm được ngay vì mọi commit đã lên remote.
 >
-> **Đọc để lấy lại ngữ cảnh:** [`sessions/2026-09-24-01.md`](sessions/2026-09-24-01.md) (phiên gần
-> nhất) → [`sessions/2026-09-20-05.md`](sessions/2026-09-20-05.md) (bốn phần) →
-> [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) (năm phần, nền của mọi quyết định hiện tại).
+> **3. Sáu ô smoke P8 chờ người dùng bấm tay.** Bốn trong sáu ô **đã có sẵn bằng chứng** kiểm bằng
+> lệnh, ghi trong [`sessions/2026-09-24-01.md`](sessions/2026-09-24-01.md) — agent không tick vì ô
+> smoke đo trải nghiệm trên trình duyệt.
+>
+> **4. Hai việc treo lâu, chưa ai quyết:**
+> - **Ngân sách thời gian test**: 902 ca ~101s, vượt ngưỡng 90s ghi trong `test-strategy.md`.
+>   Treo từ 11/09.
+> - **M-08 chưa kiểm bằng Gemini thật** (mới kiểm ở mức prompt) — tốn 1 lượt quota.
+>
+> ---
+>
+> ### Đã xong, đừng làm lại
+>
+> **Hết lỗi tồn.** Toàn bộ 18 lỗi của lượt rà 19/09 cộng D-02 đã xử lý qua bốn đợt: 3 lỗi cao
+> (19/09) · 4 lỗi ưu tiên (20/09) · M-06 · **11 lỗi cuối** (24/09). Cả 11 lỗi cuối đều **tái hiện
+> bằng Chrome trước khi sửa và nghiệm thu lại bằng Chrome sau khi sửa** — xem
+> [báo cáo](testing/reports/2026-09-19-ra-luong-P1-P7.md) mục "Đã sửa ngày 24/09 (phần 2)".
+>
+> **Con số lỗi từng bị đếm sai hai lần** (ghi 11 nhưng liệt kê 12 mã từ 20/09, rồi thành 10). Nay là
+> **0**, và cách đếm ghi lại trong báo cáo để không lặp.
+>
+> ### Ngữ cảnh dễ mất, ghi lại ở đây
+>
+> - **Quota AI là ~20 lượt cho MỖI model, 4 model → ~80 lượt/ngày**, không phải 20. Cơ chế xoay ca
+>   ở `app/ai/quota.py` sinh ra đúng vì *"một model là không đủ để chạy 20 ca guardrail"*.
+> - **`G-14 → G-20` không cần model thật** — `ai-safety.md` chốt chúng là "việc của code", đã có
+>   test tự động xanh. Đừng đưa chúng ra Gemini.
+> - **`python -m app.ai.quota --guardrail` đã chạy được** `G-01→G-13` và sinh báo cáo Markdown; nó
+>   **cố ý để trống cột "Đạt?"** cho người đọc. Bộ đo mới **cộng thêm cột máy chấm, không thay thế**.
+> - **Repo trộn CRLF với LF theo từng file**, không có quy ước chung. Mỗi file giữ kiểu của chính nó.
+>   Sửa file bằng Python thì phải đọc ra, quy về LF, thay, rồi ghi lại đúng kiểu cũ — xem
+>   `CLAUDE.md` mục 9 dòng 5. Đã mất hai lần trong ngày 24/09 vì chuyện này.
+> - **Bấm nút bằng `ref` của tiện ích Chrome không gửi form** trong ứng dụng này; phải bấm bằng tọa
+>   độ hoặc gọi `form.submit()`. Đăng xuất là **POST**, `GET /logout` trả 405.
+>
+> ### Trạng thái máy
+>
+> `petcare.db` **sạch**: 3 chủ nuôi, 9 lịch hẹn, 2 hóa đơn, không nợ âm. Mọi lượt rà đều chạy trên
+> **bản sao** trong scratchpad, không đụng CSDL thật. Bản sao lưu:
+> `petcare.truoc-khoi-phuc-2026-09-20.db`, `petcare.backup-2026-09-19.db` (cả hai **không vào git**).
+> `.env` đang `AI_PROVIDER=gemini`. **Đã push tới `786b2f1`; 0 commit tồn ở máy**; kiểm lại remote:
+> không có `.env`, không có file `.db` nào.
+>
+> ### Đọc để lấy lại ngữ cảnh
+>
+> [`sessions/2026-09-24-01.md`](sessions/2026-09-24-01.md) (phiên gần nhất, **bốn phần** — dài nhưng
+> là nguồn đầy đủ nhất) → [`sessions/2026-09-20-05.md`](sessions/2026-09-20-05.md) (bốn phần) →
+> [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) (năm phần, nền của mọi quyết định).
 
 ### `app/ai/` — tầng AI, từ P7
 
@@ -81,7 +112,7 @@
 | `codebase-map.md` | File này |
 | `roadmap.md` | Lộ trình P0→P8 gắn với mốc KT1/KT2/KT3/cuối kỳ, kèm Definition of Done |
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
-| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 18: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập, vá dữ liệu và sửa 4 lỗi ưu tiên (20/09), M-06 giờ mở cửa (24/09), 11 lỗi còn lại (24/09) |
+| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 19: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập, vá dữ liệu và sửa 4 lỗi ưu tiên (20/09), M-06 giờ mở cửa (24/09), 11 lỗi còn lại (24/09), **bộ đo AI có RAGAS (25/09 — đã duyệt, chưa làm)** |
 | `sessions/README.md` | Quy ước log phiên làm việc |
 | `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 14 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
@@ -169,7 +200,7 @@
 | `unit/test_tien.py` | Đọc số tiền: phân cách nghìn, từ chối phần lẻ, `NaN`/`Infinity`, ô trống, số âm (L-03) |
 | `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
 | `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa |
-| `unit/test_architecture.py` | **Canh ranh giới dự án** (50 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file (so **đuôi đường dẫn**, không so mỗi tên file — xem kẽ hở đã vá 13/09), hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật, ba system prompt in trong `ai-safety.md` khớp từng chữ với `prompts.py`, mọi biến trong `config.py` đều có mặt trong `.env.example` |
+| `unit/test_architecture.py` | **Canh ranh giới dự án** (51 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file (so **đuôi đường dẫn**, không so mỗi tên file — xem kẽ hở đã vá 13/09), hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật, ba system prompt in trong `ai-safety.md` khớp từng chữ với `prompts.py`, mọi biến trong `config.py` đều có mặt trong `.env.example` |
 | `unit/test_khoi_dong.py` | Lifespan từ chối khởi động với `SECRET_KEY` mặc định (S1). Gọi thẳng `lifespan`, engine in-memory |
 | `unit/test_prompts.py` | Dựng prompt, ba system prompt, chèn `DISCLAIMER` (TC-082, 083, 088, 096) |
 | `unit/test_guardrail.py` | Ba phép chặn trong code, nặng về **ca âm**: "nhân viên" không được coi là hỏi liều (TC-093) |
