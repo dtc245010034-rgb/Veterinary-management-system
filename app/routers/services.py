@@ -16,6 +16,7 @@ from app.db import get_db
 from app.models.user import User
 from app.services import catalog as nv
 from app.services.errors import LoiNghiepVu
+from app.services.tien import doc_tien
 from app.templates import templates
 
 router = APIRouter(prefix="/services")
@@ -63,7 +64,7 @@ def them_dich_vu(
             db,
             ma=ma,
             ten=ten,
-            gia=_doc_tien(gia),
+            gia=doc_tien(gia, "Giá"),
             thoi_luong_phut=_doc_nguyen(thoi_luong_phut, "Thời lượng"),
             mo_ta=mo_ta,
         )
@@ -89,7 +90,7 @@ def sua_dich_vu(
             db,
             dich_vu_id,
             ten=ten,
-            gia=_doc_tien(gia),
+            gia=doc_tien(gia, "Giá"),
             thoi_luong_phut=_doc_nguyen(thoi_luong_phut, "Thời lượng"),
             mo_ta=mo_ta,
         )
@@ -127,18 +128,22 @@ async def tao_goi(
     danh_sach_so = form.getlist("so_luong")
 
     thanh_phan: dict[int, int] = {}
-    for ma_chuoi, so_chuoi in zip(danh_sach_ma, danh_sach_so):
-        so = (so_chuoi or "").strip()
-        # isdecimal() chứ không phải isdigit(): "²".isdigit() là True mà int("²") ném
-        # ValueError — từng thành lỗi 500 (rà 11/09). isdecimal() khớp đúng thứ int() đọc được.
-        if so and so.isdecimal() and int(so) > 0:
-            thanh_phan[int(ma_chuoi)] = int(so)
-
     try:
+        for ma_chuoi, so_chuoi in zip(danh_sach_ma, danh_sach_so):
+            so = (so_chuoi or "").strip()
+            # Ô TRỐNG là cách bỏ chọn một dòng — bỏ qua, không phải lỗi.
+            if not so:
+                continue
+            # Có gõ thì phải đọc được và phải hợp lệ. Bản cũ âm thầm bỏ qua mọi giá trị
+            # không phải số nguyên dương, nên gõ `-5` làm `thanh_phan` rỗng và người dùng
+            # nhận câu "Gói phải có ít nhất một dịch vụ" trong khi họ đã chọn dịch vụ
+            # (D-02). Nay đưa giá trị xuống nguyên vẹn để `catalog.tao_goi` báo đúng lỗi.
+            thanh_phan[int(ma_chuoi)] = _doc_nguyen(so, "Số lượt của dịch vụ trong gói")
+
         nv.tao_goi(
             db,
             ten=form.get("ten", ""),
-            gia=_doc_tien(form.get("gia", "")),
+            gia=doc_tien(form.get("gia", ""), "Giá"),
             thanh_phan=thanh_phan,
             mo_ta=form.get("mo_ta", ""),
         )
@@ -158,25 +163,6 @@ def ngung_ban_goi(goi_id: int, user: User = chi_quan_ly, db: Session = Depends(g
 def ban_lai_goi(goi_id: int, user: User = chi_quan_ly, db: Session = Depends(get_db)):
     nv.ban_lai_goi(db, goi_id)
     return RedirectResponse("/services", status_code=status.HTTP_303_SEE_OTHER)
-
-
-def _doc_tien(chuoi: str) -> Decimal:
-    """Đọc tiền thành Decimal, không qua float.
-
-    float(chuoi) rồi Decimal(float) sẽ kéo theo sai số nhị phân ngay từ bước đầu —
-    Decimal(0.1) cho 0.1000000000000000055511151231257827.
-    """
-    chuoi = (chuoi or "").strip().replace(",", "").replace(".", "")
-    if not chuoi:
-        raise LoiNghiepVu("Giá không được để trống.")
-    try:
-        gia = Decimal(chuoi)
-    except InvalidOperation:
-        raise LoiNghiepVu("Giá phải là một số.")
-    # Decimal nhận cả "NaN" và "Infinity" — cả hai từng thành lỗi 500 (rà 11/09).
-    if not gia.is_finite():
-        raise LoiNghiepVu("Giá phải là một số.")
-    return gia
 
 
 def _doc_nguyen(chuoi: str, ten_truong: str) -> int:

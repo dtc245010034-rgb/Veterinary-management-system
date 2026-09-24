@@ -708,3 +708,64 @@ def test_dich_vu_dai_hon_ngay_lam_viec_khong_dat_duoc(db, nen):
             bat_dau=gio_mai(8),
             nguoi_tao_id=nen["letan"].id,
         )
+
+
+# --- L-06: hai thông báo sai hướng ------------------------------------------------
+#
+# Đo bằng Chrome 24/09:
+#  (a) Lập hóa đơn cho lịch **đã hủy** → "Ghi hồ sơ chăm sóc cho buổi này trước đã."
+#      Buổi đã hủy thì ghi hồ sơ không giúp được gì; câu này đẩy người dùng đi sai đường.
+#  (b) Đổi lịch mà **giữ nguyên giờ và nhân viên** → trạng thái vẫn nhảy sang "Đã đổi
+#      lịch". Không có gì đổi cả, mà sổ thì ghi là đã dời.
+
+
+def test_lap_hoa_don_cho_lich_da_huy_bao_dung_ly_do(db, nen):
+    lich = dat(db, nen, gio(9))
+    nv.huy_lich(db, lich.id, "Khách bận")
+
+    with pytest.raises(LoiNghiepVu) as e:
+        billing.lap_hoa_don(db, lich.id)
+
+    thong_diep = str(e.value)
+    assert "hủy" in thong_diep.lower()
+    assert "Ghi hồ sơ chăm sóc cho buổi này trước" not in thong_diep
+
+
+def test_lap_hoa_don_cho_lich_chua_lam_van_bao_ghi_ho_so(db, nen):
+    """Ca đối chứng: câu cũ vẫn đúng cho lịch chưa làm — đừng đổi luôn cả ca nó đúng."""
+    lich = dat(db, nen, gio(9))
+
+    with pytest.raises(LoiNghiepVu) as e:
+        billing.lap_hoa_don(db, lich.id)
+
+    assert "Ghi hồ sơ chăm sóc" in str(e.value)
+
+
+def test_doi_lich_giu_nguyen_gio_va_nhan_vien_khong_doi_trang_thai(db, nen):
+    """(b): không có gì đổi thì trạng thái phải giữ nguyên."""
+    lich = dat(db, nen, gio(9))
+    trang_thai_cu = lich.status
+
+    sua = nv.doi_lich(db, lich.id, gio(9), nhan_vien_id=nen["nv1"].id)
+
+    assert sua.status == trang_thai_cu
+    assert sua.start_at == gio(9)
+
+
+def test_doi_lich_that_su_doi_gio_van_ghi_da_doi(db, nen):
+    """Ca đối chứng: đổi thật thì vẫn phải ghi nhận là đã dời."""
+    lich = dat(db, nen, gio(9))
+
+    sua = nv.doi_lich(db, lich.id, gio(10), nhan_vien_id=nen["nv1"].id)
+
+    assert sua.status == "rescheduled"
+
+
+def test_doi_lich_giu_gio_nhung_doi_nhan_vien_van_ghi_da_doi(db, nen):
+    """Ca biên: đổi người mà giữ giờ vẫn là một thay đổi thật."""
+    lich = dat(db, nen, gio(9))
+
+    sua = nv.doi_lich(db, lich.id, gio(9), nhan_vien_id=nen["nv2"].id)
+
+    assert sua.status == "rescheduled"
+    assert sua.staff_id == nen["nv2"].id

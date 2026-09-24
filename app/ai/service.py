@@ -52,6 +52,12 @@ def lay_provider() -> AIProvider:
         return GeminiProvider()
     return FakeProvider(tinh_quota=False)
 
+# Trần độ dài câu hỏi hỏi đáp (M-03). Một câu hỏi chăm sóc thú cưng thật sự dài nhất
+# cũng chỉ vài dòng; 1.000 ký tự đã rộng gấp nhiều lần. Trần này KHÔNG phải để tiết
+# kiệm token mà để giữ câu hỏi trong phạm vi hệ thống trả lời được: câu càng dài thì
+# phần lạc đề càng lấn át system prompt.
+DAI_TOI_DA_CAU_HOI = 1000
+
 
 # --- Ba tính năng -----------------------------------------------------------------
 
@@ -152,6 +158,16 @@ def hoi_dap(
     cau_hoi = guardrail.xoa_lien_he(cau_hoi)
     if not cau_hoi:
         raise LoiNghiepVu("Chưa nhập câu hỏi.")
+
+    # M-03. Chặn TRƯỚC khi gọi API, cùng chỗ với `la_cau_xin_thuoc` và vì cùng một lý do:
+    # không gửi đi thì không tốn lượt quota và không phụ thuộc việc mô hình xử lý ra sao.
+    # Rà 19/09: câu 20.033 ký tự làm `gemini-3.5-flash` trả lời về Truyện Kiều.
+    # Không ghi `ai_logs`: câu bị chặn vì quá dài không phải một lượt hỏi.
+    if len(cau_hoi) > DAI_TOI_DA_CAU_HOI:
+        raise LoiNghiepVu(
+            f"Câu hỏi dài quá {DAI_TOI_DA_CAU_HOI} ký tự "
+            f"(đang {len(cau_hoi)}). Hãy hỏi ngắn gọn từng ý một."
+        )
 
     if guardrail.la_cau_xin_thuoc(cau_hoi):
         log = _ghi_log(

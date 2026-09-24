@@ -17,6 +17,11 @@ from app.models.service_package import PackageItem, ServicePackage
 from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 from app.services.scheduling import PHUT_LAM_VIEC_MOI_NGAY
 
+# Trần số tiền. Rà 19/09: giá 99.999.999.999.999 lưu được — vượt cả `Numeric(12,2)`
+# mà SQLite không ép kiểu nên không chặn (L-03). Một tỷ đồng cho một dịch vụ chăm sóc
+# thú cưng đã rộng hơn mọi mức có thật.
+GIA_TOI_DA = Decimal("1000000000")
+
 
 def _bat_buoc(gia_tri: str | None, ten_truong: str) -> str:
     da_cat = (gia_tri or "").strip()
@@ -31,6 +36,10 @@ def _kiem_gia(gia: Decimal | None) -> Decimal:
         raise LoiNghiepVu("Giá không được để trống.")
     if gia < 0:
         raise LoiNghiepVu("Giá không được là số âm.")
+    if gia > GIA_TOI_DA:
+        raise LoiNghiepVu(
+            "Giá không được quá 1 tỷ đồng — kiểm lại xem có gõ thừa số 0 không."
+        )
     return gia
 
 

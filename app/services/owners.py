@@ -6,13 +6,14 @@ trong test mà không cần khởi động ứng dụng.
 
 from dataclasses import dataclass, field
 from datetime import date
+import re
 
 from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.owner import Owner
-from app.models.pet import Pet
+from app.models.pet import GIOI_TINH, Pet
 from app.services import clock
 from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 from app.services.text import chuan_hoa
@@ -28,10 +29,95 @@ class KetQuaTraCuu:
         return not self.chu_nuoi and not self.thu_cung
 
 
+# Trần độ dài cho các ô chữ. Rà 19/09: họ tên 509 ký tự lưu được (L-03). Cột CSDL có
+# giới hạn riêng (`String(100)`…) nhưng SQLite KHÔNG ép độ dài, nên ràng buộc thật sự
+# duy nhất là ở đây.
+DAI_TOI_DA = {"Họ tên": 100, "Tên thú cưng": 50, "Loài": 30, "Giống": 50,
+              "Địa chỉ": 255, "Ghi chú": 500}
+
+# Cân nặng và tuổi. Con voi nặng nhất cũng không vào tiệm spa thú cưng; 200 kg đã rộng
+# hơn mọi giống chó mèo. Tuổi 40 năm rộng hơn tuổi thọ của mọi loài thú nuôi phổ biến.
+CAN_NANG_TOI_DA = 200
+TUOI_TOI_DA_NAM = 40
+
+# Số Việt Nam: 10 chữ số bắt đầu bằng 0. Người dùng chốt 24/09.
+_MAU_SO_DIEN_THOAI = re.compile(r"^0\d{9}$")
+
+# Đủ chặt để loại `khong-phai-email` và `a@b`, đủ lỏng để không chặn nhầm địa chỉ thật.
+# Không dùng RFC 5322 đầy đủ: nó dài hơn cả file này và vẫn không quyết được ca biên.
+_MAU_EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$")
+
+
 def _bat_buoc(gia_tri: str | None, ten_truong: str) -> str:
     da_cat = (gia_tri or "").strip()
     if not da_cat:
         raise LoiNghiepVu(f"{ten_truong} không được để trống.")
+    return _kiem_do_dai(da_cat, ten_truong)
+
+
+def _kiem_do_dai(gia_tri: str, ten_truong: str) -> str:
+    """L-03. Trả lại chính chuỗi để gọi lồng được vào chỗ đang gán."""
+    toi_da = DAI_TOI_DA.get(ten_truong)
+    if toi_da is not None and len(gia_tri) > toi_da:
+        raise LoiNghiepVu(f"{ten_truong} không được dài quá {toi_da} ký tự.")
+    return gia_tri
+
+
+def _tuy_chon(gia_tri: str | None, ten_truong: str) -> str | None:
+    """Ô không bắt buộc: để trống thì thành None, có nhập thì vẫn phải trong trần."""
+    da_cat = (gia_tri or "").strip()
+    if not da_cat:
+        return None
+    return _kiem_do_dai(da_cat, ten_truong)
+
+
+def chuan_hoa_so_dien_thoai(so: str | None) -> str:
+    """Bỏ dấu cách, chấm, gạch, ngoặc; quy `+84`/`84` về dạng bắt đầu bằng `0`.
+
+    Công khai vì `tim_theo_so_dien_thoai` phải chuẩn hóa **cùng một cách** trước khi so
+    trùng: số đã lưu luôn ở dạng chuẩn, nên tra bằng chuỗi thô người dùng vừa gõ
+    (`+84912345678`) sẽ không khớp gì cả và M-07 lại lọt theo một đường khác.
+
+    Chỉ chuẩn hóa, không phán xét — phép kiểm định dạng nằm ở `_kiem_so_dien_thoai`.
+    """
+    sach = re.sub(r"[\s.\-()]", "", (so or "").strip())
+    if sach.startswith("+84"):
+        sach = "0" + sach[3:]
+    elif sach.startswith("84") and len(sach) == 11:
+        sach = "0" + sach[2:]
+    return sach
+
+
+def _kiem_so_dien_thoai(so: str | None) -> str:
+    """M-05. Chuẩn hóa TRƯỚC khi kiểm, và trả về bản đã chuẩn hóa để lưu."""
+    tho = _bat_buoc(so, "Số điện thoại")
+    sach = chuan_hoa_so_dien_thoai(tho)
+
+    if not _MAU_SO_DIEN_THOAI.match(sach):
+        raise LoiNghiepVu(
+            "Số điện thoại phải là số Việt Nam 10 chữ số bắt đầu bằng 0, "
+            "ví dụ 0912345678."
+        )
+    return sach
+
+
+def _kiem_email(email: str | None) -> str | None:
+    """M-05. Email là ô KHÔNG bắt buộc — để trống vẫn hợp lệ."""
+    da_cat = _tuy_chon(email, "Email")
+    if da_cat is None:
+        return None
+    if not _MAU_EMAIL.match(da_cat):
+        raise LoiNghiepVu("Email không đúng định dạng, ví dụ ten@vidu.com.")
+    return da_cat
+
+
+def _kiem_gioi_tinh(gioi_tinh: str | None) -> str | None:
+    """L-03. Neo vào chính hằng mà template dựng ô chọn — xem `models/pet.py`."""
+    da_cat = (gioi_tinh or "").strip()
+    if not da_cat:
+        return None
+    if da_cat not in GIOI_TINH:
+        raise LoiNghiepVu(f"Giới tính chỉ nhận {' hoặc '.join(GIOI_TINH)}.")
     return da_cat
 
 
@@ -48,10 +134,10 @@ def tao_chu_nuoi(
 ) -> Owner:
     o = Owner(
         full_name=_bat_buoc(ho_ten, "Họ tên"),
-        phone=_bat_buoc(so_dien_thoai, "Số điện thoại"),
-        email=(email or "").strip() or None,
-        address=(dia_chi or "").strip() or None,
-        note=(ghi_chu or "").strip() or None,
+        phone=_kiem_so_dien_thoai(so_dien_thoai),
+        email=_kiem_email(email),
+        address=_tuy_chon(dia_chi, "Địa chỉ"),
+        note=_tuy_chon(ghi_chu, "Ghi chú"),
     )
     db.add(o)
     db.commit()
@@ -65,10 +151,12 @@ def sua_chu_nuoi(db: Session, chu_nuoi_id: int, **truong) -> Owner:
     if "ho_ten" in truong:
         o.full_name = _bat_buoc(truong["ho_ten"], "Họ tên")
     if "so_dien_thoai" in truong:
-        o.phone = _bat_buoc(truong["so_dien_thoai"], "Số điện thoại")
-    for khoa, cot in (("email", "email"), ("dia_chi", "address"), ("ghi_chu", "note")):
+        o.phone = _kiem_so_dien_thoai(truong["so_dien_thoai"])
+    if "email" in truong:
+        o.email = _kiem_email(truong["email"])
+    for khoa, cot, nhan in (("dia_chi", "address", "Địa chỉ"), ("ghi_chu", "note", "Ghi chú")):
         if khoa in truong:
-            setattr(o, cot, (truong[khoa] or "").strip() or None)
+            setattr(o, cot, _tuy_chon(truong[khoa], nhan))
 
     db.commit()
     db.refresh(o)
@@ -97,7 +185,7 @@ def tim_theo_so_dien_thoai(
     `bo_qua_id` loại chính chủ nuôi vừa tạo ra khỏi danh sách cảnh báo — nói "đã có
     người dùng số này" mà trỏ vào chính bản ghi vừa tạo thì vô nghĩa.
     """
-    so = (so_dien_thoai or "").strip()
+    so = chuan_hoa_so_dien_thoai(so_dien_thoai)
     if not so:
         return []
 
@@ -157,11 +245,11 @@ def tao_thu_cung(
         owner_id=chu_nuoi.id,
         name=_bat_buoc(ten, "Tên thú cưng"),
         species=_bat_buoc(loai, "Loài"),
-        breed=(giong or "").strip() or None,
-        sex=(gioi_tinh or "").strip() or None,
+        breed=_tuy_chon(giong, "Giống"),
+        sex=_kiem_gioi_tinh(gioi_tinh),
         birth_date=_kiem_ngay_sinh(ngay_sinh),
         weight_kg=_kiem_can_nang(can_nang),
-        note=(ghi_chu or "").strip() or None,
+        note=_tuy_chon(ghi_chu, "Ghi chú"),
     )
     db.add(p)
     db.commit()
@@ -180,9 +268,11 @@ def sua_thu_cung(db: Session, thu_cung_id: int, **truong) -> Pet:
         p.birth_date = _kiem_ngay_sinh(truong["ngay_sinh"])
     if "can_nang" in truong:
         p.weight_kg = _kiem_can_nang(truong["can_nang"])
-    for khoa, cot in (("giong", "breed"), ("gioi_tinh", "sex"), ("ghi_chu", "note")):
+    if "gioi_tinh" in truong:
+        p.sex = _kiem_gioi_tinh(truong["gioi_tinh"])
+    for khoa, cot, nhan in (("giong", "breed", "Giống"), ("ghi_chu", "note", "Ghi chú")):
         if khoa in truong:
-            setattr(p, cot, (truong[khoa] or "").strip() or None)
+            setattr(p, cot, _tuy_chon(truong[khoa], nhan))
 
     db.commit()
     db.refresh(p)
@@ -230,8 +320,13 @@ def _kiem_ngay_sinh(ngay_sinh: date | None) -> date | None:
     """
     if ngay_sinh is None:
         return None
-    if ngay_sinh > clock.now().date():
+    hom_nay = clock.now().date()
+    if ngay_sinh > hom_nay:
         raise LoiNghiepVu("Ngày sinh không được ở tương lai.")
+    if ngay_sinh < hom_nay.replace(year=hom_nay.year - TUOI_TOI_DA_NAM):
+        raise LoiNghiepVu(
+            f"Ngày sinh không được quá {TUOI_TOI_DA_NAM} năm trước — kiểm lại xem có gõ nhầm không."
+        )
     return ngay_sinh
 
 
@@ -241,6 +336,10 @@ def _kiem_can_nang(can_nang: float | None) -> float | None:
         return None
     if can_nang <= 0:
         raise LoiNghiepVu("Cân nặng phải lớn hơn 0. Chưa cân thì để trống.")
+    if can_nang > CAN_NANG_TOI_DA:
+        raise LoiNghiepVu(
+            f"Cân nặng không được quá {CAN_NANG_TOI_DA} kg — kiểm lại xem có gõ nhầm không."
+        )
     return can_nang
 
 

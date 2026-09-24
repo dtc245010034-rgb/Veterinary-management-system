@@ -17,6 +17,12 @@ from app.db import Base
 from app.services import clock
 from app.services.text import chuan_hoa
 
+# Giới tính nhận được. Đặt ở model cùng chỗ với cột `sex`, theo đúng tiền lệ `VAI_TRO`
+# của `models/user.py`: template dựng ô chọn từ hằng này, `services/owners.py` kiểm theo
+# đúng hằng này. Viết cứng ở ba chỗ là cách chắc chắn để ba chỗ lệch nhau — rà 19/09 cho
+# thấy giá trị `hack` lưu được vì không chỗ nào kiểm (L-03).
+GIOI_TINH = ("Đực", "Cái")
+
 
 class Pet(Base):
     __tablename__ = "pets"

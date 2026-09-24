@@ -267,3 +267,55 @@ def test_sua_dich_vu_len_qua_ngay_lam_viec_bi_tu_choi(db):
 
     with pytest.raises(LoiNghiepVu):
         nv.sua_dich_vu(db, s.id, thoi_luong_phut=2000)
+
+
+# --- D-02 + L-03: thông báo đúng hướng, và trần số tiền ---------------------------
+#
+# D-02 (rà 20/09, đo lại bằng Chrome 24/09): gõ số lượng `-5` khi tạo gói thì nhận câu
+# "Gói phải có ít nhất một dịch vụ." Người dùng ĐÃ chọn dịch vụ — họ chỉ gõ sai số. Gốc
+# nằm ở router: dòng nào số lượt không phải số dương thì bị **âm thầm bỏ qua**, nên
+# service nhận về gói rỗng và báo đúng thứ nó thấy. Cùng lớp với L-06.
+#
+# L-03: giá 99.999.999.999.999 lưu được, vượt cả `Numeric(12,2)` mà SQLite không chặn.
+
+
+def test_gia_vuot_tran_bi_tu_choi(db):
+    with pytest.raises(LoiNghiepVu) as e:
+        them_dich_vu(db, gia="99999999999999")
+
+    assert "tỷ" in str(e.value)
+
+
+def test_gia_dung_tran_duoc_nhan(db):
+    """Ca biên: đúng 1 tỷ vẫn nhận."""
+    s = them_dich_vu(db, gia="1000000000")
+
+    assert s.price == Decimal("1000000000")
+
+
+def test_sua_dich_vu_len_qua_tran_bi_tu_choi(db):
+    """Bài học 4: nhánh sửa có đường đi riêng."""
+    s = them_dich_vu(db)
+
+    with pytest.raises(LoiNghiepVu):
+        nv.sua_dich_vu(db, s.id, gia=Decimal("99999999999999"))
+
+
+def test_gia_goi_vuot_tran_bi_tu_choi(db):
+    s = them_dich_vu(db)
+
+    with pytest.raises(LoiNghiepVu) as e:
+        nv.tao_goi(db, ten="Gói to", gia=Decimal("99999999999999"), thanh_phan={s.id: 1})
+
+    assert "tỷ" in str(e.value)
+
+
+def test_so_luot_am_bao_dung_loi_khong_bao_goi_rong(db):
+    """D-02 ở tầng nghiệp vụ: đã có thành phần thì không được báo "gói rỗng"."""
+    s = them_dich_vu(db)
+
+    with pytest.raises(LoiNghiepVu) as e:
+        nv.tao_goi(db, ten="Gói âm", gia=Decimal("100000"), thanh_phan={s.id: -5})
+
+    assert "ít nhất một dịch vụ" not in str(e.value)
+    assert "lớn hơn 0" in str(e.value)

@@ -237,6 +237,27 @@ tám ca unit chạy đỏ trước khi sửa và **bốn lượt đột biến**
 |---|---|---|---|---|---|
 | TC-122 | US-10, US-11, US-07 | **Giờ mở cửa (M-06 = S6):** buổi phải nằm trọn trong 08:00–18:00 cùng một ngày — 07:59 bị từ chối · 08:00 nhận · kết thúc đúng 18:00 nhận · vượt 18:00 từ chối · lấn qua nửa đêm từ chối · **`doi_lich` chịu cùng luật** · dịch vụ 2.000 phút không đặt được · thời lượng dịch vụ > 600 phút bị chặn lúc tạo và lúc sửa · dữ liệu mẫu không sinh lịch ngoài giờ | U, I | `test_scheduling.py::test_dat_lich_truoc_gio_mo_cua_bi_tu_choi` và 7 ca cùng nhóm, `test_catalog_service.py::test_thoi_luong_*_ngay_lam_viec_*` (4 ca), `test_appointments.py::test_dat_lich_ngoai_gio_mo_cua_ra_400_va_cau_tieng_viet` (+ ca đối chứng), `test_seed.py::test_moi_lich_mau_deu_nam_trong_gio_mo_cua` | ✅ |
 
+## O. Mười một lỗi còn lại — sửa ngày 24/09
+
+Người dùng yêu cầu xử lý hết ([kế hoạch](../plans/2026-09-24-11-loi-con-lai.md)). Cả 11 tái hiện
+được bằng Chrome **trước** khi sửa và nghiệm thu lại bằng Chrome **sau** khi sửa; 15/15 lượt đột biến
+bị bắt đúng nhóm ca.
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-123 | US-27 | **M-03:** câu hỏi AI quá 1.000 ký tự bị từ chối **trước khi gọi API** — không tốn lượt quota, không ghi `ai_logs`; ca biên đúng trần vẫn hỏi được | U, I | `test_ai_service.py::test_cau_hoi_qua_dai_*`, `…::test_cau_hoi_dung_tran_*`, `test_ai.py::test_cau_hoi_qua_dai_bao_loi_tieng_viet_*` | ✅ |
+| TC-124 | US-04 | **M-05:** số điện thoại phải là số Việt Nam 10 chữ số; `+84`, dấu cách, chấm, gạch đều quy về một dạng; email kiểm định dạng nhưng vẫn không bắt buộc; áp cho cả tạo lẫn sửa | U | `test_owners_service.py::test_so_dien_thoai_*` (8 ca), `…::test_email_*` (3 ca), `…::test_chuan_hoa_so_dien_thoai` | ✅ |
+| TC-125 | US-04 | **M-07:** số trùng thì **hỏi trước khi tạo** — bản ghi chưa được tạo, trang xác nhận giữ lại mọi ô đã gõ, xác nhận rồi mới tạo; số gõ khác định dạng vẫn nhận ra trùng | I | `test_owners.py::test_trung_so_dien_thoai_hien_trang_hoi_lai_va_CHUA_tao`, `…::test_xac_nhan_roi_thi_tao_that`, `…::test_trang_hoi_lai_giu_lai_moi_o_da_go`, `…::test_so_go_khac_dinh_dang_van_nhan_ra_trung`, `…::test_khong_trung_thi_tao_thang_khong_hoi` | ✅ |
+| TC-126 | US-02 | **L-01:** thẻ trang chủ khớp thanh điều hướng theo **từng vai trò**, cả hai chiều | I | `test_auth.py::test_moi_link_menu_deu_co_the_tuong_ung_theo_tung_vai_tro` (3 vai trò), `…::test_khong_co_the_nao_tro_toi_cho_vai_tro_khong_vao_duoc` (3 vai trò) | ✅ |
+| TC-127 | US-01 | **L-02:** mọi trang có `Cache-Control: no-store` — đăng xuất rồi bấm Back không còn thấy dữ liệu cũ; `/static` vẫn được lưu đệm | I | `test_auth.py::test_trang_da_dang_nhap_co_header_khong_luu_dem` (4 đường dẫn), `…::test_trang_dang_nhap_cung_khong_luu_dem`, `…::test_tep_tinh_van_duoc_luu_dem` | ✅ |
+| TC-128 | US-04, US-05, US-07 | **L-03:** trần độ dài chuỗi · giới tính theo hằng của model · cân nặng ≤ 200 kg · tuổi ≤ 40 năm · giá ≤ 1 tỷ · ô tiền **chỉ nhận số nguyên đồng** (`1234.56` và `0,5` bị từ chối, `150.000` vẫn nhận) | U, I | `test_owners_service.py::test_ho_ten_qua_dai_*`, `…::test_gioi_tinh_*`, `…::test_can_nang_*`, `…::test_ngay_sinh_*`, `test_tien.py` (21 ca), `test_catalog_service.py::test_gia_*_tran_*` | ✅ |
+| TC-129 | US-18 | **L-04:** trang thú cưng chỉ gắn "Quá hạn" cho mũi mới nhất của mỗi loại vắc-xin — cùng luật với `den_han()` | U, I | `test_vaccinations_service.py::test_mui_cu_da_co_mui_sau_*`, `…::test_mui_duy_nhat_*`, `…::test_hai_loai_vac_xin_*`, `test_vaccinations.py::test_trang_thu_cung_*qua_han*` | ✅ |
+| TC-130 | US-26 | **L-05:** trang kết quả hỏi đáp hiện lại câu hỏi, kể cả khi mở lại URL sau đó | I | `test_ai.py::test_trang_ket_qua_hoi_dap_hien_lai_cau_hoi`, `…::test_mo_lai_trang_ket_qua_van_thay_cau_hoi` | ✅ |
+| TC-131 | US-12, US-19 | **L-06:** lịch đã hủy báo đúng lý do thay vì bảo đi ghi hồ sơ; đổi lịch **không đổi gì** thì không ghi "Đã đổi lịch" | U | `test_scheduling.py::test_lap_hoa_don_cho_lich_da_huy_bao_dung_ly_do`, `…::test_doi_lich_giu_nguyen_gio_va_nhan_vien_khong_doi_trang_thai`, cộng 3 ca đối chứng | ✅ |
+| TC-132 | US-01 | **L-07:** đăng nhập sai giữ lại tên đã gõ, **không** giữ mật khẩu; tài khoản bị khóa cũng vậy | I | `test_auth.py::test_dang_nhap_sai_van_giu_lai_ten_da_go`, `…::test_dang_nhap_sai_KHONG_giu_lai_mat_khau`, `…::test_tai_khoan_bi_khoa_cung_giu_lai_ten` | ✅ |
+| TC-133 | US-08 | **D-02:** số lượt sai trong gói báo đúng ô hỏng thay vì "gói phải có ít nhất một dịch vụ"; ô trống vẫn là cách bỏ chọn | U, I | `test_services.py::test_so_luot_am_*`, `…::test_so_luot_khong_phai_so_*`, `…::test_o_so_luot_de_trong_van_la_cach_bo_chon_dich_vu`, `test_catalog_service.py::test_so_luot_am_bao_dung_loi_*` | ✅ |
+
+
 ## J. Hệ thống hoàn chỉnh — chạy cuối mỗi phase từ P5
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
@@ -270,8 +291,9 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | L. Bốn lỗi ưu tiên 20/09 | US-03, US-04, US-05, US-24, US-27 | TC-117 → TC-120 | 4 |
 | M. Việc tồn đóng ở P8 | US-10 | TC-121 | 1 |
 | N. Lỗi sửa 24/09 | US-07, US-10, US-11 | TC-122 | 1 |
+| O. Mười một lỗi còn lại, 24/09 | US-01, US-02, US-04, US-05, US-07, US-08, US-12, US-18, US-19, US-26, US-27 | TC-123 → TC-133 | 11 |
 | J. Xuyên suốt | — | TC-101, TC-102 | 2 |
-| | **28/28 US** | | **122** |
+| | **28/28 US** | | **133** |
 
 ### Theo yêu cầu đề bài mục 4
 
@@ -284,4 +306,4 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | Hạ tầng AI (xoay model, quota) | TC-103 → TC-112 | 10 |
 
 **Kết luận: 28/28 user story có test case. Bốn hạng mục đề bài yêu cầu đích danh đều được phủ, trong
-đó lịch hẹn và AI — hai phần khó nhất — chiếm 51/122 test case.**
+đó lịch hẹn và AI — hai phần khó nhất — chiếm 51/133 test case.**

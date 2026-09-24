@@ -39,7 +39,7 @@ mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ kh�
 | P5 | ✅ xong | 06–08/09 | [`P5-chang1`](testing/reports/2026-09-06-P5-chang1.md), [`rà luồng chặng 1`](testing/reports/2026-09-07-ra-luong-P5-chang1.md), [`P5-chang2`](testing/reports/2026-09-07-P5-chang2.md), [`rà luồng chặng 2`](testing/reports/2026-09-08-ra-luong-P5-chang2.md) |
 | P6 | ✅ xong | 11–13/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md), [`rà luồng`](testing/reports/2026-09-11-ra-luong-P6.md) |
 | **P7** | ✅ **xong** — người dùng tick đủ smoke chặng 2, chặng 3 và guardrail ngày 20/09 | 18–20/09 | [`chặng 0`](testing/reports/2026-09-18-P7-chang0.md), [`chặng 1`](testing/reports/2026-09-18-P7-chang1.md), [`chặng 2`](testing/reports/2026-09-18-P7-chang2.md), [`Gemini thật`](testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md) |
-| P8 | 🟡 đang làm — việc P6 để lại đã đóng, ba ô smoke đã có bằng chứng chờ tick | 24/09 | — |
+| P8 | 🟡 đang làm — việc P6 để lại đã đóng, **mọi lỗi tồn đã sửa hết**, ba ô smoke đã có bằng chứng chờ tick | 24/09 | — |
 
 Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡 · 27 ⬜** trên 102 ca, smoke
 **97 ô đã tick / 29 ô còn lại đều thuộc P6–P8**, ERD **12/13 bảng** đã dựng (còn `ai_logs` của P7).
@@ -87,6 +87,13 @@ trong `config.py` phải có mặt trong `.env.example`. **782 test xanh**, ma t
 CSDL trống dựng đủ 14 bảng không một lỗi 500, **29 bản ghi `ai_logs` không chứa dữ liệu cá nhân** —
 nhưng **agent không tick**, vì ô smoke đo trải nghiệm trên trình duyệt. Việc lớn của P8 (README hoàn
 chỉnh, báo cáo, slide, CI) **chưa bắt đầu**.
+
+Ngày 24/09, phần 3 ([kế hoạch](plans/2026-09-24-11-loi-con-lai.md)): sửa **toàn bộ 11 lỗi còn lại**
+— M-03, M-05, M-07, L-01 → L-07, D-02. Cả 11 **tái hiện bằng Chrome trước khi sửa** và **nghiệm thu
+lại bằng Chrome sau khi sửa**, trên bản sao cơ sở dữ liệu. **15/15 lượt đột biến bị bắt đúng.**
+Con số lỗi còn lại được đính chính: ghi "11" từ 20/09 nhưng liệt kê 12 mã, và "10" ở cuối phiên 24/09
+— đếm lại đúng là **11**, nay còn **0**. Thêm `app/services/tien.py` gom luật đọc số tiền vốn nằm
+trùng ở hai router.
 
 ---
 
@@ -248,8 +255,9 @@ Hai lỗ hổng tìm được khi rà soát hệ thống ngày 18/09 (chặng 0 
   hôm nay khi chuỗi ngày hỏng. Lượt rà 19/09 cho thấy rủi ro không thấp như đã đánh giá: nó đã dời một
   lịch thật sang 23:30 hôm đó. Nay đặt/đổi lịch đọc ngày bằng `_doc_ngay_bat_buoc` và báo 400.
 
-**Lỗi còn lại từ lượt rà soát 19/09** — sau đợt sửa 20/09 và 24/09 còn 3 trung bình và 7 thấp, chờ người dùng chọn; danh sách và
-cách tái hiện: [`testing/reports/2026-09-19-ra-luong-P1-P7.md`](testing/reports/2026-09-19-ra-luong-P1-P7.md).
+✅ **Lỗi còn lại từ lượt rà soát 19/09 — đã xử lý hết ngày 24/09.** Ba đợt sửa: 3 lỗi cao (19/09),
+4 lỗi ưu tiên (20/09), M-06 rồi **toàn bộ 11 lỗi còn lại** (24/09). Danh sách đầy đủ và cách tái hiện:
+[`testing/reports/2026-09-19-ra-luong-P1-P7.md`](testing/reports/2026-09-19-ra-luong-P1-P7.md).
 Ba lỗi cao đã sửa cùng ngày ([kế hoạch](plans/2026-09-19-sua-loi-cao-ra-soat.md)). S6 ở trên chính
 là M-06 trong báo cáo đó — **đã sửa 24/09**, xem [kế hoạch](plans/2026-09-24-m06-gio-mo-cua.md).
 

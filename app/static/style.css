@@ -346,6 +346,15 @@ a.nguy-hiem {
   line-height: 1.55;
 }
 
+/* Câu hỏi hiện lại trên trang kết quả (L-05). Nhạt hơn câu trả lời để mắt bám vào
+   nội dung chính, nhưng vẫn đọc được. */
+.ai-cau-hoi {
+  white-space: pre-wrap;
+  margin: 0;
+  color: var(--chu-phu);
+  font-style: italic;
+}
+
 /* Nhãn chỉ dành cho trình đọc màn hình: ô nhập đã có tiêu đề ngay phía trên. */
 .an-nhan {
   position: absolute;

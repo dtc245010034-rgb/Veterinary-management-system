@@ -11,8 +11,9 @@ cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng **trong giờ 
 thanh toán và thống kê đều chạy được. **Ba tính năng AI đã dùng được trên giao diện** và đã kiểm chứng
 với Gemini thật (13/13 ca guardrail đạt). Lượt rà soát toàn hệ thống 19/09 tìm 18 lỗi: **đã sửa 3 lỗi
 cao, 4 lỗi ưu tiên** (thiếu chức năng sửa, chuyển hướng mở, mật khẩu yếu, khuyến cáo lặp) **và M-06**
-(đặt lịch ngoài giờ mở cửa); smoke bấm tay P1→P7 đã tick đủ. Còn **10 lỗi trung bình/thấp** và **P8
-hoàn thiện** — xem tiến độ từng phase trong [`docs/roadmap.md`](docs/roadmap.md).
+(đặt lịch ngoài giờ mở cửa) **và toàn bộ 11 lỗi trung bình/thấp còn lại**; smoke bấm tay P1→P7 đã
+tick đủ. **Không còn lỗi nào tồn từ lượt rà soát.** Còn lại là **P8 hoàn thiện** — xem tiến độ từng
+phase trong [`docs/roadmap.md`](docs/roadmap.md).
 
 Chạy lần đầu phải sao chép `.env.example` thành `.env` và đặt `SECRET_KEY` riêng — ứng dụng từ chối
 khởi động với khóa mặc định. Muốn gọi AI thật thì đặt thêm `GEMINI_API_KEY` và `AI_PROVIDER=gemini`;

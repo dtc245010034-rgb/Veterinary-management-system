@@ -53,6 +53,23 @@ app = FastAPI(title="Quản lý thú cưng và lịch chăm sóc", lifespan=life
 app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+
+@app.middleware("http")
+async def khong_luu_dem(request: Request, call_next):
+    """Mọi trang của ứng dụng đều `no-store` — L-02.
+
+    Rà 19/09: đăng xuất rồi bấm Back vẫn thấy tên nhân viên và danh sách khách kèm số
+    điện thoại, vì trình duyệt dựng lại trang từ bộ nhớ đệm mà không hỏi máy chủ. Máy ở
+    quầy lễ tân là máy dùng chung, và phiên sống 14 ngày.
+
+    Chừa `/static`: file CSS không chứa dữ liệu của ai, tắt bộ nhớ đệm của nó chỉ tốn
+    băng thông. Đây cũng là lý do phép canh có một ca đối chứng riêng cho `/static`.
+    """
+    phan_hoi = await call_next(request)
+    if not request.url.path.startswith("/static"):
+        phan_hoi.headers["Cache-Control"] = "no-store, must-revalidate"
+    return phan_hoi
+
 app.include_router(auth_router.router)
 app.include_router(users_router.router)
 app.include_router(owners_router.router)

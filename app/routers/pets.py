@@ -40,6 +40,8 @@ def trang_thu_cung(
     except LoiNghiepVu:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Không tìm thấy thú cưng.")
 
+    ho_so_tiem = tiem.ho_so_tiem(db, thu_cung_id)
+
     return templates.TemplateResponse(
         request,
         "pet_detail.html",
@@ -47,7 +49,11 @@ def trang_thu_cung(
             "user": user,
             "thu_cung": thu_cung,
             "lich_su": care_records.lich_su(db, thu_cung_id),
-            "ho_so_tiem": tiem.ho_so_tiem(db, thu_cung_id),
+            "ho_so_tiem": ho_so_tiem,
+            # L-04: chỉ mũi mới nhất của mỗi loại mới được gắn nhãn "Quá hạn". Mũi cũ đã
+            # có mũi sau thay thế thì lời nhắc của nó đã hoàn thành — cùng luật mà
+            # `vaccinations.den_han()` dùng cho danh sách đến hạn.
+            "mui_moi_nhat": tiem.mui_moi_nhat_moi_loai(ho_so_tiem),
             # Chặn chọn ngày tương lai ngay ở trình duyệt; tầng services vẫn kiểm lại.
             "hom_nay": clock.now().date(),
             "loi": loi,

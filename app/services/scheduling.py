@@ -296,10 +296,17 @@ def doi_lich(
         db, lich.pet_id, nhan_vien_moi, bat_dau, ket_thuc, thoi_luong, bo_qua_id=lich.id
     )
 
+    # Không có gì đổi thì đừng ghi vào sổ là đã dời (L-06). Rà 19/09: bấm Đổi mà giữ
+    # nguyên giờ và nhân viên vẫn làm trạng thái nhảy sang "Đã dời lịch", nên lịch sử của
+    # buổi đó kể một chuyện không xảy ra. Phép so đặt TRƯỚC khi gán, vì sau khi gán thì
+    # không còn giá trị cũ để so.
+    co_thay_doi = lich.start_at != bat_dau or lich.staff_id != nhan_vien_moi
+
     lich.start_at = bat_dau
     lich.end_at = ket_thuc
     lich.staff_id = nhan_vien_moi
-    lich.status = "rescheduled"
+    if co_thay_doi:
+        lich.status = "rescheduled"
     db.commit()
     db.refresh(lich)
     return lich

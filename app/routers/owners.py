@@ -86,11 +86,44 @@ def them_chu_nuoi(
     email: str = Form(""),
     dia_chi: str = Form(""),
     ghi_chu: str = Form(""),
+    xac_nhan: str = Form(""),
     user: User = duoc_sua,
     db: Session = Depends(get_db),
 ):
+    da_nhap = {
+        "ho_ten": ho_ten, "so_dien_thoai": so_dien_thoai,
+        "email": email, "dia_chi": dia_chi, "ghi_chu": ghi_chu,
+    }
+
+    # US-04: "cảnh báo trùng và HỎI có phải khách cũ không". Hỏi phải diễn ra TRƯỚC khi
+    # tạo — bản cũ tạo xong mới cảnh báo, và câu cảnh báo bảo "hãy mở hồ sơ đó thay vì
+    # tạo mới" trong khi bản ghi mới đã nằm trong cơ sở dữ liệu (M-07).
+    if not xac_nhan:
+        trung = nv.tim_theo_so_dien_thoai(db, so_dien_thoai)
+        if trung:
+            ten_cu = ", ".join(o.full_name for o in trung)
+            return _trang_xac_nhan(
+                request, user,
+                tieu_de="Số điện thoại này đã có trong hệ thống",
+                thong_tin=[
+                    ("Khách đã có", ten_cu),
+                    ("Số điện thoại", nv.chuan_hoa_so_dien_thoai(so_dien_thoai)),
+                    ("Tên vừa nhập", ho_ten),
+                ],
+                canh_bao=(
+                    f"Nếu đây chính là {ten_cu} thì hãy quay lại và mở hồ sơ sẵn có "
+                    "thay vì tạo mới. Chỉ tạo khách mới khi đúng là hai người khác nhau "
+                    "dùng chung một số."
+                ),
+                hanh_dong="/owners",
+                quay_lai="/owners",
+                nut="Vẫn tạo khách mới",
+                kieu_nut="chinh",
+                truong_an={**da_nhap, "xac_nhan": "1"},
+            )
+
     try:
-        moi = nv.tao_chu_nuoi(
+        nv.tao_chu_nuoi(
             db,
             ho_ten=ho_ten,
             so_dien_thoai=so_dien_thoai,
@@ -103,19 +136,7 @@ def them_chu_nuoi(
             request, db, user,
             loi_nhap=str(loi),
             ma=status.HTTP_400_BAD_REQUEST,
-            da_nhap={
-                "ho_ten": ho_ten, "so_dien_thoai": so_dien_thoai,
-                "email": email, "dia_chi": dia_chi, "ghi_chu": ghi_chu,
-            },
-        )
-
-    # US-04: trùng số thì cảnh báo chứ không cấm. Khối cảnh báo có sẵn trong template từ
-    # P2a nhưng chỉ hiện khi tự gõ `?sdt_kiem_tra=` — không nút nào sinh ra URL đó, nên
-    # trên thực tế người dùng thêm chủ nuôi trùng số mà chưa từng thấy cảnh báo nào.
-    if nv.tim_theo_so_dien_thoai(db, moi.phone, bo_qua_id=moi.id):
-        return RedirectResponse(
-            f"/owners?sdt_kiem_tra={moi.phone}&bo_qua_id={moi.id}",
-            status_code=status.HTTP_303_SEE_OTHER,
+            da_nhap=da_nhap,
         )
 
     return RedirectResponse("/owners", status_code=status.HTTP_303_SEE_OTHER)

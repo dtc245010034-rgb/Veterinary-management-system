@@ -107,6 +107,28 @@ def ho_so_tiem(db: Session, thu_cung_id: int) -> list[Vaccination]:
     )
 
 
+def mui_moi_nhat_moi_loai(ho_so: list[Vaccination]) -> set[int]:
+    """Id của mũi mới nhất theo TỪNG loại vắc-xin, tính từ chính danh sách hồ sơ.
+
+    Sinh ra từ L-04: trang thú cưng gắn nhãn "Quá hạn" theo `Vaccination.qua_han`, mà
+    thuộc tính đó chỉ biết ngày hạn của riêng một dòng — nó không thể biết đã có mũi sau
+    thay thế. Kết quả: mũi Dại số 1 vẫn "Quá hạn" trong khi mũi số 2 đã tiêm xong, còn
+    danh sách `/vaccinations` thì đúng vì `den_han()` có sẵn luật này trong câu SQL.
+
+    Nhận sẵn danh sách thay vì tự truy vấn: người gọi vừa lấy hồ sơ xong, truy vấn lại
+    là hai nguồn cho cùng một câu trả lời — đúng thứ làm hai màn hình nói khác nhau.
+
+    So theo `(ngày tiêm, id)` chứ không dựa vào thứ tự danh sách: cùng ngày thì lấy bản
+    ghi nhập sau, đúng luật `den_han()` đang dùng.
+    """
+    moi_nhat: dict[str, Vaccination] = {}
+    for v in ho_so:
+        cu = moi_nhat.get(v.vaccine_name)
+        if cu is None or (v.given_at, v.id) > (cu.given_at, cu.id):
+            moi_nhat[v.vaccine_name] = v
+    return {v.id for v in moi_nhat.values()}
+
+
 def den_han(db: Session, so_ngay: int = SO_NGAY_NHAC) -> list[Vaccination]:
     """TC-062: hạn nhắc từ quá khứ tới hôm nay + `so_ngay`, hạn gần lên trước.
 

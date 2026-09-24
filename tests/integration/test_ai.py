@@ -450,3 +450,45 @@ def test_menu_co_link_tro_ly_ai_cho_moi_vai_tro(client, db, nen):
         trang = client.get("/")
         assert '/ai/hoi-dap' in trang.text, f"{username} không thấy link Trợ lý AI"
         client.post("/logout")
+
+
+# --- L-05: trang kết quả phải hiện lại câu hỏi -----------------------------------
+#
+# Đo bằng Chrome 24/09: hỏi xong sang trang kết quả thì chỉ thấy câu trả lời. Theo mẫu
+# Post/Redirect/Get, trang kết quả là một URL riêng và có thể mở lại sau — không có câu
+# hỏi thì không biết câu trả lời đang trả lời cái gì.
+#
+# Câu hỏi lấy từ `log.prompt`: với tính năng hỏi đáp, `prompt` chính là câu người dùng
+# gõ, đã qua `xoa_lien_he`. Không thêm cột, không truyền qua URL.
+
+
+def test_trang_ket_qua_hoi_dap_hien_lai_cau_hoi(client, seed_basic):
+    dang_nhap(client, "letan")
+    cau_hoi = "Chó của tôi nên tắm bao lâu một lần?"
+
+    r = client.post("/ai/hoi-dap", data={"cau_hoi": cau_hoi}, follow_redirects=True)
+
+    assert r.status_code == 200
+    assert cau_hoi in r.text
+
+
+def test_mo_lai_trang_ket_qua_van_thay_cau_hoi(client, seed_basic):
+    """Post/Redirect/Get: mở lại URL kết quả không gọi AI nữa, nhưng vẫn phải đủ ngữ cảnh."""
+    dang_nhap(client, "letan")
+    cau_hoi = "Mèo con mấy tuần thì tẩy giun được?"
+    r = client.post("/ai/hoi-dap", data={"cau_hoi": cau_hoi}, follow_redirects=True)
+    duong_dan = str(r.url)
+
+    lai = client.get(duong_dan)
+
+    assert cau_hoi in lai.text
+
+
+def test_cau_hoi_qua_dai_bao_loi_tieng_viet_khong_vo_trang(client, seed_basic):
+    """M-03 ở tầng HTTP: lỗi phải ra trang có bố cục, không phải JSON thô hay 500."""
+    dang_nhap(client, "letan")
+
+    r = client.post("/ai/hoi-dap", data={"cau_hoi": "Chó " * 6000}, follow_redirects=True)
+
+    assert r.status_code == 400
+    assert "ký tự" in r.text

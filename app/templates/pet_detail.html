@@ -86,7 +86,8 @@
               <td>
                 {% if v.next_due_at %}
                   {{ v.next_due_at.strftime("%d/%m/%Y") }}
-                  {% if v.qua_han %}<span class="nhan nhan-qua-han">Quá hạn</span>{% endif %}
+                  {# L-04: mũi cũ đã có mũi sau thay thế thì không còn là lời nhắc đang mở. #}
+                  {% if v.qua_han and v.id in mui_moi_nhat %}<span class="nhan nhan-qua-han">Quá hạn</span>{% endif %}
                 {% else %}—{% endif %}
               </td>
               <td>{{ v.note or "—" }}</td>

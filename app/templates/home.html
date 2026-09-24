@@ -5,21 +5,35 @@
 <h1>Xin chào, {{ user.full_name }}</h1>
 <p class="phu">Bạn đang đăng nhập với vai trò <strong>{{ user.ten_vai_tro }}</strong>.</p>
 
+{#
+  Mỗi link trong <nav> của base.html phải có đúng một thẻ ở đây, VÀ ngược lại, xét theo
+  TỪNG vai trò — phép canh: `test_auth.py::test_moi_link_menu_deu_co_the_tuong_ung_*`.
+
+  L-01 (rà 19/09, đo lại bằng Chrome 24/09): lễ tân có link "Dịch vụ" mà không có thẻ;
+  nhân viên chăm sóc thiếu cả "Chủ nuôi" lẫn "Dịch vụ". Phép canh cũ so danh sách gộp
+  chung nên không thấy — ba vai trò cộng lại thì đủ đường dẫn, từng vai trò thì thiếu.
+#}
 <div class="luoi-the">
+  {# Cả ba vai trò đều xem được chủ nuôi (US-02); chỉ quản lý và lễ tân mới sửa. #}
+  <a class="the the-lien-ket" href="/owners"><h2>Chủ nuôi và thú cưng</h2>
+    <p>{{ "Thêm, sửa, tra cứu khách hàng" if user.role in ('manager', 'receptionist')
+          else "Tra cứu khách hàng và hồ sơ thú cưng" }}</p></a>
   {% if user.role in ('manager', 'receptionist') %}
-    <a class="the the-lien-ket" href="/owners"><h2>Chủ nuôi và thú cưng</h2><p>Thêm, sửa, tra cứu khách hàng</p></a>
     <a class="the the-lien-ket" href="/appointments"><h2>Lịch hẹn</h2><p>Đặt lịch, đổi lịch, hủy lịch</p></a>
   {% endif %}
   {% if user.role == 'caretaker' %}
     <a class="the the-lien-ket" href="/appointments/cua-toi"><h2>Lịch của tôi</h2><p>Công việc được phân hôm nay</p></a>
   {% endif %}
+  {# Cả ba vai trò xem được bảng giá (US-02); chỉ quản lý mới sửa. #}
+  <a class="the the-lien-ket" href="/services"><h2>Dịch vụ</h2>
+    <p>{{ "Bảng giá và gói dịch vụ" if user.role == 'manager'
+          else "Xem bảng giá và gói dịch vụ" }}</p></a>
   <a class="the the-lien-ket" href="/vaccinations"><h2>Tiêm phòng</h2><p>Thú cưng sắp và đã quá hạn</p></a>
   <a class="the the-lien-ket" href="/ai/hoi-dap"><h2>Trợ lý AI</h2><p>Hỏi đáp chăm sóc, soạn tin nhắc, tóm tắt hồ sơ</p></a>
   {% if user.role in ('manager', 'receptionist') %}
     <a class="the the-lien-ket" href="/invoices"><h2>Hóa đơn</h2><p>Lập hóa đơn, ghi nhận thanh toán</p></a>
   {% endif %}
   {% if user.role == 'manager' %}
-    <a class="the the-lien-ket" href="/services"><h2>Dịch vụ</h2><p>Bảng giá và gói dịch vụ</p></a>
     <a class="the the-lien-ket" href="/stats"><h2>Thống kê</h2><p>Lượt dịch vụ, doanh thu</p></a>
     <a class="the the-lien-ket" href="/users"><h2>Tài khoản</h2><p>Quản lý nhân viên</p></a>
   {% endif %}

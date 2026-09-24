@@ -8,7 +8,8 @@ from datetime import date, timedelta
 
 import pytest
 
-from app.models.pet import Pet
+from app.models.pet import GIOI_TINH, Pet
+from app.services import clock
 from app.services import owners as nv
 from app.services.errors import LoiNghiepVu
 
@@ -407,3 +408,206 @@ def test_xoa_chu_nuoi_con_du_lieu_khac_tro_vao_van_bao_loi_nghiep_vu(db, frozen_
         nv.xoa_chu_nuoi(db, o.id)
 
     assert nv.lay_chu_nuoi(db, o.id) is not None
+
+
+# --- M-05 + L-03: kiểm định dạng và đặt trần cho giá trị người dùng gõ ------------
+#
+# Rà 19/09 và đo lại bằng Chrome 24/09: `abc-xyz` lưu được làm số điện thoại,
+# `khong-phai-email` lọt phía server, họ tên 509 ký tự lưu được, cân nặng 99.999 kg,
+# ngày sinh 01/01/1800, giới tính `hack`. Người dùng chốt 24/09: số Việt Nam 10 chữ số
+# bắt đầu bằng 0, nhận `+84` và tự quy về dạng 0; đặt trần đủ bốn nhóm giá trị.
+
+
+def test_so_dien_thoai_chu_cai_bi_tu_choi(db):
+    """Ca đo được trên Chrome: `abc-xyz` từng lưu được."""
+    with pytest.raises(LoiNghiepVu) as e:
+        nv.tao_chu_nuoi(db, ho_ten="Ra M05", so_dien_thoai="abc-xyz")
+
+    assert "điện thoại" in str(e.value).lower()
+
+
+@pytest.mark.parametrize("so", ["123", "091234567", "091234567890", ""])
+def test_so_dien_thoai_sai_do_dai_bi_tu_choi(db, so):
+    """Ca biên hai đầu: 9 chữ số và 12 chữ số đều hỏng, ô trống vẫn là lỗi cũ."""
+    with pytest.raises(LoiNghiepVu):
+        nv.tao_chu_nuoi(db, ho_ten="Ra M05", so_dien_thoai=so)
+
+
+def test_so_dien_thoai_10_chu_so_duoc_nhan(db):
+    """Ca biên đúng: đủ 10 chữ số, bắt đầu bằng 0."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra M05", so_dien_thoai="0912345678")
+
+    assert o.phone == "0912345678"
+
+
+@pytest.mark.parametrize(
+    "go_vao", ["+84912345678", "0912 345 678", "0912.345.678", "0912-345-678", "84912345678"]
+)
+def test_cac_cach_go_khac_nhau_deu_ve_cung_mot_so(db, go_vao):
+    """Chuẩn hóa trước khi lưu — điều kiện để M-07 phát hiện trùng cho đúng.
+
+    Không chuẩn hóa thì `0912 345 678` và `0912345678` thành hai bản ghi khác nhau mà
+    phép kiểm trùng không thấy.
+    """
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra M05", so_dien_thoai=go_vao)
+
+    assert o.phone == "0912345678"
+
+
+def test_sua_chu_nuoi_cung_chiu_luat_so_dien_thoai(db):
+    """Bài học 4: chặn lúc tạo mà quên lúc sửa thì vẫn lọt."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra M05", so_dien_thoai="0912345678")
+
+    with pytest.raises(LoiNghiepVu):
+        nv.sua_chu_nuoi(db, o.id, so_dien_thoai="abc-xyz")
+
+
+@pytest.mark.parametrize("email", ["khong-phai-email", "a@b", "@b.vn", "a b@c.vn"])
+def test_email_sai_dinh_dang_bi_tu_choi(db, email):
+    with pytest.raises(LoiNghiepVu) as e:
+        nv.tao_chu_nuoi(db, ho_ten="Ra M05", so_dien_thoai="0912345678", email=email)
+
+    assert "email" in str(e.value).lower()
+
+
+def test_email_de_trong_van_duoc(db):
+    """Email là ô không bắt buộc — đừng biến phép kiểm định dạng thành phép bắt buộc."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra M05", so_dien_thoai="0912345678", email="")
+
+    assert o.email is None
+
+
+def test_email_dung_dinh_dang_duoc_nhan(db):
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra M05", so_dien_thoai="0912345678", email="a@b.vn")
+
+    assert o.email == "a@b.vn"
+
+
+def test_ho_ten_qua_dai_bi_tu_choi(db):
+    """Ca đo được: họ tên 509 ký tự lưu được."""
+    with pytest.raises(LoiNghiepVu) as e:
+        nv.tao_chu_nuoi(db, ho_ten="X" * 101, so_dien_thoai="0912345678")
+
+    assert "100" in str(e.value)
+
+
+def test_ho_ten_dung_tran_duoc_nhan(db):
+    """Ca biên: đúng 100 ký tự vẫn phải nhận."""
+    o = nv.tao_chu_nuoi(db, ho_ten="X" * 100, so_dien_thoai="0912345678")
+
+    assert len(o.full_name) == 100
+
+
+def test_dia_chi_va_ghi_chu_qua_dai_bi_tu_choi(db):
+    with pytest.raises(LoiNghiepVu):
+        nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345678", dia_chi="X" * 256)
+
+    with pytest.raises(LoiNghiepVu):
+        nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345679", ghi_chu="X" * 501)
+
+
+# --- Thú cưng ---------------------------------------------------------------------
+
+
+def test_gioi_tinh_ngoai_danh_sach_bi_tu_choi(db):
+    """Ca đo được trên Chrome: `hack` lưu được vào cột `sex`."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345678")
+
+    with pytest.raises(LoiNghiepVu) as e:
+        nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", gioi_tinh="hack")
+
+    assert "Giới tính" in str(e.value)
+
+
+@pytest.mark.parametrize("gt", ["Đực", "Cái", "", None])
+def test_gioi_tinh_trong_danh_sach_duoc_nhan(db, gt):
+    """Lấy thẳng từ hằng của model chứ không viết cứng — hai chỗ lệch nhau thì test này
+    phải đỏ, đó là điểm của nó."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345678")
+
+    p = nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", gioi_tinh=gt)
+
+    assert p.sex == (gt or None)
+
+
+def test_moi_gia_tri_trong_hang_GIOI_TINH_deu_duoc_nhan(db):
+    """Neo phép kiểm vào chính hằng mà template dùng để dựng ô chọn."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345678")
+
+    for gt in GIOI_TINH:
+        p = nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", gioi_tinh=gt)
+        assert p.sex == gt
+
+
+def test_can_nang_qua_lon_bi_tu_choi(db):
+    """Ca đo được: 99.999 kg lưu được."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345678")
+
+    with pytest.raises(LoiNghiepVu) as e:
+        nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", can_nang=99999)
+
+    assert "200" in str(e.value)
+
+
+def test_can_nang_dung_tran_duoc_nhan(db):
+    """Ca biên: đúng 200 kg vẫn nhận."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345678")
+
+    p = nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", can_nang=200)
+
+    assert p.weight_kg == 200
+
+
+def test_ngay_sinh_qua_xa_bi_tu_choi(db, frozen_clock):
+    """Ca đo được: sinh 01/01/1800 lưu được."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345678")
+
+    with pytest.raises(LoiNghiepVu) as e:
+        nv.tao_thu_cung(
+            db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", ngay_sinh=date(1800, 1, 1)
+        )
+
+    assert "40" in str(e.value)
+
+
+def test_ngay_sinh_dung_tran_tuoi_duoc_nhan(db, frozen_clock):
+    """Ca biên: đúng 40 năm trước vẫn nhận. Lấy mốc từ `clock` chứ không viết cứng năm."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345678")
+    hom_nay = clock.now().date()
+    dung_40_nam = hom_nay.replace(year=hom_nay.year - 40)
+
+    p = nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó", ngay_sinh=dung_40_nam)
+
+    assert p.birth_date == dung_40_nam
+
+
+def test_sua_thu_cung_cung_chiu_cac_tran(db):
+    """Bài học 4 lần nữa — nhánh `sua_` có đường đi riêng."""
+    o = nv.tao_chu_nuoi(db, ho_ten="Ra", so_dien_thoai="0912345678")
+    p = nv.tao_thu_cung(db, chu_nuoi_id=o.id, ten="Mực", loai="Chó")
+
+    with pytest.raises(LoiNghiepVu):
+        nv.sua_thu_cung(db, p.id, gioi_tinh="hack")
+    with pytest.raises(LoiNghiepVu):
+        nv.sua_thu_cung(db, p.id, can_nang=99999)
+
+
+@pytest.mark.parametrize(
+    "go_vao, mong_doi",
+    [
+        ("0912345678", "0912345678"),
+        ("0912 345 678", "0912345678"),
+        ("+84912345678", "0912345678"),
+        ("84912345678", "0912345678"),
+        ("(091) 234-5678", "0912345678"),
+        ("", ""),
+        (None, ""),
+    ],
+)
+def test_chuan_hoa_so_dien_thoai(go_vao, mong_doi):
+    """Gọi thẳng hàm công khai — phép canh kiến trúc đòi mỗi hàm public có một ca như vậy.
+
+    Hàm này chỉ chuẩn hóa, KHÔNG phán xét: chuỗi rỗng trả về rỗng chứ không ném lỗi, vì
+    `tim_theo_so_dien_thoai` gọi nó cho cả những lần tra bằng ô trống.
+    """
+    assert nv.chuan_hoa_so_dien_thoai(go_vao) == mong_doi

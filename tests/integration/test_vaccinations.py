@@ -237,3 +237,37 @@ def test_form_mui_tiem_giu_lai_du_lieu_da_nhap_khi_bao_loi(client, nen):
     assert 'value="3"' in r.text
     assert f'value="{(HOM_NAY - timedelta(days=5)).isoformat()}"' in r.text
     assert "Tiêm ở phòng khám An Khang" in r.text
+
+
+# --- L-04: trang thú cưng không gắn "Quá hạn" cho mũi đã có mũi sau thay thế ------
+#
+# Đo bằng Chrome 24/09 trên CSDL thật: "Mực" có mũi Dại số 2 hạn 04/08/2027 mà mũi số 1
+# vẫn mang nhãn Quá hạn. Danh sách `/vaccinations` thì đúng — hai màn hình nói khác nhau
+# về cùng một con vật.
+
+
+def test_trang_thu_cung_khong_gan_qua_han_cho_mui_da_co_mui_sau(client, nen):
+    dang_nhap(client, "letan")
+    ghi_mui(client, nen["muc"], so_mui="1",
+            ngay_tiem=(HOM_NAY - timedelta(days=400)).isoformat(),
+            han_nhac=(HOM_NAY - timedelta(days=35)).isoformat())
+    ghi_mui(client, nen["muc"], so_mui="2",
+            ngay_tiem=(HOM_NAY - timedelta(days=5)).isoformat(),
+            han_nhac=(HOM_NAY + timedelta(days=360)).isoformat())
+
+    r = client.get(f"/pets/{nen['muc'].id}")
+
+    assert r.status_code == 200
+    assert "Quá hạn" not in r.text
+
+
+def test_trang_thu_cung_van_gan_qua_han_khi_mui_moi_nhat_that_su_qua_han(client, nen):
+    """Ca đối chứng: đừng lọc mất luôn cảnh báo thật — đó mới là mục đích của màn hình."""
+    dang_nhap(client, "letan")
+    ghi_mui(client, nen["muc"], so_mui="1",
+            ngay_tiem=(HOM_NAY - timedelta(days=400)).isoformat(),
+            han_nhac=(HOM_NAY - timedelta(days=35)).isoformat())
+
+    r = client.get(f"/pets/{nen['muc'].id}")
+
+    assert "Quá hạn" in r.text

@@ -21,6 +21,7 @@ from app.models.payment import TEN_HINH_THUC
 from app.models.user import User
 from app.services import billing as nv
 from app.services.errors import LoiNghiepVu
+from app.services.tien import doc_tien
 from app.templates import templates
 
 # Phép kiểm vai trò đặt ở cấp router thay vì từng route: thiếu một route là thủng cả
@@ -84,7 +85,7 @@ def thu_tien(
     db: Session = Depends(get_db),
 ):
     try:
-        nv.ghi_nhan_thanh_toan(db, hoa_don_id, _doc_tien(so_tien), hinh_thuc)
+        nv.ghi_nhan_thanh_toan(db, hoa_don_id, doc_tien(so_tien, "Số tiền"), hinh_thuc)
     except LoiNghiepVu as e:
         return trang_chi_tiet(
             request,
@@ -160,21 +161,3 @@ def _ve_chi_tiet(hoa_don_id: int) -> RedirectResponse:
     )
 
 
-def _doc_tien(chuoi: str) -> Decimal | None:
-    """Đọc tiền thành Decimal, không qua float, và chấp nhận cả '150.000'.
-
-    Ô trống trả về None để tầng services phân biệt "không nhập" với "nhập số 0" — hai
-    thông báo lỗi khác nhau, và luật "phải nhập" là nghiệp vụ nên nó ở services.
-    """
-    chuoi = (chuoi or "").strip().replace(".", "").replace(",", "").replace(" ", "")
-    if not chuoi:
-        return None
-    try:
-        so = Decimal(chuoi)
-    except InvalidOperation:
-        raise LoiNghiepVu("Số tiền phải là một số.")
-    # Decimal nhận cả "NaN" và "Infinity"; NaN làm phép so ở tầng services ném
-    # InvalidOperation thành lỗi 500 (rà bằng trình duyệt 11/09).
-    if not so.is_finite():
-        raise LoiNghiepVu("Số tiền phải là một số.")
-    return so

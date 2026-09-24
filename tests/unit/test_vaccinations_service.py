@@ -218,3 +218,61 @@ def test_qua_han_danh_dau_dung_theo_hom_nay(db, thu_cung):
 
     assert hom_nay.qua_han is False
     assert hom_qua.qua_han is True
+
+
+# --- L-04: nhãn "Quá hạn" chỉ dành cho mũi mới nhất của mỗi loại -----------------
+#
+# Đo bằng Chrome 24/09 trên thú cưng "Mực": mũi Dại số 2 tiêm 04/08/2026 hạn 04/08/2027,
+# mũi Dại số 1 tiêm 04/08/2025 hạn 19/08/2026 — mũi số 1 vẫn gắn nhãn **Quá hạn** dù đã
+# có mũi sau thay thế. Danh sách `/vaccinations` thì đúng, vì `den_han()` có sẵn luật
+# "chỉ tính mũi mới nhất của mỗi loại". Trang thú cưng không dùng luật đó.
+#
+# Hậu quả: hồ sơ nói con vật đang quá hạn tiêm trong khi nó vừa tiêm xong.
+
+
+def test_mui_cu_da_co_mui_sau_khong_con_tinh_la_qua_han(db, thu_cung, frozen_clock):
+    thu = thu_cung["muc"]
+    nv.ghi_mui_tiem(
+        db, thu_cung_id=thu.id, ten_vac_xin="Dại", so_mui=1,
+        ngay_tiem=date(2025, 8, 4), han_nhac=date(2026, 2, 19),
+    )
+    nv.ghi_mui_tiem(
+        db, thu_cung_id=thu.id, ten_vac_xin="Dại", so_mui=2,
+        ngay_tiem=date(2026, 3, 1), han_nhac=date(2027, 3, 1),
+    )
+
+    ho_so = nv.ho_so_tiem(db, thu.id)
+    moi_nhat = nv.mui_moi_nhat_moi_loai(ho_so)
+
+    cu = next(v for v in ho_so if v.dose_no == 1)
+    moi = next(v for v in ho_so if v.dose_no == 2)
+    assert cu.id not in moi_nhat
+    assert moi.id in moi_nhat
+    # Chính mũi cũ vẫn "quá hạn" theo ngày — nên phép lọc mới là thứ làm nên khác biệt.
+    assert cu.qua_han is True
+
+
+def test_mui_duy_nhat_cua_mot_loai_van_la_mui_moi_nhat(db, thu_cung, frozen_clock):
+    """Ca đối chứng: đừng lọc mất luôn cả mũi thật sự đang quá hạn."""
+    thu = thu_cung["muc"]
+    nv.ghi_mui_tiem(
+        db, thu_cung_id=thu.id, ten_vac_xin="Care 5 bệnh", so_mui=1,
+        ngay_tiem=date(2025, 8, 4), han_nhac=date(2026, 2, 19),
+    )
+
+    ho_so = nv.ho_so_tiem(db, thu.id)
+
+    assert len(nv.mui_moi_nhat_moi_loai(ho_so)) == 1
+
+
+def test_hai_loai_vac_xin_khac_nhau_deu_giu_mui_moi_nhat_cua_minh(db, thu_cung, frozen_clock):
+    """Ca biên: lọc theo TỪNG loại, không phải lấy một mũi mới nhất cho cả hồ sơ."""
+    thu = thu_cung["muc"]
+    nv.ghi_mui_tiem(db, thu_cung_id=thu.id, ten_vac_xin="Dại", so_mui=1,
+                    ngay_tiem=date(2026, 1, 1), han_nhac=date(2027, 1, 1))
+    nv.ghi_mui_tiem(db, thu_cung_id=thu.id, ten_vac_xin="Care 5 bệnh", so_mui=1,
+                    ngay_tiem=date(2025, 6, 1), han_nhac=date(2026, 2, 1))
+
+    ho_so = nv.ho_so_tiem(db, thu.id)
+
+    assert len(nv.mui_moi_nhat_moi_loai(ho_so)) == 2

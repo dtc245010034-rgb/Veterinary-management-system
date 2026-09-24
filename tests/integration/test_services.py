@@ -10,8 +10,10 @@ import re
 from decimal import Decimal
 
 import pytest
+from sqlalchemy import select
 
 from app.models.service import Service
+from app.models.service_package import ServicePackage
 
 
 def dang_nhap(client, username, password="matkhau123"):
@@ -280,7 +282,12 @@ def test_gia_goi_nan_bao_loi_khong_ra_loi_500(client, seed_basic):
 def test_so_luot_trong_goi_la_chu_so_mu_khong_ra_loi_500(client, seed_basic):
     """Lỗi thật 11/09: `"²".isdigit()` là True nhưng `int("²")` ném ValueError → 500.
 
-    Ô số lượt không phải một số nguyên thì coi như không chọn dịch vụ đó, như ô bỏ trống.
+    Điều test này bảo vệ là **không bao giờ ra 500**, và nó vẫn nguyên giá trị.
+
+    Phần khẳng định thì đổi ngày 24/09: bản 11/09 chốt "ô số lượt không đọc được thì coi
+    như không chọn dịch vụ đó" — chính giả định ấy là lỗi D-02. Gõ sai một ký tự rồi nhận
+    câu "Gói phải có ít nhất một dịch vụ" trong khi đã chọn dịch vụ là thông báo sai
+    hướng. Nay phải nói thẳng ô nào hỏng.
     """
     dang_nhap(client, "quanly")
     them_dich_vu(client, ma="TAM", ten="Tắm cho chó", gia="150000")
@@ -293,7 +300,8 @@ def test_so_luot_trong_goi_la_chu_so_mu_khong_ra_loi_500(client, seed_basic):
     )
 
     assert r.status_code == 400
-    assert "ít nhất một dịch vụ" in r.text
+    assert "ít nhất một dịch vụ" not in r.text
+    assert "số nguyên" in r.text
 
 
 def test_trang_dich_vu_trong_hien_trang_thai_rong(client, seed_basic):
@@ -336,3 +344,68 @@ def _ma_dich_vu_dau_tien(client) -> int:
     ma = _tat_ca_ma_dich_vu(client)
     assert ma, "Không tìm thấy dịch vụ nào trên trang"
     return ma[0]
+
+
+# --- D-02: số lượt sai không được biến thành "gói rỗng" --------------------------
+#
+# Tầng nghiệp vụ đã đúng từ đầu: đưa cho nó `{dich_vu: -5}` thì nó báo "Số lượt … phải
+# lớn hơn 0". Lỗi nằm trọn ở router: dòng nào số lượt không phải số nguyên dương thì bị
+# **âm thầm bỏ qua**, nên service nhận về gói rỗng và báo đúng thứ nó thấy. Đo lại bằng
+# Chrome 24/09: gõ `-5` ra "Gói phải có ít nhất một dịch vụ."
+
+
+def _ma_dich_vu(db, ma):
+    return db.scalar(select(Service).where(Service.code == ma)).id
+
+
+def test_so_luot_am_khong_bao_nham_thanh_goi_rong(client, db, seed_basic):
+    dang_nhap(client, "quanly")
+    them_dich_vu(client, ma="TAM", ten="Tắm và sấy")
+
+    r = client.post(
+        "/services/goi",
+        data={"ten": "Gói âm", "gia": "100000", "mo_ta": "",
+              "dich_vu_id": str(_ma_dich_vu(db, "TAM")), "so_luong": "-5"},
+    )
+
+    assert r.status_code == 400
+    assert "ít nhất một dịch vụ" not in r.text
+    assert "lớn hơn 0" in r.text
+
+
+def test_so_luot_khong_phai_so_cung_bao_dung_huong(client, db, seed_basic):
+    dang_nhap(client, "quanly")
+    them_dich_vu(client, ma="TAM", ten="Tắm và sấy")
+
+    r = client.post(
+        "/services/goi",
+        data={"ten": "Gói chữ", "gia": "100000", "mo_ta": "",
+              "dich_vu_id": str(_ma_dich_vu(db, "TAM")), "so_luong": "abc"},
+    )
+
+    assert r.status_code == 400
+    assert "ít nhất một dịch vụ" not in r.text
+
+
+def test_o_so_luot_de_trong_van_la_cach_bo_chon_dich_vu(client, db, seed_basic):
+    """Ca đối chứng — quan trọng: để trống PHẢI tiếp tục là cách bỏ chọn một dòng.
+
+    Không có ca này thì bản vá dễ đi quá tay, bắt lỗi cả những dòng người dùng cố ý
+    không chọn, và form nhiều dịch vụ sẽ không tạo nổi gói nào.
+    """
+    dang_nhap(client, "quanly")
+    them_dich_vu(client, ma="TAM", ten="Tắm và sấy")
+    them_dich_vu(client, ma="CATMONG", ten="Cắt móng", gia="50000", phut="15")
+
+    r = client.post(
+        "/services/goi",
+        data={"ten": "Gói một dịch vụ", "gia": "100000", "mo_ta": "",
+              "dich_vu_id": [str(_ma_dich_vu(db, "TAM")), str(_ma_dich_vu(db, "CATMONG"))],
+              "so_luong": ["2", ""]},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 200
+    goi = db.scalars(select(ServicePackage)).all()
+    assert len(goi) == 1
+    assert len(goi[0].items) == 1

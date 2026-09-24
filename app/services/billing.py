@@ -47,6 +47,15 @@ def lap_hoa_don(db: Session, lich_id: int, ghi_chu: str | None = None) -> Invoic
         raise LoiKhongTimThay("Không tìm thấy lịch hẹn.")
 
     if lich.status != "done":
+        # Thông báo phải nói được BƯỚC TIẾP THEO, và bước tiếp theo khác nhau tùy trạng
+        # thái. Bản cũ luôn bảo "ghi hồ sơ chăm sóc trước đã" — với lịch đã hủy thì đó là
+        # lời khuyên đi vào ngõ cụt, vì buổi đó không diễn ra và không ghi hồ sơ được
+        # (L-06). Rà 19/09 gặp đúng ca này trên giao diện.
+        if lich.status == "cancelled":
+            raise LoiNghiepVu(
+                f"Buổi này đã hủy{f' ({lich.cancel_reason})' if lich.cancel_reason else ''} "
+                "nên không lập hóa đơn được. Muốn thu tiền thì phải đặt lại lịch mới."
+            )
         raise LoiNghiepVu(
             "Chỉ lập hóa đơn được cho lịch đã hoàn thành. "
             "Ghi hồ sơ chăm sóc cho buổi này trước đã."

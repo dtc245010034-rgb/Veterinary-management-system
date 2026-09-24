@@ -16,6 +16,7 @@ import pytest
 
 from app.ai import prompts
 from app.ai import service as nv
+from app.ai.service import DAI_TOI_DA_CAU_HOI
 from app.ai.fake import FakeProvider
 from app.ai.provider import LoiAI, LoiQuaTai
 from app.models.ai_log import AiLog
@@ -388,3 +389,42 @@ def test_lay_log_tra_ve_ket_qua_cu_va_bao_loi_khi_khong_co(db, nen):
 
 def test_moc_reset_ke_tiep_co_cua_o_service(frozen_clock):
     assert nv.moc_reset_ke_tiep() > clock.now()
+
+
+# --- M-03: giới hạn độ dài câu hỏi -----------------------------------------------
+#
+# Rà 19/09: câu 20.033 ký tự được gửi nguyên sang Gemini (16,5 giây), và mô hình
+# **trả lời về Truyện Kiều** — lạc đề hoàn toàn, vượt phạm vi, vẫn kèm khuyến cáo thú y
+# (`ai_logs` #38). Đo lại bằng Chrome 24/09: câu 20.000 ký tự vẫn đi thẳng qua.
+#
+# Chặn TRƯỚC khi gọi API, đúng tiền lệ của `la_cau_xin_thuoc`: không gửi đi thì không
+# tốn lượt quota và không phụ thuộc việc mô hình có chịu nổi câu dài hay không.
+
+
+def test_cau_hoi_qua_dai_bi_tu_choi_truoc_khi_goi_api(db, fake_ai, seed_basic):
+    with pytest.raises(LoiNghiepVu) as e:
+        nv.hoi_dap(db, fake_ai, seed_basic["manager"].id, "Chó " * 6000)
+
+    assert str(DAI_TOI_DA_CAU_HOI) in str(e.value)
+    # Điều quan trọng nhất: không lời gọi nào đi ra, nên không tốn lượt quota.
+    assert fake_ai.da_goi == []
+
+
+def test_cau_hoi_dung_tran_van_duoc_hoi(db, fake_ai, seed_basic):
+    """Ca biên: đúng trần vẫn phải đi qua, nếu không là chặn nhầm câu hợp lệ."""
+    kq = nv.hoi_dap(db, fake_ai, seed_basic["manager"].id, "a" * DAI_TOI_DA_CAU_HOI)
+
+    assert kq.noi_dung
+    assert len(fake_ai.da_goi) == 1
+
+
+def test_cau_hoi_qua_dai_khong_ghi_log_goi_ai(db, fake_ai, seed_basic):
+    """Câu bị chặn vì quá dài không phải một lượt hỏi — đừng làm bẩn `ai_logs`."""
+    from app.models.ai_log import AiLog
+    from sqlalchemy import select
+
+    truoc = len(db.scalars(select(AiLog)).all())
+    with pytest.raises(LoiNghiepVu):
+        nv.hoi_dap(db, fake_ai, seed_basic["manager"].id, "Chó " * 6000)
+
+    assert len(db.scalars(select(AiLog)).all()) == truoc

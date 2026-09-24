@@ -16,6 +16,17 @@
 {% if loi %}
   <div class="loi" role="alert"><p>{{ loi }}</p></div>
 {% else %}
+  {# L-05: hiện lại câu hỏi. Theo mẫu Post/Redirect/Get, trang này là một URL riêng mở
+     lại được sau đó — không có câu hỏi thì không biết câu trả lời đang trả lời cái gì.
+     Với tính năng hỏi đáp, `prompt` chính là câu người dùng gõ (đã qua `xoa_lien_he`),
+     nên không cần thêm cột hay truyền qua URL. Hai tính năng kia dựng prompt từ dữ liệu
+     chăm sóc nên `prompt` của chúng không phải câu để đọc. #}
+  {% if log.feature == 'qa' %}
+    <div class="the">
+      <h2>Câu hỏi</h2>
+      <p class="ai-cau-hoi">{{ log.prompt }}</p>
+    </div>
+  {% endif %}
   {% if ban_chot is defined %}
     <div class="the">
       <h2>Bản đã chốt</h2>

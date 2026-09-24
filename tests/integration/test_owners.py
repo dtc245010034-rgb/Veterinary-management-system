@@ -81,22 +81,25 @@ def test_thieu_truong_bat_buoc_hien_loi_tren_trang(client, seed_basic, ho_ten, s
     assert tu_khoa_loi in r.text
 
 
-def test_so_dien_thoai_trung_hien_canh_bao_ngay_sau_khi_them(client, seed_basic):
-    """TC-015: cảnh báo chứ không cấm — và cảnh báo phải hiện TRONG LUỒNG.
+def test_so_dien_thoai_trung_hien_canh_bao_ngay_trong_luong(client, seed_basic):
+    """TC-015: cảnh báo phải hiện TRONG LUỒNG, không phải ở một URL tự gõ.
 
-    Bản test cũ gọi thẳng `/owners?sdt_kiem_tra=...`, một URL không nút nào trong giao
-    diện sinh ra. Nó xanh suốt từ P2a trong khi người dùng thật thêm chủ nuôi trùng số
-    mà không thấy cảnh báo nào. Tìm ra khi rà bằng chuột trên trình duyệt ở P4.
+    Bản test đầu tiên gọi thẳng `/owners?sdt_kiem_tra=...`, một URL không nút nào trong
+    giao diện sinh ra. Nó xanh suốt từ P2a trong khi người dùng thật thêm chủ nuôi trùng
+    số mà không thấy cảnh báo nào. Tìm ra khi rà bằng chuột trên trình duyệt ở P4.
+
+    Đổi phần khẳng định ngày 24/09 (M-07): cảnh báo nay đến **trước** khi tạo, chứ không
+    phải sau. US-04 nói "cảnh báo trùng và **hỏi**" — hỏi sau khi đã tạo thì không còn là
+    hỏi. Điều test này bảo vệ không đổi: người dùng đi đúng luồng bình thường phải nhìn
+    thấy cảnh báo.
     """
     dang_nhap(client, "letan")
     them_chu_nuoi(client, ho_ten="Người Một", sdt="0912345678")
 
     r = them_chu_nuoi(client, ho_ten="Người Hai", sdt="0912345678")
 
-    assert "đã dùng số này" in r.text
+    assert "đã có trong hệ thống" in r.text
     assert "Người Một" in r.text
-    # Không tự liệt kê chính người vừa tạo — nói "đã có" mà trỏ vào chính nó thì vô nghĩa.
-    assert r.text.count("Người Hai") == 1
 
 
 def test_them_chu_nuoi_so_dien_thoai_moi_khong_hien_canh_bao(client, seed_basic):
@@ -544,3 +547,94 @@ def test_nhan_vien_cham_soc_khong_sua_duoc_thu_cung(client, db, seed_basic):
               "ngay_sinh": "", "can_nang": "", "ghi_chu": ""},
     )
     assert r.status_code == 403
+
+
+# --- M-07: trùng số điện thoại thì HỎI trước, chưa tạo gì cả ---------------------
+#
+# US-04 nói "cảnh báo trùng và **hỏi** có phải khách cũ không". Bản cũ tạo bản ghi
+# xong mới cảnh báo, và câu cảnh báo còn bảo "hãy mở hồ sơ đó **thay vì tạo mới**"
+# trong khi bản ghi mới đã nằm trong cơ sở dữ liệu rồi. Cộng với M-02 lúc đó chưa có
+# chức năng xóa, bản ghi thừa nằm lại vĩnh viễn.
+#
+# Đo lại bằng Chrome 24/09: tạo "Ra M07 Trung" trùng số với "Đỗ Thị Hằng" → 7 chủ nuôi.
+
+
+def _so_chu_nuoi(db):
+    from app.models.owner import Owner
+    from sqlalchemy import select
+    return len(db.scalars(select(Owner)).all())
+
+
+def test_trung_so_dien_thoai_hien_trang_hoi_lai_va_CHUA_tao(client, db, seed_basic):
+    """Điều quan trọng nhất của bản vá: chưa có bản ghi nào được tạo."""
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client, ho_ten="Đỗ Thị Hằng", sdt="0912345678")
+    truoc = _so_chu_nuoi(db)
+
+    r = client.post(
+        "/owners",
+        data={"ho_ten": "Người Trùng Số", "so_dien_thoai": "0912345678"},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 200
+    assert "Đỗ Thị Hằng" in r.text
+    assert _so_chu_nuoi(db) == truoc
+
+
+def test_xac_nhan_roi_thi_tao_that(client, db, seed_basic):
+    """Vẫn phải tạo được — hai người trong một nhà dùng chung số là chuyện có thật."""
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client, ho_ten="Đỗ Thị Hằng", sdt="0912345678")
+    truoc = _so_chu_nuoi(db)
+
+    r = client.post(
+        "/owners",
+        data={"ho_ten": "Người Trùng Số", "so_dien_thoai": "0912345678", "xac_nhan": "1"},
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 200
+    assert _so_chu_nuoi(db) == truoc + 1
+
+
+def test_trang_hoi_lai_giu_lai_moi_o_da_go(client, db, seed_basic):
+    """Bấm "Vẫn tạo" mà mất địa chỉ vừa gõ thì lễ tân phải gõ lại từ đầu."""
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client, ho_ten="Đỗ Thị Hằng", sdt="0912345678")
+
+    r = client.post(
+        "/owners",
+        data={"ho_ten": "Người Trùng Số", "so_dien_thoai": "0912345678",
+              "email": "a@b.vn", "dia_chi": "12 Ngô Quyền", "ghi_chu": "Khách quen"},
+        follow_redirects=True,
+    )
+
+    for gia_tri in ("Người Trùng Số", "a@b.vn", "12 Ngô Quyền", "Khách quen"):
+        assert gia_tri in r.text
+
+
+def test_khong_trung_thi_tao_thang_khong_hoi(client, db, seed_basic):
+    """Ca đối chứng: đừng biến mọi lần thêm khách thành một lần hỏi lại."""
+    dang_nhap(client, "letan")
+    truoc = _so_chu_nuoi(db)
+
+    them_chu_nuoi(client, ho_ten="Khách Mới", sdt="0909090909")
+
+    assert _so_chu_nuoi(db) == truoc + 1
+
+
+def test_so_go_khac_dinh_dang_van_nhan_ra_trung(client, db, seed_basic):
+    """Chuẩn hóa số (M-05) phải làm phép kiểm trùng nhận ra `0912 345 678`."""
+    dang_nhap(client, "letan")
+    them_chu_nuoi(client, ho_ten="Đỗ Thị Hằng", sdt="0912345678")
+    truoc = _so_chu_nuoi(db)
+
+    r = client.post(
+        "/owners",
+        data={"ho_ten": "Người Trùng Số", "so_dien_thoai": "+84912345678"},
+        follow_redirects=True,
+    )
+
+    assert _so_chu_nuoi(db) == truoc
+    assert "Đỗ Thị Hằng" in r.text

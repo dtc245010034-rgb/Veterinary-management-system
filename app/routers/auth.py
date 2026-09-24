@@ -43,7 +43,9 @@ def xu_ly_dang_nhap(
         return templates.TemplateResponse(
             request,
             "login.html",
-            {"user": None, "loi": LOI_DANG_NHAP},
+            # Giữ lại tên đã gõ, KHÔNG giữ mật khẩu: máy quầy dùng chung và HTML
+            # còn nằm trong bộ nhớ đệm của trình duyệt (L-07).
+            {"user": None, "loi": LOI_DANG_NHAP, "username": username},
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 
@@ -51,7 +53,7 @@ def xu_ly_dang_nhap(
         return templates.TemplateResponse(
             request,
             "login.html",
-            {"user": None, "loi": LOI_TAI_KHOAN_KHOA},
+            {"user": None, "loi": LOI_TAI_KHOAN_KHOA, "username": username},
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 

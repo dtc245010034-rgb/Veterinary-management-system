@@ -22,9 +22,15 @@
   <p class="canh-bao" role="alert">{{ canh_bao }}</p>
 
   <form method="post" action="{{ hanh_dong }}">
+    {# Ô ẩn để thao tác cần dữ liệu người dùng vừa gõ (cảnh báo trùng số điện thoại,
+       M-07) không bắt họ gõ lại từ đầu sau khi bấm xác nhận. Thao tác xóa không truyền
+       gì vào đây nên vòng lặp chạy không lần nào. #}
+    {% for ten, gia_tri in (truong_an or {}).items() %}
+      <input type="hidden" name="{{ ten }}" value="{{ gia_tri }}">
+    {% endfor %}
     <div class="hang-nut">
       <a class="lien-ket-nho" href="{{ quay_lai }}">Quay lại</a>
-      <button type="submit" class="nguy-hiem">{{ nut }}</button>
+      <button type="submit" class="{{ kieu_nut or 'nguy-hiem' }}">{{ nut }}</button>
     </div>
   </form>
 </div>
