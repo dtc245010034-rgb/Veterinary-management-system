@@ -534,3 +534,55 @@ def test_khoa_het_nhan_vien_cham_soc_thi_bao_thieu_nhan_vien(client, db, nen, se
     assert "Chưa có nhân viên chăm sóc nào" in r.text
     assert "Chưa có thú cưng nào" not in r.text
     assert "Chưa có dịch vụ nào đang bán" not in r.text
+
+
+# --- M-06: giờ mở cửa, kiểm ở tầng HTTP -----------------------------------------
+#
+# Luật nằm ở `services/scheduling.py` và đã có bảy ca unit. Ở đây chỉ kiểm phần thuộc
+# tầng HTTP: lỗi có ra đúng mã 400 và câu tiếng Việt hiện trên trang, chứ không vỡ
+# thành 500 hay JSON thô. Ngày 13/03 vì `frozen_clock` đứng ở 12/03 08:00 — đặt 03:00
+# hôm nay sẽ vướng luật "không đặt lịch trong quá khứ" trước và test xanh vì lý do sai.
+
+NGAY_MAI = "2026-03-13"
+
+
+def test_dat_lich_ngoai_gio_mo_cua_ra_400_va_cau_tieng_viet(client, nen):
+    dang_nhap(client, "letan")
+
+    r = client.post(
+        "/appointments",
+        data={
+            "thu_cung_id": str(nen["pet1"].id),
+            "dich_vu_id": str(nen["dv"].id),
+            "nhan_vien_id": str(nen["nv1"].id),
+            "ngay": NGAY_MAI,
+            "gio": "03:00",
+            "ghi_chu": "",
+        },
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 400
+    assert "giờ làm việc" in r.text
+    assert "08:00" in r.text and "18:00" in r.text
+
+
+def test_dat_lich_trong_gio_mo_cua_van_duoc(client, db, nen):
+    """Ca đối chứng: cùng đường đi, chỉ khác giờ — phải qua."""
+    dang_nhap(client, "letan")
+
+    r = client.post(
+        "/appointments",
+        data={
+            "thu_cung_id": str(nen["pet1"].id),
+            "dich_vu_id": str(nen["dv"].id),
+            "nhan_vien_id": str(nen["nv1"].id),
+            "ngay": NGAY_MAI,
+            "gio": "09:00",
+            "ghi_chu": "",
+        },
+        follow_redirects=True,
+    )
+
+    assert r.status_code == 200
+    assert db.scalar(select(Appointment)) is not None

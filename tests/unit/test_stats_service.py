@@ -226,11 +226,18 @@ def test_dem_lich_da_qua_gio_ma_chua_ghi_ho_so(db, nen):
 
 
 def test_lich_vua_ket_thuc_dung_bay_gio_da_tinh_la_qua_gio(db, nen):
-    """Biên: "bây giờ" là 12/03 08:00. Buổi 07:00–08:00 đã xong, chưa ghi thì là thiếu."""
-    dat(db, nen, "muc", gio(12, 7))
-    dat(db, nen, "mun", gio(12, 8))  # 08:00–09:00 vừa bắt đầu → không tính
+    """Biên: buổi kết thúc ĐÚNG lúc "bây giờ" đã xong, chưa ghi thì là thiếu.
 
-    tk = nv.thong_ke(db, *THANG_3)
+    Bản cũ dựng buổi 07:00–08:00 để chạm mốc 08:00 của `frozen_clock`. Từ 24/09 lịch phải
+    nằm trọn trong giờ mở cửa (M-06) nên 07:00 không đặt được nữa, và mọi buổi kết thúc
+    đúng 08:00 đều phải bắt đầu trước giờ mở cửa. Dời cả cảnh vào trong giờ và cố định
+    "bây giờ" ở 10:00 ngay lúc gọi thống kê — vẫn đúng ca biên cũ, chỉ khác con số.
+    """
+    dat(db, nen, "muc", gio(12, 9))   # 09:00–10:00, kết thúc đúng "bây giờ"
+    dat(db, nen, "mun", gio(12, 10))  # 10:00–11:00 vừa bắt đầu → không tính
+
+    with clock.freeze(gio(12, 10)):
+        tk = nv.thong_ke(db, *THANG_3)
 
     assert tk.so_lich_qua_gio_chua_ghi == 1
 

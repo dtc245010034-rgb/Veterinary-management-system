@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.models.service import Service
 from app.models.service_package import PackageItem, ServicePackage
 from app.services.errors import LoiKhongTimThay, LoiNghiepVu
+from app.services.scheduling import PHUT_LAM_VIEC_MOI_NGAY
 
 
 def _bat_buoc(gia_tri: str | None, ten_truong: str) -> str:
@@ -38,9 +39,19 @@ def _kiem_thoi_luong(phut: int | None) -> int:
 
     P3 tính end_at = start_at + duration_min. Thời lượng 0 tạo ra lịch hẹn có khoảng thời
     gian rỗng, lọt qua mọi phép kiểm tra trùng lịch.
+
+    Cận trên thêm 24/09 (M-06): dịch vụ dài hơn một ngày làm việc thì không buổi nào của
+    nó đặt được, vì `scheduling` buộc cả buổi nằm trong giờ mở cửa. Chặn ngay tại đây để
+    quản lý biết lúc tạo, thay vì tạo xong mới phát hiện dịch vụ vô dụng. `scheduling`
+    vẫn kiểm lại một lần nữa cho dịch vụ dài đã nằm sẵn trong CSDL từ trước bản vá.
     """
     if phut is None or phut <= 0:
         raise LoiNghiepVu("Thời lượng phải lớn hơn 0 phút.")
+    if phut > PHUT_LAM_VIEC_MOI_NGAY:
+        raise LoiNghiepVu(
+            f"Thời lượng không được dài hơn một ngày làm việc "
+            f"({PHUT_LAM_VIEC_MOI_NGAY} phút) — buổi dài hơn thế không xếp vừa giờ mở cửa."
+        )
     return phut
 
 

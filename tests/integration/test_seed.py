@@ -5,6 +5,7 @@ CSDL tạm qua biến môi trường `DATABASE_URL`, nên không đụng `petcar
 thẳng `seed.main()` vì nó tự mở `SessionLocal` của CSDL thật.
 """
 
+from datetime import datetime
 import os
 import sqlite3
 from contextlib import closing
@@ -65,3 +66,33 @@ def test_hoa_don_va_thanh_toan_mau_mang_ngay_cua_buoi_cham_soc(tmp_path):
     # Dữ liệu mẫu cố ý có buổi hôm qua và buổi 28 ngày trước — hai ngày lập khác nhau
     # là điều kiện để smoke test chọn kỳ mà thấy doanh thu thay đổi.
     assert len({ngay_lap for _, ngay_lap, _ in hoa_don}) >= 2
+
+
+def test_moi_lich_mau_deu_nam_trong_gio_mo_cua(tmp_path):
+    """M-06, bài học 4: `seed.py` ghi thẳng `Appointment`, không đi qua `dat_lich`.
+
+    Nó buộc phải làm vậy — dữ liệu mẫu có cả buổi đã qua, mà `dat_lich` từ chối mọi mốc
+    trong quá khứ. Hệ quả là luật giờ mở cửa **không** che được đường này. Hiện seed sinh
+    09:00 → 12:45 nên hợp lệ, nhưng không có gì giữ cho nó hợp lệ: chỉ cần ai đó nới vòng
+    lặp thêm vài giờ là dữ liệu mẫu lại chứa đúng thứ mà bản vá vừa cấm, và mọi đợt smoke
+    bấm tay sẽ dựa trên dữ liệu vi phạm chính luật của hệ thống.
+    """
+    from app.services.scheduling import GIO_DONG_CUA, GIO_MO_CUA
+
+    csdl = _chay_seed(tmp_path)
+
+    with closing(sqlite3.connect(csdl)) as c:
+        lich = c.execute("SELECT id, start_at, end_at FROM appointments").fetchall()
+
+    assert lich, "Không có lịch mẫu nào — phép canh sẽ xanh mà không chứng minh gì"
+
+    vi_pham = []
+    for ma, bat_dau, ket_thuc in lich:
+        b = datetime.fromisoformat(bat_dau)
+        k = datetime.fromisoformat(ket_thuc)
+        if b.date() != k.date() or b.hour < GIO_MO_CUA:
+            vi_pham.append((ma, bat_dau, ket_thuc))
+        elif (k.hour, k.minute) > (GIO_DONG_CUA, 0):
+            vi_pham.append((ma, bat_dau, ket_thuc))
+
+    assert not vi_pham, f"Lịch mẫu nằm ngoài giờ {GIO_MO_CUA}h–{GIO_DONG_CUA}h: {vi_pham}"

@@ -209,11 +209,16 @@ phiên này sẽ khuất tầm nhìn ngay khi có hai phiên nữa.
    vụ" xong bỏ sót "Chủ nuôi"; chặn xóa thú cưng — chặn `appointments` xong bỏ sót `vaccinations`,
    lỗi 500 quay lại nguyên vẹn. Hỏi "còn chỗ nào cùng dạng?" trước khi đóng. — *không tự động hóa
    được*
-5. **Đừng viết code qua heredoc của shell.** 20/09 ba lần: `\t`, `\n`, `\\` bị nuốt — file test nhận
-   ký tự vertical-tab thật và một chuỗi vỡ đôi dòng; lần thứ ba heredoc làm vỡ cả lệnh. Cùng họ với
-   dòng 3 ("thứ mình viết không phải thứ vào file") nhưng khác đường: đây là lúc **tạo** code, không
-   phải lúc đột biến. Viết bằng công cụ ghi file, hoặc ghi khối ra file riêng rồi ghép bằng Python;
-   **đọc lại file sau mỗi lần ghi khối nhiều dòng**. — *không tự động hóa được*
+5. **Đừng viết code qua heredoc của shell, và coi chừng công cụ ghi làm đổi cả file.** 20/09 ba lần:
+   `\t`, `\n`, `\\` bị nuốt — file test nhận ký tự vertical-tab thật và một chuỗi vỡ đôi dòng; lần
+   thứ ba heredoc làm vỡ cả lệnh. **24/09 thêm một đường mới:** `Add-Content` của PowerShell ghi
+   CRLF còn `io.open(p,'w')` của Python chuẩn hóa **toàn bộ** file sang CRLF, nên ba file vốn dùng
+   LF bị lật sạch — diff phình 791/397 trong khi thay đổi thật chỉ 427/33, và một file test thành
+   trộn CRLF với LF. Repo này **không có quy ước chung**: mỗi file giữ kiểu của chính nó, nên phải
+   **đối chiếu `git diff --stat` với lượng mình thực sự sửa** trước khi commit; lệch nhiều thì ghi
+   lại bằng chế độ nhị phân. Cùng họ với dòng 3 ("thứ mình viết không phải thứ vào file"). Viết bằng
+   công cụ ghi file, hoặc ghi khối ra file riêng rồi ghép bằng Python; **đọc lại file sau mỗi lần
+   ghi khối nhiều dòng**. — *không tự động hóa được ở repo trộn sẵn kiểu xuống dòng*
 
 Ranh giới kiến trúc và bao phủ hàm public **đã rời khỏi danh sách này** vì tự động hóa được — xem
 `test_architecture.py`. Đó là kết quả mong muốn: danh sách càng ngắn nghĩa là càng nhiều bài học đã

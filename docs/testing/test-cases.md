@@ -227,6 +227,16 @@ Cả bốn tái hiện được trên trình duyệt **trước khi sửa**; m�
 |---|---|---|---|---|---|
 | TC-121 | US-10 | Cơ sở dữ liệu chưa có dữ liệu nền: form đặt lịch nói rõ **còn thiếu gì và thêm ở đâu**, thay vì ba ô chọn bắt buộc rỗng không lời giải thích (việc P6 để lại từ 11/09) | I | `test_appointments.py::test_csdl_chua_co_du_lieu_nen_…`, `…::test_thieu_moi_dich_vu_…`, `…::test_dich_vu_ngung_ban_khong_tinh_…`, `…::test_khoa_het_nhan_vien_…`, `…::test_du_du_lieu_nen_thi_form_hien_binh_thuong` | ✅ |
 
+## N. Lỗi sửa ngày 24/09 — M-06 (= S6)
+
+Người dùng chọn M-06 sau khi việc tồn được dọn xong
+([kế hoạch](../plans/2026-09-24-m06-gio-mo-cua.md)). Lỗi tái hiện được trên giao diện từ 19/09;
+tám ca unit chạy đỏ trước khi sửa và **bốn lượt đột biến** đều bắt đúng nhóm ca tương ứng.
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-122 | US-10, US-11, US-07 | **Giờ mở cửa (M-06 = S6):** buổi phải nằm trọn trong 08:00–18:00 cùng một ngày — 07:59 bị từ chối · 08:00 nhận · kết thúc đúng 18:00 nhận · vượt 18:00 từ chối · lấn qua nửa đêm từ chối · **`doi_lich` chịu cùng luật** · dịch vụ 2.000 phút không đặt được · thời lượng dịch vụ > 600 phút bị chặn lúc tạo và lúc sửa · dữ liệu mẫu không sinh lịch ngoài giờ | U, I | `test_scheduling.py::test_dat_lich_truoc_gio_mo_cua_bi_tu_choi` và 7 ca cùng nhóm, `test_catalog_service.py::test_thoi_luong_*_ngay_lam_viec_*` (4 ca), `test_appointments.py::test_dat_lich_ngoai_gio_mo_cua_ra_400_va_cau_tieng_viet` (+ ca đối chứng), `test_seed.py::test_moi_lich_mau_deu_nam_trong_gio_mo_cua` | ✅ |
+
 ## J. Hệ thống hoàn chỉnh — chạy cuối mỗi phase từ P5
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
@@ -259,18 +269,19 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | K. Lỗi rà soát 19/09 | US-10, US-12, US-20, US-27 | TC-113 → TC-116 | 4 |
 | L. Bốn lỗi ưu tiên 20/09 | US-03, US-04, US-05, US-24, US-27 | TC-117 → TC-120 | 4 |
 | M. Việc tồn đóng ở P8 | US-10 | TC-121 | 1 |
+| N. Lỗi sửa 24/09 | US-07, US-10, US-11 | TC-122 | 1 |
 | J. Xuyên suốt | — | TC-101, TC-102 | 2 |
-| | **28/28 US** | | **121** |
+| | **28/28 US** | | **122** |
 
 ### Theo yêu cầu đề bài mục 4
 
 | Yêu cầu | Test case | Số lượng |
 |---|---|---|
-| Test cho **lịch hẹn** | TC-032 → TC-052 | 21 |
+| Test cho **lịch hẹn** | TC-032 → TC-052, TC-122 | 22 |
 | Test cho **hóa đơn** | TC-065 → TC-075 | 11 |
 | Test cho **hồ sơ** | TC-053 → TC-058 | 6 |
 | Test cho **AI** | TC-082 → TC-100 | 19 |
 | Hạ tầng AI (xoay model, quota) | TC-103 → TC-112 | 10 |
 
 **Kết luận: 28/28 user story có test case. Bốn hạng mục đề bài yêu cầu đích danh đều được phủ, trong
-đó lịch hẹn và AI — hai phần khó nhất — chiếm 50/121 test case.**
+đó lịch hẹn và AI — hai phần khó nhất — chiếm 51/122 test case.**

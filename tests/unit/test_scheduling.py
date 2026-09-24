@@ -606,3 +606,105 @@ def test_khung_gio_trong_rong_khi_thoi_luong_dai_hon_gio_lam_viec(db, nen):
     ket_qua = nv.khung_gio_trong(db, nen["nv1"].id, nen["pet1"].id, NGAY.date(), 11 * 60)
 
     assert ket_qua == []
+
+
+# --- M-06 (= S6): buổi chăm sóc phải nằm trọn trong giờ mở cửa -------------------
+#
+# Lỗi tìm được khi rà soát 19/09: `dat_lich` không hề kiểm giờ làm việc. Đo trên giao
+# diện: đặt được lịch 03:00, đặt được buổi 23:50 → 01:20 hôm sau, và một dịch vụ 2.000
+# phút giữ nhân viên hơn 33 giờ. Hằng GIO_MO_CUA/GIO_DONG_CUA có từ P3 nhưng chỉ phần
+# gợi ý khung trống dùng tới.
+#
+# Người dùng chốt 24/09: cả buổi phải nằm trọn trong giờ — bắt đầu >= 08:00 VÀ kết thúc
+# <= 18:00, cùng một ngày. Một luật diệt cả ba triệu chứng.
+#
+# `frozen_clock` đứng ở 2026-03-12 08:00, nên mọi ca giờ sớm phải đặt sang NGÀY HÔM SAU:
+# đặt 07:59 hôm nay sẽ vướng phép kiểm "không đặt lịch trong quá khứ" trước, và test sẽ
+# xanh vì lý do sai.
+
+MAI = NGAY + timedelta(days=1)
+
+
+def gio_mai(h: int, p: int = 0) -> datetime:
+    return MAI.replace(hour=h, minute=p)
+
+
+def test_dat_lich_truoc_gio_mo_cua_bi_tu_choi(db, nen):
+    """07:59 — sát dưới giờ mở cửa."""
+    with pytest.raises(LoiNghiepVu) as e:
+        dat(db, nen, gio_mai(7, 59))
+
+    assert "08:00" in str(e.value) and "18:00" in str(e.value)
+
+
+def test_dat_lich_dung_gio_mo_cua_duoc_nhan(db, nen):
+    """Ca biên dưới: 08:00 là hợp lệ, không được chặn nhầm."""
+    lich = dat(db, nen, gio_mai(8))
+
+    assert lich.start_at == gio_mai(8)
+
+
+def test_buoi_ket_thuc_dung_gio_dong_cua_duoc_nhan(db, nen):
+    """Ca biên trên: 17:00 + 60 phút = đúng 18:00, phải được nhận.
+
+    Đây là ca dễ hỏng nhất nếu viết `ket_thuc < GIO_DONG_CUA` thay vì `<=`.
+    """
+    lich = dat(db, nen, gio_mai(17))
+
+    assert lich.end_at == gio_mai(18)
+
+
+def test_buoi_vuot_gio_dong_cua_bi_tu_choi(db, nen):
+    """17:30 + 60 phút = 18:30 — nhân viên phải ở lại sau giờ đóng cửa."""
+    with pytest.raises(LoiNghiepVu):
+        dat(db, nen, gio_mai(17, 30))
+
+
+def test_lich_lan_qua_nua_dem_bi_tu_choi(db, nen):
+    """23:50 + 60 phút = 00:50 hôm sau — chính ca đo được trên giao diện 19/09."""
+    with pytest.raises(LoiNghiepVu):
+        dat(db, nen, gio_mai(23, 50))
+
+
+def test_doi_lich_ra_ngoai_gio_lam_viec_bi_tu_choi(db, nen):
+    """Bài học 4 — sửa cả lớp lỗi: `doi_lich` cũng phải chịu đúng luật đó.
+
+    Chặn ở `dat_lich` mà quên `doi_lich` thì đặt đúng giờ rồi dời ra 07:00 vẫn lọt.
+    """
+    lich = dat(db, nen, gio_mai(9))
+
+    with pytest.raises(LoiNghiepVu):
+        nv.doi_lich(db, lich.id, gio_mai(7))
+
+
+def test_doi_lich_trong_gio_lam_viec_van_duoc(db, nen):
+    """Ca đối chứng cho ca trên: đổi sang giờ hợp lệ vẫn phải chạy."""
+    lich = dat(db, nen, gio_mai(9))
+
+    sua = nv.doi_lich(db, lich.id, gio_mai(10))
+
+    assert sua.start_at == gio_mai(10)
+
+
+def test_dich_vu_dai_hon_ngay_lam_viec_khong_dat_duoc(db, nen):
+    """Dịch vụ 2.000 phút — ca đo được 19/09, giữ nhân viên hơn 33 giờ.
+
+    Dựng thẳng bằng model chứ không qua `catalog.tao_dich_vu`: từ 24/09 `catalog` chặn
+    thời lượng quá một ngày làm việc, nhưng dịch vụ dài có thể đã nằm sẵn trong cơ sở dữ
+    liệu từ trước bản vá. Đây đúng là ca mà lớp chặn thứ hai sinh ra để bắt.
+    """
+    dv_dai = Service(
+        code="DAI", name="Dịch vụ rất dài", duration_min=2000, price=Decimal("10000")
+    )
+    db.add(dv_dai)
+    db.commit()
+
+    with pytest.raises(LoiNghiepVu):
+        nv.dat_lich(
+            db,
+            thu_cung_id=nen["pet1"].id,
+            dich_vu_id=dv_dai.id,
+            nhan_vien_id=nen["nv1"].id,
+            bat_dau=gio_mai(8),
+            nguoi_tao_id=nen["letan"].id,
+        )

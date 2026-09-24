@@ -42,6 +42,11 @@ from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 GIO_MO_CUA = 8
 GIO_DONG_CUA = 18
 
+# Suy ra từ hai hằng trên, không viết cứng: đổi giờ đóng cửa mà quên sửa số này thì
+# `catalog` sẽ chặn theo một ngày làm việc khác với `scheduling`. `catalog.py` nhập đúng
+# hằng này — nhập một HẰNG SỐ, không gọi hàm, nên hai service vẫn tách ra được.
+PHUT_LAM_VIEC_MOI_NGAY = (GIO_DONG_CUA - GIO_MO_CUA) * 60
+
 # Bước nhảy khi dò khung trống, tính bằng phút.
 BUOC_GOI_Y = 30
 
@@ -132,6 +137,31 @@ def khung_gio_trong(
     return ket_qua
 
 
+def _kiem_gio_lam_viec(bat_dau: datetime, ket_thuc: datetime) -> None:
+    """Cả buổi phải nằm trọn trong giờ mở cửa — M-06 (= S6), người dùng chốt 24/09.
+
+    Một luật chặn cả ba triệu chứng đo được trên giao diện ngày 19/09: đặt lịch lúc 3 giờ
+    sáng, buổi 23:50 lấn sang 01:20 hôm sau, và dịch vụ 2.000 phút giữ nhân viên hơn 33
+    giờ. Ca cuối bị chặn ở đây vì không khoảng nào dài hơn một ngày làm việc lọt được
+    giữa hai mốc; không cần thêm phép kiểm riêng cho thời lượng.
+
+    So `ket_thuc > dong_cua` chứ không phải `>=`: buổi 17:00–18:00 vừa khít giờ đóng cửa
+    là hợp lệ. Đây đúng cái bẫy mà TC-038 đã bắt một lần ở phép kiểm trùng lịch.
+
+    Mốc đóng cửa lấy theo ngày của `bat_dau`, nên buổi lấn qua nửa đêm luôn vượt mốc —
+    không phải viết thêm phép so sánh ngày.
+    """
+    mo_cua = datetime.combine(bat_dau.date(), time(GIO_MO_CUA))
+    dong_cua = datetime.combine(bat_dau.date(), time(GIO_DONG_CUA))
+    if bat_dau < mo_cua or ket_thuc > dong_cua:
+        raise LoiNghiepVu(
+            f"Cửa hàng chỉ nhận lịch trong giờ làm việc "
+            f"{GIO_MO_CUA:02d}:00–{GIO_DONG_CUA:02d}:00. Buổi này bắt đầu "
+            f"{bat_dau:%H:%M} ngày {bat_dau:%d/%m} và kéo tới "
+            f"{ket_thuc:%H:%M} ngày {ket_thuc:%d/%m}."
+        )
+
+
 def dat_lich(
     db: Session,
     thu_cung_id: int,
@@ -161,6 +191,7 @@ def dat_lich(
     # Giờ kết thúc luôn tính từ thời lượng dịch vụ, không cho người dùng nhập tay.
     ket_thuc = bat_dau + timedelta(minutes=dich_vu.duration_min)
 
+    _kiem_gio_lam_viec(bat_dau, ket_thuc)
     _chan_neu_trung(db, thu_cung_id, nhan_vien_id, bat_dau, ket_thuc, dich_vu.duration_min)
 
     lich = Appointment(
@@ -253,6 +284,11 @@ def doi_lich(
 
     thoi_luong = lich.service.duration_min
     ket_thuc = bat_dau + timedelta(minutes=thoi_luong)
+
+    # Bài học 4 — sửa cả lớp lỗi: chặn ở `dat_lich` mà quên đây thì đặt đúng giờ rồi dời
+    # ra 07:00 vẫn lọt, và M-06 chỉ được vá một nửa.
+    _kiem_gio_lam_viec(bat_dau, ket_thuc)
+
 
     # bo_qua_id: loại chính lịch đang sửa ra khỏi tập so sánh, nếu không nó tự báo trùng
     # với chính mình và không lịch nào đổi giờ được (TC-046).

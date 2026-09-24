@@ -240,16 +240,18 @@ và hai lượt đột biến. Việc "ghi TC-027 ngoài phạm vi" **đã làm 
 Hai lỗ hổng tìm được khi rà soát hệ thống ngày 18/09 (chặng 0 của P7), cùng người dùng chốt để lại
 đây vì rủi ro thấp — xem [`plans/2026-09-18-p7-tich-hop-ai.md`](plans/2026-09-18-p7-tich-hop-ai.md):
 
-- **S6 — đặt lịch ngoài giờ mở cửa.** `scheduling.dat_lich` không kiểm giờ làm việc: đặt được lúc 3
-  giờ sáng hoặc để buổi lấn qua nửa đêm. Chỉ phần gợi ý khung trống tôn trọng `GIO_MO_CUA`/`GIO_DONG_CUA`.
+- ✅ *Sửa 24/09 (TC-122).* **S6 — đặt lịch ngoài giờ mở cửa.** `scheduling.dat_lich` không kiểm giờ
+  làm việc: đặt được lúc 3 giờ sáng hoặc để buổi lấn qua nửa đêm. Chỉ phần gợi ý khung trống tôn
+  trọng `GIO_MO_CUA`/`GIO_DONG_CUA`. Nay cả buổi phải nằm trọn trong 08:00–18:00 cùng một ngày,
+  áp cho **cả** `dat_lich` lẫn `doi_lich`, cộng cận trên thời lượng dịch vụ ở `catalog`.
 - ✅ *Sửa 19/09 (TC-114).* **S7 — ngày sai định dạng khi POST.** `routers/appointments._doc_ngay` trả về
   hôm nay khi chuỗi ngày hỏng. Lượt rà 19/09 cho thấy rủi ro không thấp như đã đánh giá: nó đã dời một
   lịch thật sang 23:30 hôm đó. Nay đặt/đổi lịch đọc ngày bằng `_doc_ngay_bat_buoc` và báo 400.
 
-**Lỗi còn lại từ lượt rà soát 19/09** — sau đợt sửa 20/09 còn 4 trung bình và 7 thấp, chờ người dùng chọn; danh sách và
+**Lỗi còn lại từ lượt rà soát 19/09** — sau đợt sửa 20/09 và 24/09 còn 3 trung bình và 7 thấp, chờ người dùng chọn; danh sách và
 cách tái hiện: [`testing/reports/2026-09-19-ra-luong-P1-P7.md`](testing/reports/2026-09-19-ra-luong-P1-P7.md).
 Ba lỗi cao đã sửa cùng ngày ([kế hoạch](plans/2026-09-19-sua-loi-cao-ra-soat.md)). S6 ở trên chính
-là M-06 trong báo cáo đó.
+là M-06 trong báo cáo đó — **đã sửa 24/09**, xem [kế hoạch](plans/2026-09-24-m06-gio-mo-cua.md).
 
 Đáp ứng yêu cầu đề bài mục 6: *"Cuối kỳ: Dùng AI viết README, báo cáo, slide và review dữ liệu cá nhân."*
 

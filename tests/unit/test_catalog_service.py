@@ -232,3 +232,38 @@ def test_ban_lai_goi_da_ngung_thi_hien_lai_trong_danh_sach_dang_ban(db):
 def test_ban_lai_goi_khong_ton_tai_bi_tu_choi(db):
     with pytest.raises(LoiNghiepVu):
         nv.ban_lai_goi(db, 9999)
+
+
+# --- M-06: thời lượng dịch vụ không được dài hơn một ngày làm việc ---------------
+#
+# Lớp chặn thứ nhất của M-06. Lớp thứ hai nằm ở `scheduling.dat_lich` cho dịch vụ dài
+# đã có sẵn trong cơ sở dữ liệu từ trước bản vá — người dùng chốt chặn ở cả hai chỗ.
+
+
+def test_thoi_luong_dai_hon_ngay_lam_viec_bi_tu_choi(db):
+    """2.000 phút = hơn 33 giờ, không buổi nào như vậy vừa một ngày làm việc."""
+    with pytest.raises(LoiNghiepVu) as e:
+        them_dich_vu(db, phut=2000)
+
+    assert "600" in str(e.value)
+
+
+def test_thoi_luong_dai_hon_ngay_lam_viec_dung_mot_phut_bi_tu_choi(db):
+    """Ca biên trên: 601 phút — chỉ dài hơn đúng một phút."""
+    with pytest.raises(LoiNghiepVu):
+        them_dich_vu(db, phut=601)
+
+
+def test_thoi_luong_bang_tron_ngay_lam_viec_duoc_nhan(db):
+    """Ca biên: 600 phút = 08:00 → 18:00, vừa khít, phải được nhận."""
+    s = them_dich_vu(db, phut=600)
+
+    assert s.duration_min == 600
+
+
+def test_sua_dich_vu_len_qua_ngay_lam_viec_bi_tu_choi(db):
+    """Sửa cũng phải chịu luật đó — chặn lúc tạo mà quên lúc sửa thì vẫn lọt."""
+    s = them_dich_vu(db, phut=45)
+
+    with pytest.raises(LoiNghiepVu):
+        nv.sua_dich_vu(db, s.id, thoi_luong_phut=2000)
