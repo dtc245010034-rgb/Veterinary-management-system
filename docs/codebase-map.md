@@ -57,7 +57,33 @@
 >
 > `petcare.db` **sạch**: 3 chủ nuôi, 9 lịch hẹn, 2 hóa đơn, không nợ âm. Mọi lượt rà đều chạy trên
 > **bản sao** trong scratchpad, không đụng CSDL thật. Bản sao lưu:
-> `petcare.truoc-khoi-phuc-2026-09-20.db`, `petcare.backup-2026-09-19.db` (cả hai **không vào git**).
+> `petcare.bang-chung-ai-2026-09-20.db` (**không vào git**) — xem mục dưới.
+>
+> ### Hai file `.db` trên máy, và vì sao chỉ còn hai
+>
+> | File | Vai trò |
+> |---|---|
+> | `petcare.db` | **CSDL đang chạy** (`.env` trỏ vào) và kiêm luôn CSDL demo. Có `ai_logs` **id 1..29** |
+> | `petcare.bang-chung-ai-2026-09-20.db` | **Kho bằng chứng, chỉ đọc.** Đổi tên 25/09 từ `petcare.truoc-khoi-phuc-2026-09-20.db` |
+>
+> **Mọi trích dẫn `ai_logs #N` trong tài liệu ngày 19–20/09 đều đối chiếu vào file bằng chứng, KHÔNG
+> phải `petcare.db`.** Các bản ghi #30, #31, #38, #40→#45 đã biến mất khỏi `petcare.db` khi nó được
+> khôi phục từ bản sao lưu ngày 20/09; nơi duy nhất còn chúng là file bằng chứng (46 bản ghi). File
+> này cũng là bản duy nhất còn giữ trạng thái hỏng **D-01** (nợ âm hóa đơn #3) và **ba lịch ngoài giờ
+> mở cửa** — ba bản ghi tái hiện M-06 mà hệ thống nay không tạo ra được nữa.
+>
+> **Cạm bẫy khi đọc trích dẫn:** id `ai_logs` bị dùng lại ở mọi bản sao CSDL, nên cùng một con số trỏ
+> vào bản ghi khác nhau tùy file. Ví dụ `#30` là tin nhắc lịch do `gemini-3.6-flash` sinh trong file
+> bằng chứng, nhưng lại là một câu hỏi đáp của `fake` trong các bản sao dựng sau này. **Trích dẫn
+> `ai_logs` phải nói rõ file**, nếu không thì không kiểm chứng lại được.
+>
+> `petcare.backup-2026-09-19.db` **đã xóa ngày 25/09** sau khi đối chiếu **từng dòng của cả 14 bảng**
+> và chứng minh `petcare.db` chứa trọn vẹn nội dung của nó (0 dòng riêng). Các tài liệu ngày 19–20/09
+> còn nhắc tên file này là **mốc lịch sử**, giữ nguyên không sửa.
+>
+> **Test không dùng file `.db` nào trên đĩa** — `conftest.py` dùng SQLite in-memory, `test_seed.py` và
+> e2e dùng `tmp_path`. Và **không file `.db` nào cần để dựng lại dự án**: `create_all` cộng
+> `python -m app.seed` là đủ.
 > `.env` đang `AI_PROVIDER=gemini`. **Đã push tới `786b2f1`; 0 commit tồn ở máy**; kiểm lại remote:
 > không có `.env`, không có file `.db` nào.
 >

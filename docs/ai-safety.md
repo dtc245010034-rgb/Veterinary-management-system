@@ -81,7 +81,7 @@ câu gần y hệt nhau.
 
 > **Đổi ngày 20/09 (M-08).** Dòng *"Nếu là nhắc lịch tiêm, thêm một câu khuyên…"* đã **bỏ**. Nó khiến
 > mô hình tự viết câu khuyến cáo trong khi `service._them_cau_nhac_tiem` cũng nối `NHAC_XAC_NHAN_TIEM`,
-> nên khách nhận hai câu gần y hệt (bằng chứng: `ai_logs #30`). Đây là lần thứ hai của lớp lỗi Q10 —
+> nên khách nhận hai câu gần y hệt (bằng chứng: `ai_logs #30` trong `petcare.bang-chung-ai-2026-09-20.db` — **không** phải `petcare.db`, xem `codebase-map.md`). Đây là lần thứ hai của lớp lỗi Q10 —
 > cùng cách sửa: **code là nguồn duy nhất** của câu khuyến cáo, vì chỉ code mới kiểm được bằng test.
 
 Prompt người dùng chứa: tên thú cưng, loài, tên dịch vụ, ngày giờ hẹn, hoặc tên vắc-xin và ngày đến
