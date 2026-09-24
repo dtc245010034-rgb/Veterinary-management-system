@@ -556,3 +556,48 @@ def test_moi_bien_cau_hinh_deu_co_trong_env_example():
         "Biến cấu hình có trong app/config.py nhưng thiếu trong .env.example: "
         + ", ".join(t.upper() for t in thieu)
     )
+
+
+# --- Quy ước làm việc phải nằm trong repo ----------------------------------------
+
+
+def test_claude_md_co_muc_lam_viec_voi_nguoi_dung():
+    """Quy ước làm việc phải sống trong repo, không phải trong bộ nhớ agent.
+
+    Sinh ra từ một lỗi thật, ngày 25/09. Luật "hỏi trước rồi mới sửa" vốn nằm trong khối
+    "Làm tiếp" của `codebase-map.md`, ăn theo danh sách lỗi còn tồn. Khi danh sách lỗi
+    hết, khối đó được viết lại và **luật bị xóa cùng** — từ đó nó chỉ còn sống trong bộ
+    nhớ agent ở `~/.claude/`, tức ngoài repo và mất theo máy. Người dùng phát hiện ra.
+
+    Gốc của lỗi: một mệnh lệnh đi nhờ chỗ của một danh sách tạm thời. Nay nó có mục riêng,
+    và phép canh này giữ cho mục đó không biến mất lần nữa.
+
+    NẾU TEST NÀY ĐỎ: đừng xóa test. Khôi phục mục 10 trong CLAUDE.md.
+    """
+    noi_dung = _doc(GOC / "CLAUDE.md")
+
+    assert "# 10. Làm việc với người dùng" in noi_dung, (
+        "CLAUDE.md thiếu mục 10 — quy ước làm việc với người dùng"
+    )
+
+    # Ba luật dễ mất nhất, mỗi luật đều đã từng phải nhắc lại ít nhất một lần.
+    for luat, vi_sao in [
+        ("HỎI RỒI MỚI SỬA", "luật này đã biến mất khỏi repo một lần, ngày 25/09"),
+        ("tự tick smoke", "agent đã tick thay người dùng bốn lần — mục 9 dòng 2"),
+        ("BẢN SAO", "lượt rà 19/09 chạy trên CSDL thật và để lại dữ liệu rác"),
+    ]:
+        assert luat in noi_dung, f"CLAUDE.md mục 10 thiếu luật “{luat}” — {vi_sao}"
+
+
+def test_quy_trinh_mo_phien_tro_toi_muc_10():
+    """Có mục 10 mà không ai được dẫn tới đó thì cũng như không.
+
+    Mục 6 là thứ duy nhất agent chắc chắn đọc khi mở phiên, nên nó phải trỏ sang.
+    """
+    noi_dung = _doc(GOC / "CLAUDE.md")
+    mo_phien = noi_dung[noi_dung.index("## Mở phiên") : noi_dung.index("## Đóng phiên")]
+
+    assert "mục 10" in mo_phien, (
+        "Quy trình mở phiên (mục 6) không trỏ tới mục 10, nên quy ước làm việc "
+        "sẽ không được đọc"
+    )

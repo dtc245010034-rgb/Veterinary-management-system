@@ -102,12 +102,14 @@ tài liệu, test và code phải luôn đi song song; xem mục 6.
 
 # 6. Quy trình mỗi phiên làm việc
 
-## Mở phiên — làm đủ 3 việc này trước khi làm bất cứ gì khác
+## Mở phiên — làm đủ 4 việc này trước khi làm bất cứ gì khác
 
 1. **Làm việc tại `C:\hethongquanlythucung`.** Nếu thư mục hiện tại không phải đây thì chuyển vào
    trước. Mọi đường dẫn trong tài liệu đều tương đối so với thư mục này.
 2. Đọc [`docs/codebase-map.md`](docs/codebase-map.md) để biết hiện có những file nào, làm gì.
-3. Đọc file log phiên gần nhất trong [`docs/sessions/`](docs/sessions/). Nếu đang làm dở một kế
+3. Đọc **mục 10 — Làm việc với người dùng** ở cuối file này. Quy ước làm việc nằm trong repo chứ
+   không nằm trong bộ nhớ agent; bộ nhớ agent ngoài repo và mất theo máy.
+4. Đọc file log phiên gần nhất trong [`docs/sessions/`](docs/sessions/). Nếu đang làm dở một kế
    hoạch, đọc file tương ứng trong [`docs/plans/`](docs/plans/) và xem checklist còn ô nào chưa tick.
 
 ## Đóng phiên — bắt buộc nếu phiên có thay đổi code
@@ -223,3 +225,49 @@ phiên này sẽ khuất tầm nhìn ngay khi có hai phiên nữa.
 Ranh giới kiến trúc và bao phủ hàm public **đã rời khỏi danh sách này** vì tự động hóa được — xem
 `test_architecture.py`. Đó là kết quả mong muốn: danh sách càng ngắn nghĩa là càng nhiều bài học đã
 thành máy canh.
+
+---
+
+# 10. Làm việc với người dùng
+
+Mục này từng chỉ nằm trong bộ nhớ agent ở `~/.claude/` — **ngoài repo, mất theo máy**. Ngày 25/09
+chuyển hẳn vào đây sau khi phát hiện luật "hỏi trước rồi mới sửa" đã biến mất khỏi repo: nó vốn
+sống nhờ ăn theo danh sách lỗi trong `codebase-map.md`, và khi danh sách lỗi hết thì nó bị xóa cùng.
+
+Đặt ở `CLAUDE.md` chứ không phải `docs/` vì đây là **mệnh lệnh**, không phải tài liệu tham khảo —
+và vì nội dung `CLAUDE.md` có hiệu lực cao hơn bộ nhớ agent.
+
+## Hỏi trước khi làm
+
+- **Việc lớn hoặc mơ hồ: hỏi cho tới khi rõ**, bằng câu hỏi nhiều lựa chọn, phương án đề xuất để
+  đầu. Việc nhỏ và rõ thì làm luôn, đừng hỏi cho có.
+- **Lỗi tìm được: ghi lại hết, xếp mức nghiêm trọng, HỎI RỒI MỚI SỬA.** Người dùng chọn nhóm lỗi để
+  xử lý; agent không tự quyết phạm vi. *(Ngoại lệ: việc đã nằm sẵn trong `roadmap.md` như một hạng
+  mục được chấp nhận thì làm luôn, ghi rõ lý do trong log phiên.)*
+- Mỗi kế hoạch được duyệt phải chép ngay vào `docs/plans/` — xem mục 6.
+
+## Phản biện, đừng chỉ phục vụ
+
+- Khi người dùng đề xuất một hướng đi hoặc một công nghệ, **nói thẳng chỗ nó không hợp, kèm số
+  liệu**, đưa 3–4 phương án có đánh đổi rõ ràng, rồi mới làm. Gật và làm theo là cách tệ nhất.
+- **Xác minh ràng buộc từ chính code trước khi lấy nó làm cơ sở thiết kế**, nhất là khi ràng buộc đó
+  làm phương án hẹp lại. Ngày 25/09 agent đọc `GEMINI_RPD_UOC_TINH=20` thành trần toàn cục rồi thiết
+  kế quanh nó; người dùng vặn lại và đúng — đó là 20 lượt cho **mỗi** model, bốn model.
+- Người dùng có kiểm lại lời agent. Khẳng định sai tốn thời gian của cả hai.
+
+## Ranh giới của agent
+
+- **Người dùng tự tick smoke.** Agent không tick thay — xem mục 9 dòng 2. Người dùng có thể tick
+  trong lúc agent tạm dừng, nên **đếm lại file và đối chiếu `git show HEAD` trước khi kết luận
+  "chưa tick"**.
+- **Chỉ commit khi được bảo**, và push cũng vậy. Repo dùng thẳng nhánh `main`.
+- **Rà lỗi phải chạy trên BẢN SAO cơ sở dữ liệu** trong thư mục scratchpad, không đụng `petcare.db`
+  thật. Lượt rà 19/09 chạy thẳng trên CSDL thật và chính nó đẻ ra đống dữ liệu rác phải xóa ở 20/09.
+  Nếu buộc phải đụng CSDL thật thì sao lưu trước và hỏi.
+- Trả lời, báo cáo và tài liệu bằng tiếng Việt — xem mục 5.
+
+## Trước khi kết luận về trạng thái dự án
+
+Đếm lại từ hệ thống tập tin và từ bộ test, **đừng chép số từ tài liệu**. Con số lỗi còn lại đã bị
+chép sai qua ba file suốt năm ngày (ghi "11" trong khi liệt kê 12 mã, rồi thành "10") cho tới khi có
+người đếm tay lại. Phép canh trong `test_architecture.py` chỉ giữ được vài con số, không giữ hết.
