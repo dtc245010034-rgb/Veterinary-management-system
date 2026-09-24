@@ -10,7 +10,7 @@
 >
 > **1. Việc đã duyệt, chưa làm — mở ra là chạy được ngay:**
 > [`plans/2026-09-25-ragas-bo-do-ai.md`](plans/2026-09-25-ragas-bo-do-ai.md) — bộ đo chất lượng AI.
-> Người dùng đã chốt đủ 4 quyết định, kế hoạch có sẵn 14 ô checklist chưa tick. Tóm tắt: chấm
+> Người dùng đã chốt đủ 4 quyết định, kế hoạch có sẵn 12 ô checklist chưa tick. Tóm tắt: chấm
 > `G-01→G-13` **bằng luật code** (0 lượt gọi), cộng **RAGAS `Faithfulness` chỉ cho tóm tắt hồ sơ**
 > qua một wrapper gọi ngược vào `goi_co_xoay`. Giám khảo phải là model **khác** model bị chấm.
 > Đặt ở `app/ai/danh_gia.py`. `ragas` **không** vào `requirements.txt`.
