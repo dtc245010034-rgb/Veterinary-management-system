@@ -30,7 +30,7 @@
 > **Trạng thái máy:** `petcare.db` **sạch** — 2 hóa đơn, **không nợ âm**, không bản ghi rác. Rà 24/09:
 > **29 bản ghi `ai_logs`, không bản ghi nào chứa SĐT/email/địa chỉ chủ nuôi.** Bản sao lưu ở
 > `petcare.truoc-khoi-phuc-2026-09-20.db` và `petcare.backup-2026-09-19.db` (cả hai **không vào git**).
-> `.env` đang `AI_PROVIDER=gemini`. **Đã push tới `1e41af6` ngày 24/09 — không còn commit nào tồn ở máy**; kiểm lại trên remote: không có `.env` và không có file `.db` nào.
+> `.env` đang `AI_PROVIDER=gemini`. **Đã push tới `abd4b8c` ngày 24/09 — không còn commit nào tồn ở máy**; kiểm lại trên remote: không có `.env` và không có file `.db` nào.
 >
 > **Đọc để lấy lại ngữ cảnh:** [`sessions/2026-09-24-01.md`](sessions/2026-09-24-01.md) (phiên gần
 > nhất) → [`sessions/2026-09-20-05.md`](sessions/2026-09-20-05.md) (bốn phần) →
