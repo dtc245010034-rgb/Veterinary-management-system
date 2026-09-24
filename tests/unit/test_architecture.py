@@ -528,3 +528,31 @@ def test_system_prompt_in_trong_ai_safety_khop_tung_chu_voi_code(muc, ten_hang):
     khoi = re.search(rf"^### {re.escape(muc)} .*?\n```\n(.*?)\n```", tai_lieu, re.S | re.M)
     assert khoi, f"Không tìm thấy khối prompt của mục {muc} — tài liệu đã đổi cách viết?"
     assert khoi.group(1) == getattr(prompts, ten_hang)
+
+
+# --- .env.example khớp config.py -------------------------------------------------
+
+
+def test_moi_bien_cau_hinh_deu_co_trong_env_example():
+    """`.env.example` là thứ duy nhất người dựng lại hệ thống nhìn thấy — CLAUDE.md mục 6.
+
+    Sinh ra từ một lỗi thật: ô checklist của kế hoạch P7 ngày 18/09 tick là đã thêm
+    `ai_tong_giay`, `ai_moi_lan_giay`, `ai_nghi_giay` vào `config.py` **và**
+    `.env.example`, nhưng ba biến chỉ vào `config.py`. Không ai phát hiện suốt sáu ngày
+    vì cả ba đều có giá trị mặc định nên ứng dụng vẫn chạy. Cùng lớp với bài học 2:
+    tài liệu khẳng định thứ không có thật.
+    """
+    mau = _doc(GOC / ".env.example")
+    nguon = _doc(GOC / "app" / "config.py")
+
+    # Tên trường của pydantic-settings: dòng thụt lề trong class Settings, dạng `ten: kieu`.
+    truong = set(re.findall(r"^    ([a-z][a-z0-9_]*)\s*:\s*\w", nguon, re.M))
+    assert truong, "Không đọc được trường nào từ config.py — phép canh hỏng"
+
+    khoa_mau = set(re.findall(r"^([A-Z][A-Z0-9_]*)=", mau, re.M))
+    thieu = sorted(t for t in truong if t.upper() not in khoa_mau)
+
+    assert not thieu, (
+        "Biến cấu hình có trong app/config.py nhưng thiếu trong .env.example: "
+        + ", ".join(t.upper() for t in thieu)
+    )

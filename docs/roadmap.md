@@ -39,7 +39,7 @@ mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ kh�
 | P5 | ✅ xong | 06–08/09 | [`P5-chang1`](testing/reports/2026-09-06-P5-chang1.md), [`rà luồng chặng 1`](testing/reports/2026-09-07-ra-luong-P5-chang1.md), [`P5-chang2`](testing/reports/2026-09-07-P5-chang2.md), [`rà luồng chặng 2`](testing/reports/2026-09-08-ra-luong-P5-chang2.md) |
 | P6 | ✅ xong | 11–13/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md), [`rà luồng`](testing/reports/2026-09-11-ra-luong-P6.md) |
 | **P7** | ✅ **xong** — người dùng tick đủ smoke chặng 2, chặng 3 và guardrail ngày 20/09 | 18–20/09 | [`chặng 0`](testing/reports/2026-09-18-P7-chang0.md), [`chặng 1`](testing/reports/2026-09-18-P7-chang1.md), [`chặng 2`](testing/reports/2026-09-18-P7-chang2.md), [`Gemini thật`](testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md) |
-| P8 | ⬜ chưa làm | — | — |
+| P8 | 🟡 đang làm — việc P6 để lại đã đóng, ba ô smoke đã có bằng chứng chờ tick | 24/09 | — |
 
 Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡 · 27 ⬜** trên 102 ca, smoke
 **97 ô đã tick / 29 ô còn lại đều thuộc P6–P8**, ERD **12/13 bảng** đã dựng (còn `ai_logs` của P7).
@@ -78,6 +78,15 @@ US-03 và US-04 nói "sửa" từ P1 mà chức năng sửa chưa từng tồn t
 `AI_PROVIDER=fake`, 13 ô chặng 3 và guardrail với `gemini`). Ba điều kiện DoD của P7 nay đủ cả ba.
 Smoke toàn dự án: **149 tick / 6 trống — cả 6 ô còn lại đều thuộc P8.**
 **Tám phase P0→P7 đã xong; chỉ còn P8.**
+
+Ngày 24/09 — mở P8 phần kiểm chứng được ([log phiên](sessions/2026-09-24-01.md)): đóng **việc P6 để
+lại** (form đặt lịch trên CSDL trống nay nói rõ còn thiếu gì — TC-121, 5 test, 2 lượt đột biến) và vá
+ba biến `AI_*` kế hoạch P7 tick nhầm là đã vào `.env.example`. Thêm **phép canh thứ 50**: mọi biến
+trong `config.py` phải có mặt trong `.env.example`. **782 test xanh**, ma trận **121 ca: 119 ✅ ·
+1 ⬜ · 1 ➖**. Ba ô smoke P8 đã có bằng chứng kiểm bằng lệnh — `.env` chưa từng vào git lần nào,
+CSDL trống dựng đủ 14 bảng không một lỗi 500, **29 bản ghi `ai_logs` không chứa dữ liệu cá nhân** —
+nhưng **agent không tick**, vì ô smoke đo trải nghiệm trên trình duyệt. Việc lớn của P8 (README hoàn
+chỉnh, báo cáo, slide, CI) **chưa bắt đầu**.
 
 ---
 
@@ -222,9 +231,11 @@ thật có tuân thủ hay không.
 README hoàn chỉnh, báo cáo, slide, rà soát dữ liệu cá nhân trong `ai_logs`. Kiểm tra dựng lại hệ thống
 từ CSDL trống trên máy sạch.
 
-Một việc để lại từ P6 cho phase này: khi chạy trên **CSDL trống**, form đặt lịch hiện ô chọn rỗng mà
-không có câu hướng dẫn nào — chỉ trình duyệt chặn bằng thông báo của chính nó (phát hiện khi rà luồng
-11/09). Việc "ghi TC-027 ngoài phạm vi" **đã làm xong 13/09**, không còn chờ P8.
+✅ *Xong 24/09 (TC-121).* Một việc để lại từ P6 cho phase này: khi chạy trên **CSDL trống**, form đặt
+lịch hiện ô chọn rỗng mà không có câu hướng dẫn nào — chỉ trình duyệt chặn bằng thông báo của chính nó
+(phát hiện khi rà luồng 11/09). Đo lại 24/09 trên CSDL tạm: cả ba ô `required` đều **0 lựa chọn**,
+không câu hướng dẫn nào. Nay form được thay bằng khối nói rõ còn thiếu gì và thêm ở đâu, kèm 5 test
+và hai lượt đột biến. Việc "ghi TC-027 ngoài phạm vi" **đã làm xong 13/09**, không còn chờ P8.
 
 Hai lỗ hổng tìm được khi rà soát hệ thống ngày 18/09 (chặng 0 của P7), cùng người dùng chốt để lại
 đây vì rủi ro thấp — xem [`plans/2026-09-18-p7-tich-hop-ai.md`](plans/2026-09-18-p7-tich-hop-ai.md):

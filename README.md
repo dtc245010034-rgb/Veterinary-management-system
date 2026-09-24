@@ -79,7 +79,7 @@ prompt. Chi tiết: [`docs/ai-safety.md`](docs/ai-safety.md).
 pytest tests/unit            # 489 ca, ~35–45s — chạy mỗi lần sửa code
 pytest tests/integration     # 286 ca, ~55–65s — chạy cuối mỗi phiên làm việc
 pytest tests/e2e             #   1 ca,  ~6s    — kịch bản xuyên suốt 11 bước, chạy cuối mỗi phase
-pytest                       # 776 ca, ~110s   — chạy trước mỗi commit (hồi quy)
+pytest                       # 782 ca, ~105s   — chạy trước mỗi commit (hồi quy)
 ```
 
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).
@@ -95,7 +95,7 @@ Kết quả từng phase: [`docs/testing/reports/`](docs/testing/reports/).
 | [`docs/ai-safety.md`](docs/ai-safety.md) | System prompt, ba lớp guardrail trong code, 20 ca kiểm thử an toàn AI |
 | [`docs/roadmap.md`](docs/roadmap.md) | Lộ trình P0–P8 gắn với mốc KT1/KT2/KT3/cuối kỳ |
 | [`docs/codebase-map.md`](docs/codebase-map.md) | Bản đồ file → trách nhiệm |
-| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 120 test case, checklist thủ công, báo cáo |
+| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 121 test case, checklist thủ công, báo cáo |
 | [`docs/plans/`](docs/plans/) | Kế hoạch đã duyệt của từng phase |
 | [`docs/sessions/`](docs/sessions/) | Nhật ký từng phiên làm việc |
 

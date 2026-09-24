@@ -442,3 +442,95 @@ def test_doi_lich_sang_nhan_vien_da_khoa_bi_tu_choi(client, db, nen):
     assert r.status_code == 400
     db.expire_all()
     assert db.get(Appointment, ma).staff_id == nen["nv1"].id
+
+
+# --- Việc P6 để lại, đóng ở P8: form đặt lịch trên cơ sở dữ liệu chưa có dữ liệu nền ---
+#
+# Phát hiện khi rà luồng 11/09: mở /appointments trên CSDL trống thì ba ô chọn bắt buộc
+# đều rỗng và không có câu nào nói vì sao. Người dùng chỉ gặp thông báo của chính trình
+# duyệt khi bấm Đặt lịch. Đo lại 24/09 trên CSDL tạm: thu_cung_id 0 lựa chọn,
+# dich_vu_id 0 lựa chọn, nhan_vien_id (ô trong form) 0 lựa chọn, không câu hướng dẫn nào.
+
+
+def test_csdl_chua_co_du_lieu_nen_thi_form_dat_lich_hien_cau_huong_dan(
+    client, db, seed_basic, frozen_clock
+):
+    """Chỉ có tài khoản, chưa có thú cưng và dịch vụ → nói rõ còn thiếu gì.
+
+    Không dùng fixture `nen` vì chính trạng thái "chưa có gì" mới là thứ cần dựng.
+    """
+    dang_nhap(client, "letan")
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert r.status_code == 200
+    assert "Chưa có thú cưng nào" in r.text
+    assert "Chưa có dịch vụ nào đang bán" in r.text
+    # Ô chọn rỗng bắt buộc không được hiện nữa — đó chính là thứ gây khó hiểu.
+    assert 'name="thu_cung_id"' not in r.text
+    assert 'name="dich_vu_id"' not in r.text
+
+
+def test_thieu_moi_dich_vu_thi_chi_bao_thieu_dich_vu(client, db, seed_basic, frozen_clock):
+    """Ca biên: có thú cưng nhưng chưa có dịch vụ → chỉ nêu đúng thứ còn thiếu."""
+    o = Owner(full_name="Đỗ Thị Hằng", phone="0912345678")
+    db.add(o)
+    db.flush()
+    db.add(Pet(owner_id=o.id, name="Mực", species="Chó"))
+    db.commit()
+    dang_nhap(client, "letan")
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert "Chưa có dịch vụ nào đang bán" in r.text
+    assert "Chưa có thú cưng nào" not in r.text
+
+
+def test_dich_vu_ngung_ban_khong_tinh_la_da_co_dich_vu(client, db, seed_basic, frozen_clock):
+    """Ca biên: dịch vụ đã ngưng bán không đặt lịch được, nên vẫn phải báo thiếu."""
+    o = Owner(full_name="Đỗ Thị Hằng", phone="0912345678")
+    db.add(o)
+    db.flush()
+    db.add(Pet(owner_id=o.id, name="Mực", species="Chó"))
+    db.add(
+        Service(
+            code="CU", name="Dịch vụ cũ", duration_min=30,
+            price=Decimal("10000"), is_active=False,
+        )
+    )
+    db.commit()
+    dang_nhap(client, "letan")
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert "Chưa có dịch vụ nào đang bán" in r.text
+
+
+def test_du_du_lieu_nen_thi_form_hien_binh_thuong(client, db, nen):
+    """Ca đối chứng: đủ dữ liệu thì form phải trở lại, không còn câu hướng dẫn."""
+    dang_nhap(client, "letan")
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert 'name="thu_cung_id"' in r.text
+    assert 'name="dich_vu_id"' in r.text
+    assert "Chưa có thú cưng nào" not in r.text
+    assert "Chưa có dịch vụ nào đang bán" not in r.text
+
+
+def test_khoa_het_nhan_vien_cham_soc_thi_bao_thieu_nhan_vien(client, db, nen, seed_basic):
+    """Ca biên thứ ba: đủ thú cưng và dịch vụ nhưng không còn ai nhận lịch.
+
+    Dựng bằng cách khóa cả hai nhân viên chăm sóc — `_danh_sach_nhan_vien` chỉ lấy người
+    còn hoạt động, nên đây là đường thật dẫn tới danh sách rỗng, không phải dựng tay.
+    """
+    seed_basic["caretaker1"].is_active = False
+    seed_basic["caretaker2"].is_active = False
+    db.commit()
+    dang_nhap(client, "letan")
+
+    r = client.get(f"/appointments?ngay={NGAY}")
+
+    assert "Chưa có nhân viên chăm sóc nào" in r.text
+    assert "Chưa có thú cưng nào" not in r.text
+    assert "Chưa có dịch vụ nào đang bán" not in r.text

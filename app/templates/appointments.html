@@ -124,6 +124,38 @@
   </div>
 
   {% if user.role in ('manager', 'receptionist') %}
+  {% if not thu_cung or not dich_vu or not nhan_vien %}
+  {# Trên cơ sở dữ liệu mới dựng, ba ô chọn này đều rỗng. Hiện form rỗng thì người dùng chỉ
+     gặp thông báo của chính trình duyệt khi bấm Đặt lịch, không biết phải làm gì trước. #}
+  <div class="the">
+    <h2>Đặt lịch</h2>
+    <p>Chưa đặt lịch được vì hệ thống còn thiếu dữ liệu nền:</p>
+    <ul>
+      {% if not thu_cung %}
+        <li>Chưa có thú cưng nào — thêm chủ nuôi và thú cưng ở trang
+          <a href="/owners">Chủ nuôi</a>.</li>
+      {% endif %}
+      {% if not dich_vu %}
+        <li>Chưa có dịch vụ nào đang bán —
+          {% if user.role == 'manager' %}
+            thêm ở trang <a href="/services">Dịch vụ</a>.
+          {% else %}
+            nhờ quản lý thêm ở trang Dịch vụ.
+          {% endif %}
+        </li>
+      {% endif %}
+      {% if not nhan_vien %}
+        <li>Chưa có nhân viên chăm sóc nào —
+          {% if user.role == 'manager' %}
+            tạo tài khoản vai trò Nhân viên chăm sóc ở trang <a href="/users">Tài khoản</a>.
+          {% else %}
+            nhờ quản lý tạo tài khoản nhân viên chăm sóc.
+          {% endif %}
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+  {% else %}
   <form class="the" method="post" action="/appointments">
     <h2>Đặt lịch</h2>
     <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">
@@ -156,6 +188,7 @@
     <button type="submit" class="chinh">Đặt lịch</button>
     <p class="phu nhan-nho">Giờ kết thúc tự tính theo thời lượng dịch vụ.</p>
   </form>
+  {% endif %}
   {% endif %}
 </div>
 {% endblock %}

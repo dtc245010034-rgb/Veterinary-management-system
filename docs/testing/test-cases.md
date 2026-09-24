@@ -221,6 +221,12 @@ Cả bốn tái hiện được trên trình duyệt **trước khi sửa**; m�
 > tự sinh câu khuyến cáo nên không dựng lại được cảnh lặp. Muốn chắc chắn thì phải chạy một lượt nhắc
 > lịch tiêm với Gemini thật và đọc kết quả (một lượt quota).
 
+## M. Việc tồn đóng ở P8
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-121 | US-10 | Cơ sở dữ liệu chưa có dữ liệu nền: form đặt lịch nói rõ **còn thiếu gì và thêm ở đâu**, thay vì ba ô chọn bắt buộc rỗng không lời giải thích (việc P6 để lại từ 11/09) | I | `test_appointments.py::test_csdl_chua_co_du_lieu_nen_…`, `…::test_thieu_moi_dich_vu_…`, `…::test_dich_vu_ngung_ban_khong_tinh_…`, `…::test_khoa_het_nhan_vien_…`, `…::test_du_du_lieu_nen_thi_form_hien_binh_thuong` | ✅ |
+
 ## J. Hệ thống hoàn chỉnh — chạy cuối mỗi phase từ P5
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
@@ -251,8 +257,10 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | I. AI | US-24 → US-28 | TC-082 → TC-100 | 19 |
 | I.4 Xoay model, quota | — (vận hành) | TC-103 → TC-112 | 10 |
 | K. Lỗi rà soát 19/09 | US-10, US-12, US-20, US-27 | TC-113 → TC-116 | 4 |
+| L. Bốn lỗi ưu tiên 20/09 | US-03, US-04, US-05, US-24, US-27 | TC-117 → TC-120 | 4 |
+| M. Việc tồn đóng ở P8 | US-10 | TC-121 | 1 |
 | J. Xuyên suốt | — | TC-101, TC-102 | 2 |
-| | **28/28 US** | | **116** |
+| | **28/28 US** | | **121** |
 
 ### Theo yêu cầu đề bài mục 4
 
@@ -265,4 +273,4 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | Hạ tầng AI (xoay model, quota) | TC-103 → TC-112 | 10 |
 
 **Kết luận: 28/28 user story có test case. Bốn hạng mục đề bài yêu cầu đích danh đều được phủ, trong
-đó lịch hẹn và AI — hai phần khó nhất — chiếm 50/120 test case.**
+đó lịch hẹn và AI — hai phần khó nhất — chiếm 50/121 test case.**

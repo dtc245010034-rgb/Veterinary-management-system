@@ -4,14 +4,15 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-20 (phiên 20/09 — vá dữ liệu D-01, sửa 4 lỗi ưu tiên, **người dùng tick đủ smoke P7**) · **Trạng thái:** **P0→P7 xong cả tám phase; chỉ còn P8.** **776 test xanh.** Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+**Cập nhật lần cuối:** 2026-09-24 (phiên 24/09 — dọn việc tồn, mở P8 phần kiểm chứng được) · **Trạng thái:** **P0→P7 xong cả tám phase; P8 đang làm.** **782 test xanh.** Tiến độ từng phase: [`roadmap.md`](roadmap.md)
 
 > **Làm tiếp — theo thứ tự:**
-> 1. **Mở P8 — phase cuối, việc lớn nhất còn lại.** Theo [`roadmap.md`](roadmap.md) mục P8:
->    README hoàn chỉnh · báo cáo · slide · rà dữ liệu cá nhân trong `ai_logs` · CI GitHub Actions ·
->    dựng lại trên máy sạch · câu hướng dẫn form đặt lịch khi CSDL trống. **6 ô smoke P8** còn trống
->    chính là danh sách việc sẵn có: xem cuối [`testing/smoke-checklist.md`](testing/smoke-checklist.md).
-> 2. **Hoặc sửa tiếp trong 11 lỗi còn lại** của
+> 1. **P8 — phần còn lại đều cần người dùng hoặc cần bạn quyết.** Ba ô smoke P8 đã có bằng chứng
+>    kiểm chứng bằng lệnh (xem log phiên 24/09) nhưng **agent không tick** — ô smoke là việc bấm tay.
+>    Ba ô còn lại: dựng lại trên máy sạch · ma trận hết ô ⬜ (phụ thuộc chính TC-102) · dán output
+>    cuối cùng vào báo cáo. **Việc lớn chưa bắt đầu: README hoàn chỉnh, báo cáo cuối kỳ, slide,
+>    CI GitHub Actions.**
+> 2. **11 lỗi còn lại** của
 >    [`testing/reports/2026-09-19-ra-luong-P1-P7.md`](testing/reports/2026-09-19-ra-luong-P1-P7.md):
 >    M-03 (giới hạn độ dài câu hỏi AI), M-05 (kiểm SĐT/email), **M-06 = S6** (đặt được lịch 3 giờ sáng,
 >    lịch lấn 33 giờ — nghiệp vụ lịch hẹn, trọng tâm đề bài), M-07 (cảnh báo SĐT trùng), L-01 → L-07,
@@ -21,15 +22,18 @@
 >    chạy với Gemini thật — chế độ `fake` không tự sinh câu khuyến cáo nên không dựng lại được cảnh
 >    lặp. Muốn chắc thì chạy một lượt nhắc lịch tiêm với Gemini thật (tốn 1 lượt quota).
 >
-> **Trạng thái máy (20/09, cuối phiên):** `petcare.db` **đã sạch** — khôi phục từ bản sao lưu, 2 hóa
-> đơn, **không nợ âm**, không còn bản ghi rác "Rà 19/09". Bản trước khi khôi phục giữ ở
-> `petcare.truoc-khoi-phuc-2026-09-20.db`, bản gốc trước lượt rà 19/09 ở
-> `petcare.backup-2026-09-19.db` (cả hai **không vào git**). `.env` đang `AI_PROVIDER=gemini`.
-> Phiên 20/09 đã commit ở `0f17f52` (34 file), working tree sạch — **chưa push** lên GitHub.
+> **Đã đóng 24/09:** việc P6 để lại (form đặt lịch trên CSDL trống nay nói rõ còn thiếu gì — TC-121)
+> và ba biến `AI_*` thiếu trong `.env.example` mà kế hoạch P7 đã tick nhầm là xong. Thêm **phép canh
+> thứ 50**: mọi biến trong `config.py` phải có mặt trong `.env.example`.
 >
-> **Đọc để lấy lại ngữ cảnh:** [`sessions/2026-09-20-05.md`](sessions/2026-09-20-05.md) (phiên gần
-> nhất, hai phần) → [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) (năm phần, nền của mọi
-> quyết định hiện tại).
+> **Trạng thái máy:** `petcare.db` **sạch** — 2 hóa đơn, **không nợ âm**, không bản ghi rác. Rà 24/09:
+> **29 bản ghi `ai_logs`, không bản ghi nào chứa SĐT/email/địa chỉ chủ nuôi.** Bản sao lưu ở
+> `petcare.truoc-khoi-phuc-2026-09-20.db` và `petcare.backup-2026-09-19.db` (cả hai **không vào git**).
+> `.env` đang `AI_PROVIDER=gemini`. **Hai commit `0f17f52` và `d31645d` chưa push lên GitHub.**
+>
+> **Đọc để lấy lại ngữ cảnh:** [`sessions/2026-09-24-01.md`](sessions/2026-09-24-01.md) (phiên gần
+> nhất) → [`sessions/2026-09-20-05.md`](sessions/2026-09-20-05.md) (bốn phần) →
+> [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) (năm phần, nền của mọi quyết định hiện tại).
 
 ### `app/ai/` — tầng AI, từ P7
 
@@ -55,7 +59,7 @@
 | `đề-bài.md` | Đề bài gốc của môn học. **Không sửa** |
 | `README.md` | Giới thiệu, cách chạy, cách chạy test |
 | `.gitignore` | Bỏ qua `.venv`, `__pycache__`, `*.db`, `.env`, `.claude/settings.local.json` |
-| `.env.example` | Mẫu biến môi trường: khóa, **danh sách model Gemini**, ước tính hạn mức, `GEMINI_THINKING_BUDGET`. `.env` thật không vào repo |
+| `.env.example` | Mẫu biến môi trường: khóa, **danh sách model Gemini**, ước tính hạn mức, `GEMINI_THINKING_BUDGET`, ngân sách thời gian mỗi lượt gọi AI. `.env` thật không vào repo. Có phép canh: mọi biến trong `config.py` phải có mặt ở đây |
 
 ### `.claude/` — cấu hình agent, nằm trong repo
 
@@ -78,9 +82,9 @@
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
 | `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 16: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập, vá dữ liệu và sửa 4 lỗi ưu tiên (20/09) |
 | `sessions/README.md` | Quy ước log phiên làm việc |
-| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 13 |
+| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 14 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
-| `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 120 test case — 118 ✅ · 0 🟡 · 1 ⬜ (TC-102 smoke) · 1 ➖ ngoài phạm vi (20/09, thêm TC-117 → TC-120 cho bốn lỗi ưu tiên) |
+| `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 121 test case — 119 ✅ · 0 🟡 · 1 ⬜ (TC-102 smoke) · 1 ➖ ngoài phạm vi (24/09 thêm TC-121 cho việc P6 để lại; 20/09 thêm TC-117 → TC-120) |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
 | `testing/reports/README.md` | Mẫu báo cáo kiểm thử cuối phase |
 | `testing/reports/YYYY-MM-DD-Pn.md` | Một file mỗi phase, chứa output pytest thật. Hiện có 25: mỗi phase một file, cộng sáu báo cáo rà luồng bằng trình duyệt (bản 19/09 kèm ảnh trong `anh-2026-09-19/`), một báo cáo rà bổ sung bằng HTTP (20/09, bốn phần lượt 19/09 chưa chạm), một báo cáo rà bằng Chrome trước khi sửa (20/09), một báo cáo trả nợ, một báo cáo dọn việc tồn và một báo cáo chạy Gemini thật (sinh bởi `python -m app.ai.quota --guardrail`) |
@@ -162,7 +166,7 @@
 | `unit/test_text.py` | Chuẩn hóa chuỗi tiếng Việt, gồm bẫy chữ `đ` |
 | `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
 | `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa |
-| `unit/test_architecture.py` | **Canh ranh giới dự án** (15 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file (so **đuôi đường dẫn**, không so mỗi tên file — xem kẽ hở đã vá 13/09), hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật, ba system prompt in trong `ai-safety.md` khớp từng chữ với `prompts.py` |
+| `unit/test_architecture.py` | **Canh ranh giới dự án** (50 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file (so **đuôi đường dẫn**, không so mỗi tên file — xem kẽ hở đã vá 13/09), hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật, ba system prompt in trong `ai-safety.md` khớp từng chữ với `prompts.py`, mọi biến trong `config.py` đều có mặt trong `.env.example` |
 | `unit/test_khoi_dong.py` | Lifespan từ chối khởi động với `SECRET_KEY` mặc định (S1). Gọi thẳng `lifespan`, engine in-memory |
 | `unit/test_prompts.py` | Dựng prompt, ba system prompt, chèn `DISCLAIMER` (TC-082, 083, 088, 096) |
 | `unit/test_guardrail.py` | Ba phép chặn trong code, nặng về **ca âm**: "nhân viên" không được coi là hỏi liều (TC-093) |
