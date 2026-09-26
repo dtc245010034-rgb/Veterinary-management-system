@@ -4,27 +4,44 @@
 > agent đọc ở mỗi phiên làm việc (xem [`../CLAUDE.md`](../CLAUDE.md) mục 6). Bản đồ lệch thực tế thì
 > phiên sau sẽ làm việc dựa trên thông tin sai.
 
-**Cập nhật lần cuối:** 2026-09-25 (phiên 24/09, bốn phần — dọn việc tồn · sửa M-06 · **sửa hết 11 lỗi còn lại** · lên kế hoạch bộ đo AI) · **Trạng thái:** **P0→P7 xong cả tám phase; P8 đang làm. KHÔNG CÒN LỖI NÀO TỒN.** **904 test xanh.** Tiến độ từng phase: [`roadmap.md`](roadmap.md)
+**Cập nhật lần cuối:** 2026-09-27 (phiên 25–27/09 — **dựng CI GitHub Actions** · **đặc tả theo kịp 12 lỗi đã sửa** · **xử lý 3 việc tồn** · **lên kế hoạch P9 cổng khách hàng sau buổi giảng viên kiểm tiến độ**) · **Trạng thái:** **P0→P7 xong cả tám phase; P8 đang làm. KHÔNG CÒN LỖI NÀO TỒN.** **906 test xanh.** Tiến độ từng phase: [`roadmap.md`](roadmap.md)
 
 > ## Làm tiếp — đọc mục này trước tiên
 >
-> **1. Việc đã duyệt, chưa làm — mở ra là chạy được ngay:**
-> [`plans/2026-09-25-ragas-bo-do-ai.md`](plans/2026-09-25-ragas-bo-do-ai.md) — bộ đo chất lượng AI.
-> Người dùng đã chốt đủ 4 quyết định, kế hoạch có sẵn 12 ô checklist chưa tick. Tóm tắt: chấm
-> `G-01→G-13` **bằng luật code** (0 lượt gọi), cộng **RAGAS `Faithfulness` chỉ cho tóm tắt hồ sơ**
-> qua một wrapper gọi ngược vào `goi_co_xoay`. Giám khảo phải là model **khác** model bị chấm.
-> Đặt ở `app/ai/danh_gia.py`. `ragas` **không** vào `requirements.txt`.
+> **1. VIỆC LỚN NHẤT ĐANG CHỜ: P9 — cổng khách hàng.**
+> [`plans/2026-09-25-p9-cong-khach-hang.md`](plans/2026-09-25-p9-cong-khach-hang.md) — **29 ô,
+> CHƯA DUYỆT**, viết sau buổi giảng viên kiểm tra tiến độ 25/09. Mười quyết định đã chốt qua hai
+> vòng hỏi; kế hoạch chờ người dùng duyệt trước khi gõ code. **Đọc cả mục 1 và mục 2 của file đó
+> trước khi bàn lại bất cứ điều gì** — bốn nhận xét của giảng viên và phản biện có bằng chứng đều
+> nằm ở đó, đừng tranh luận lại từ đầu.
 >
-> **2. Việc lớn của P8 chưa bắt đầu:** README hoàn chỉnh · **báo cáo cuối kỳ** · **slide** ·
-> **CI GitHub Actions**. CI làm được ngay vì mọi commit đã lên remote.
+> **Ô 0.1 đã chốt ngày 27/09: đổi fixture `db`** sang dựng schema một lần mỗi phiên + rollback từng
+> test. Lý do làm trước mọi thứ khác: P9 sẽ thêm ~250–350 test, đổi fixture trên 906 test rẻ hơn hẳn
+> trên 1200. **Đây là việc đầu tiên của phiên sau.** Chưa gõ dòng nào.
 >
-> **3. Sáu ô smoke P8 chờ người dùng bấm tay.** Bốn trong sáu ô **đã có sẵn bằng chứng** kiểm bằng
+> **2. Việc đã duyệt, chưa làm:**
+> [`plans/2026-09-25-ragas-bo-do-ai.md`](plans/2026-09-25-ragas-bo-do-ai.md) — bộ đo chất lượng AI,
+> **12 ô chưa tick**. Người dùng đã chốt đủ 4 quyết định. Tóm tắt: chấm `G-01→G-13` **bằng luật
+> code** (0 lượt gọi), cộng **RAGAS `Faithfulness` chỉ cho tóm tắt hồ sơ** qua một wrapper gọi ngược
+> vào `goi_co_xoay`. Giám khảo phải là model **khác** model bị chấm. Đặt ở `app/ai/danh_gia.py`.
+> `ragas` **không** vào `requirements.txt`.
+>
+> **3. Việc lớn của P8 chưa bắt đầu:** README hoàn chỉnh · **báo cáo cuối kỳ** · **slide**.
+> **CI đã dựng xong 25/09** — xem mục `.github/` bên dưới. Lượt chạy đầu tiên là phép thử thật
+> của job Linux: dự án chưa từng chạy trên Linux, nên **đỏ ở đó chưa chắc là lỗi code**.
+>
+> **4. Sáu ô smoke P8 chờ người dùng bấm tay.** Bốn trong sáu ô **đã có sẵn bằng chứng** kiểm bằng
 > lệnh, ghi trong [`sessions/2026-09-24-01.md`](sessions/2026-09-24-01.md) — agent không tick vì ô
 > smoke đo trải nghiệm trên trình duyệt.
 >
-> **4. Hai việc treo lâu, chưa ai quyết:**
-> - **Ngân sách thời gian test**: 902 ca ~101s, vượt ngưỡng 90s ghi trong `test-strategy.md`.
->   Treo từ 11/09.
+> **5. Việc treo còn lại:**
+> - **Ngân sách thời gian test — ĐÃ CHỐT 27/09, xem ô 0.1 ở mục 1.** Ngưỡng thật là **100s**
+>   (`test-strategy.md`, nới lần hai 18/09) — **không phải 90s**; con số 90s là của lần nới
+>   13/09 còn sót trong `roadmap.md` rồi bị chép qua **năm** tài liệu suốt ba phiên. Đo 25/09
+>   qua bảy lượt: **101–148s** cho cùng một bộ test cùng một ngày — dao động theo tải máy rộng
+>   hơn cả mức vượt ngưỡng. Đã truy nguyên nhân: **không test nào đáng cắt** (20 ca chậm nhất
+>   cộng lại chỉ ~24s), chi phí rải đều ở fixture — `create_all` từng test tốn
+>   **25,6 ms × 906 ≈ 23s**. Có phép canh số 55 giữ con số ngưỡng khỏi bị chép lệch lần nữa.
 > - **M-08 chưa kiểm bằng Gemini thật** (mới kiểm ở mức prompt) — tốn 1 lượt quota.
 >
 > ---
@@ -41,6 +58,32 @@
 >
 > ### Ngữ cảnh dễ mất, ghi lại ở đây
 >
+> - **Giảng viên đã kiểm tiến độ ngày 25/09 và nêu bốn điểm.** Phản biện có bằng chứng nằm ở
+>   mục 1 của [`plans/2026-09-25-p9-cong-khach-hang.md`](plans/2026-09-25-p9-cong-khach-hang.md).
+>   Hai điều **đừng bàn lại từ đầu**:
+>   - *"Không phải lập trình hướng đối tượng"* — **sai về sự kiện**: `app/` có **35 class**, gồm
+>     mẫu Strategy (`AIProvider` ← `GeminiProvider`/`FakeProvider`) và cây kế thừa ngoại lệ ba
+>     tầng. Người dùng đã xác nhận OOP **không phải tiêu chí chấm** → **không refactor**.
+>   - *"Cho khách xem bảng lịch nhân viên"* — làm theo nghĩa đen là **rò dữ liệu**:
+>     `appointments.html` render tên thú cưng, họ tên chủ nuôi và link `/owners/{id}`. Đã chốt:
+>     khách chỉ thấy **khung trống theo từng nhân viên**.
+> - **Vì sao KHÔNG nối tài khoản khách theo số điện thoại** (dù đó là cách tiện nhất):
+>   `owners.phone` **không UNIQUE**, và `requirements.txt` **không có thư viện gửi mail/SMS nào**
+>   → ai biết số điện thoại của một khách là **chiếm được** hồ sơ thú cưng, lịch sử chăm sóc và
+>   hóa đơn của người đó. Nặng hơn mọi lỗi của lượt rà 19/09. Đã chốt: **xác minh email** (bài
+>   toán "email này là của ai") **cộng lễ tân duyệt yêu cầu nối** (bài toán "người này là chủ
+>   nuôi nào") — hai bài toán khác nhau, đừng gộp lại. Thêm dữ kiện: **chỉ 1/4 chủ nuôi trong
+>   `petcare.db` có email**, `seed.py` không đặt email cho ai.
+> - **Cạm bẫy của hook `session-stop.ps1`:** nó xóa mọi log phiên có **≥5** lần chuỗi
+>   `_(chua ghi)_`. Một log phiên **mô tả chính cơ chế đó** mà trích chuỗi 5 lần sẽ **bị hook
+>   xóa im lặng, dù đã điền đầy đủ**. `sessions/2026-09-25-01.md` hiện trích 1 lần nên an toàn.
+>   Phép canh `dem_log_phien_da_ghi` dùng cùng ngưỡng nên có cùng điểm mù. **Chưa sửa** — sửa
+>   hook là việc cần người dùng quyết.
+> - **Bộ test có dấu hiệu flaky:** lượt chạy 27/09 ra `901 passed, 5 errors`, chạy lại ngay sau
+>   đó **906 passed** hai lần liền. Không xác định được 5 ca nào vì output đã bị cắt. Bốn ca duy
+>   nhất chạm hệ thống tập tin thật là `test_seed.py` (2), `e2e/test_full_flow.py` (1),
+>   `test_hooks.py` (1) — **không đủ 5 nên đừng kết luận là chúng**. CI nay chạy mỗi lần push và
+>   sẽ giữ log đầy đủ; đó là chỗ để bắt lại chuyện này.
 > - **Quota AI là ~20 lượt cho MỖI model, 4 model → ~80 lượt/ngày**, không phải 20. Cơ chế xoay ca
 >   ở `app/ai/quota.py` sinh ra đúng vì *"một model là không đủ để chạy 20 ca guardrail"*.
 > - **`G-14 → G-20` không cần model thật** — `ai-safety.md` chốt chúng là "việc của code", đã có
@@ -89,9 +132,12 @@
 >
 > ### Đọc để lấy lại ngữ cảnh
 >
-> [`sessions/2026-09-24-01.md`](sessions/2026-09-24-01.md) (phiên gần nhất, **bốn phần** — dài nhưng
-> là nguồn đầy đủ nhất) → [`sessions/2026-09-20-05.md`](sessions/2026-09-20-05.md) (bốn phần) →
-> [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) (năm phần, nền của mọi quyết định).
+> [`sessions/2026-09-25-01.md`](sessions/2026-09-25-01.md) (phiên gần nhất — CI và đặc tả, kèm
+> bảng **luật → test** và cách xử lý xuống dòng trên file trộn CRLF/LF) →
+> [`sessions/2026-09-24-01.md`](sessions/2026-09-24-01.md) (**sáu phần** — dài nhưng là nguồn
+> đầy đủ nhất về đợt sửa lỗi) → [`sessions/2026-09-20-05.md`](sessions/2026-09-20-05.md)
+> (bốn phần) → [`sessions/2026-09-19-01.md`](sessions/2026-09-19-01.md) (năm phần, nền của mọi
+> quyết định).
 
 ### `app/ai/` — tầng AI, từ P7
 
@@ -127,20 +173,26 @@
 | `hooks/session-start.ps1` | Tạo `docs/sessions/YYYY-MM-DD-NN.md`, in nhắc nhở, cảnh báo nếu sai thư mục làm việc |
 | `hooks/session-stop.ps1` | Chạy sau **mỗi lượt**: xóa **mọi** file log còn rỗng (mọi ngày, không chỉ file mới nhất), nhắc cập nhật codebase-map và checklist plan |
 
+### `.github/` — CI, từ 25/09
+
+| File | Vai trò |
+|---|---|
+| `workflows/ci.yml` | Chạy toàn bộ bộ test mỗi lần push lên `main` và mỗi pull request, trên **cả `windows-latest` lẫn `ubuntu-latest`** (`fail-fast: false` để Linux đỏ vẫn biết Windows xanh hay không). **Cố ý không tạo `.env`**: job xanh chính là bằng chứng suite chạy được bằng giá trị mặc định của `config.py`, tức người chấm clone repo về là test được ngay. Chạy `pytest -rs` để chỗ bỏ qua hiện ra trong log thay vì lẫn vào màu xanh — **Windows 0 ca bỏ qua, Linux đúng 1** (`test_hooks.py`, nó tìm lệnh `powershell` chứ không phải `pwsh`) |
+
 ### `docs/`
 
 | File | Vai trò |
 |---|---|
-| `user-stories.md` | 28 user story, 104 tiêu chí Given/When/Then, bảng đối chiếu với đề bài |
+| `user-stories.md` | 28 user story, **118** tiêu chí Given/When/Then, bảng đối chiếu với đề bài. 14 tiêu chí thêm ngày 25/09 cho các luật nghiệp vụ sinh ra từ lượt sửa lỗi 24/09 — xem [kế hoạch](plans/2026-09-25-ci-va-dac-ta-theo-kip.md) |
 | `erd.md` | 14 bảng, sơ đồ Mermaid, mô tả cột và ràng buộc |
 | `architecture.md` | Cây thư mục, ranh giới ba lớp, 3 sequence diagram, cách xử lý lỗi |
 | `ai-safety.md` | System prompt 3 tính năng (có phép canh khớp `prompts.py`), `DISCLAIMER`, 20 ca guardrail G-01→G-20, kết quả chạy Gemini thật 19/09 |
 | `codebase-map.md` | File này |
 | `roadmap.md` | Lộ trình P0→P8 gắn với mốc KT1/KT2/KT3/cuối kỳ, kèm Definition of Done |
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
-| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 19: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập, vá dữ liệu và sửa 4 lỗi ưu tiên (20/09), M-06 giờ mở cửa (24/09), 11 lỗi còn lại (24/09), **bộ đo AI có RAGAS (25/09 — đã duyệt, chưa làm)** |
+| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 21: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập, vá dữ liệu và sửa 4 lỗi ưu tiên (20/09), M-06 giờ mở cửa (24/09), 11 lỗi còn lại (24/09), **bộ đo AI có RAGAS (25/09 — đã duyệt, chưa làm)**, **CI và đặc tả theo kịp (25/09)**, **P9 cổng khách hàng (25/09 — CHƯA DUYỆT)** |
 | `sessions/README.md` | Quy ước log phiên làm việc |
-| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 14 |
+| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 15 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
 | `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 133 test case — 131 ✅ · 0 🟡 · 1 ⬜ (TC-102 smoke) · 1 ➖ ngoài phạm vi (24/09 thêm TC-121 → TC-133; 20/09 thêm TC-117 → TC-120) |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
@@ -226,7 +278,7 @@
 | `unit/test_tien.py` | Đọc số tiền: phân cách nghìn, từ chối phần lẻ, `NaN`/`Infinity`, ô trống, số âm (L-03) |
 | `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
 | `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa |
-| `unit/test_architecture.py` | **Canh ranh giới dự án** (53 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file (so **đuôi đường dẫn**, không so mỗi tên file — xem kẽ hở đã vá 13/09), hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật, ba system prompt in trong `ai-safety.md` khớp từng chữ với `prompts.py`, mọi biến trong `config.py` đều có mặt trong `.env.example`, **`CLAUDE.md` có mục 10 và mục 6 trỏ tới nó** |
+| `unit/test_architecture.py` | **Canh ranh giới dự án** (55 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file (so **đuôi đường dẫn**, không so mỗi tên file — xem kẽ hở đã vá 13/09), hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật, ba system prompt in trong `ai-safety.md` khớp từng chữ với `prompts.py`, mọi biến trong `config.py` đều có mặt trong `.env.example`, **`CLAUDE.md` có mục 10 và mục 6 trỏ tới nó**. Phép canh đếm số log phiên **bỏ qua khung rỗng hook `SessionStart` vừa tạo** — đếm cả nó thì phép canh đỏ ở đầu mọi phiên chưa kịp ghi log, tức tự báo động giả (sửa 25/09, có test cô lập `dem_log_phien_da_ghi`). Phép canh **ngưỡng thời gian test**: mọi câu "vượt ngưỡng Ns" trong `docs/` phải khớp `test-strategy.md` — con số 90s từng bị chép lệch qua năm tài liệu, ba phiên |
 | `unit/test_khoi_dong.py` | Lifespan từ chối khởi động với `SECRET_KEY` mặc định (S1). Gọi thẳng `lifespan`, engine in-memory |
 | `unit/test_prompts.py` | Dựng prompt, ba system prompt, chèn `DISCLAIMER` (TC-082, 083, 088, 096) |
 | `unit/test_guardrail.py` | Ba phép chặn trong code, nặng về **ca âm**: "nhân viên" không được coi là hỏi liều (TC-093) |

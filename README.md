@@ -1,5 +1,7 @@
 # Hệ thống quản lý thú cưng và lịch chăm sóc có tích hợp AI
 
+[![Kiểm thử](https://github.com/dtc245010034-rgb/Veterinary-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/dtc245010034-rgb/Veterinary-management-system/actions/workflows/ci.yml)
+
 Phần mềm quản lý cho cửa hàng dịch vụ thú cưng: chủ nuôi, thú cưng, lịch spa/tắm/grooming, lịch tiêm
 nhắc lại, hồ sơ chăm sóc, hóa đơn và thống kê. Tích hợp AI để soạn tin nhắn nhắc lịch, tóm tắt hồ sơ
 chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham khảo.
@@ -77,11 +79,19 @@ prompt. Chi tiết: [`docs/ai-safety.md`](docs/ai-safety.md).
 ## Cách chạy test
 
 ```bash
-pytest tests/unit            # 489 ca, ~35–45s — chạy mỗi lần sửa code
-pytest tests/integration     # 286 ca, ~55–65s — chạy cuối mỗi phiên làm việc
-pytest tests/e2e             #   1 ca,  ~6s    — kịch bản xuyên suốt 11 bước, chạy cuối mỗi phase
-pytest                       # 902 ca, ~101s   — chạy trước mỗi commit (hồi quy)
+pytest tests/unit            # 582 ca, ~41–45s — chạy mỗi lần sửa code
+pytest tests/integration     # 322 ca, ~80–87s — chạy cuối mỗi phiên làm việc
+pytest tests/e2e             #   1 ca,  ~7s    — kịch bản xuyên suốt 11 bước, chạy cuối mỗi phase
+pytest                       # 906 ca, ~101–148s — chạy trước mỗi commit (hồi quy)
 ```
+
+Số đo ngày 25/09 qua bảy lượt chạy. **Dao động rất rộng theo tải máy — 101s tới 148s cho cùng một
+bộ test, cùng một ngày**, nên đừng coi một lượt đo là kết luận. Chạy riêng từng tầng rồi cộng lại
+(~127s) cũng lớn hơn một lượt chạy chung; chưa truy nguyên nhân chỗ chênh đó.
+
+Ngân sách trong `test-strategy.md` (toàn bộ **< 100s**) là **mốc xem lại, không phải mốc chặn**:
+vượt thì đo và tìm nguyên nhân, không cắt test để lấy màu xanh. Lượt đo 25/09 cho thấy **không
+test nào đáng cắt** — 20 ca chậm nhất cộng lại chỉ ~24s, phần còn lại là chi phí fixture rải đều.
 
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).
 Kết quả từng phase: [`docs/testing/reports/`](docs/testing/reports/).
@@ -90,13 +100,13 @@ Kết quả từng phase: [`docs/testing/reports/`](docs/testing/reports/).
 
 | File | Nội dung |
 |---|---|
-| [`docs/user-stories.md`](docs/user-stories.md) | 28 user story, 104 tiêu chí chấp nhận Given/When/Then |
+| [`docs/user-stories.md`](docs/user-stories.md) | 28 user story, 118 tiêu chí chấp nhận Given/When/Then |
 | [`docs/erd.md`](docs/erd.md) | 14 bảng, sơ đồ quan hệ, mô tả cột và ràng buộc — tất cả đã dựng |
 | [`docs/architecture.md`](docs/architecture.md) | Ba lớp, ranh giới, luồng dữ liệu, cách xử lý lỗi |
 | [`docs/ai-safety.md`](docs/ai-safety.md) | System prompt, ba lớp guardrail trong code, 20 ca kiểm thử an toàn AI |
 | [`docs/roadmap.md`](docs/roadmap.md) | Lộ trình P0–P8 gắn với mốc KT1/KT2/KT3/cuối kỳ |
 | [`docs/codebase-map.md`](docs/codebase-map.md) | Bản đồ file → trách nhiệm |
-| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 122 test case, checklist thủ công, báo cáo |
+| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 133 test case, checklist thủ công, báo cáo |
 | [`docs/plans/`](docs/plans/) | Kế hoạch đã duyệt của từng phase |
 | [`docs/sessions/`](docs/sessions/) | Nhật ký từng phiên làm việc |
 

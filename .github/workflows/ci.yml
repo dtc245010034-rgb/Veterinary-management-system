@@ -1,0 +1,43 @@
+# Chạy toàn bộ bộ test mỗi lần đẩy code lên.
+#
+# Cố ý KHÔNG tạo .env: app/config.py có giá trị mặc định cho mọi biến, tests/conftest.py tự
+# đặt BCRYPT_ROUNDS=4, và fixture `client` không chạy `lifespan` nên luật chặn SECRET_KEY mặc
+# định (S1) không cản. Job xanh mà không có .env chính là bằng chứng người chấm clone repo về
+# là chạy được test ngay.
+#
+# Chạy cả Windows lẫn Linux: dự án phát triển trên Windows, nhưng máy chấm có thể là Linux.
+# tests/unit/test_hooks.py tìm lệnh `powershell` (không phải `pwsh`) nên tự bỏ qua trên Linux —
+# dùng `-rs` để chỗ bỏ qua đó hiện ra trong log thay vì lẫn vào màu xanh.
+
+name: Kiểm thử
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    name: pytest trên ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Linux đỏ thì vẫn phải biết Windows xanh hay không: Windows là nền duy nhất dự án
+      # từng được kiểm thật.
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: pip
+
+      - name: Cài phụ thuộc
+        run: pip install -r requirements.txt
+
+      - name: Chạy toàn bộ bộ test
+        run: pytest -rs

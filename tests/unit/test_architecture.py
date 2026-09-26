@@ -32,6 +32,24 @@ def _doc(p: Path) -> str:
     return p.read_text(encoding="utf-8")
 
 
+# Khung log phiên do hook `SessionStart` tạo có đúng 5 ô `_(chua ghi)_`; hook `Stop`
+# xóa mọi file còn nguyên cả 5 ô. Giữa hai thời điểm đó, thư mục `docs/sessions/` có
+# thừa một file so với con số trong bản đồ — tức là **đầu mọi phiên chưa kịp ghi log**.
+# Đếm cả khung rỗng vào thì phép canh đỏ vì lý do không ai sửa được, và phép canh báo
+# động giả thì người ta tắt chứ không sửa. Dùng đúng ngưỡng của `session-stop.ps1` để
+# hai bên không lệch nhau.
+KHUNG_LOG_RONG = 5
+
+
+def dem_log_phien_da_ghi(thu_muc: Path) -> int:
+    """Đếm log phiên, BỎ QUA khung rỗng hook vừa tạo mà chưa ai ghi gì."""
+    return sum(
+        1
+        for p in thu_muc.glob("20*.md")
+        if _doc(p).count("_(chua ghi)_") < KHUNG_LOG_RONG
+    )
+
+
 # --- Ranh giới router / services -------------------------------------------------
 
 
@@ -429,7 +447,11 @@ def test_so_luong_ghi_trong_codebase_map_khop_so_file_that():
             if ghi is None:
                 continue
             da_soat.append(dau)
-            that = len(list(duong_dan.glob("20*.md")))
+            that = (
+                dem_log_phien_da_ghi(duong_dan)
+                if duong_dan.name == "sessions"
+                else len(list(duong_dan.glob("20*.md")))
+            )
             if int(ghi.group(1)) != that:
                 lech.append(f"{dau.strip('`')} bản đồ ghi {ghi.group(1)}, thực tế {that}")
 
@@ -437,6 +459,67 @@ def test_so_luong_ghi_trong_codebase_map_khop_so_file_that():
     # regex của nó không khớp gì cả chứ không phải vì code đúng.
     assert len(da_soat) == 3, f"Chỉ soát được {da_soat}, bản đồ đã đổi cách viết ba dòng đó?"
     assert len(lech) == 0, "codebase-map.md dem sai:" + "".join('\n  ' + d for d in lech)
+
+
+def test_dem_log_phien_bo_qua_khung_rong_hook_vua_tao(tmp_path):
+    """Khung rỗng không được tính; log đã ghi — kể cả ghi dở — thì phải tính.
+
+    Lỗi thật 25/09: phép canh đếm số log phiên ĐỎ ở đầu mỗi phiên, vì hook
+    `SessionStart` vừa tạo khung rỗng còn bản đồ thì chưa kể nó. Hook `Stop` xóa
+    khung đó ở cuối lượt nên test tự xanh lại — một phép canh tự báo động giả rồi
+    tự khỏi là phép canh sẽ bị bỏ qua.
+
+    Ngưỡng ở đây phải khớp `session-stop.ps1`: **còn nguyên cả 5 ô** mới là rỗng.
+    Ghi dở (4 ô) là có người làm việc, phải đếm.
+    """
+    o = "_(chua ghi)_"
+    (tmp_path / "2026-01-01-01.md").write_text("\n".join([o] * 5), encoding="utf-8")
+    (tmp_path / "2026-01-02-01.md").write_text("\n".join([o] * 4), encoding="utf-8")
+    (tmp_path / "2026-01-03-01.md").write_text("da ghi day du", encoding="utf-8")
+    (tmp_path / "README.md").write_text(o * 5, encoding="utf-8")
+
+    assert dem_log_phien_da_ghi(tmp_path) == 2
+
+
+def test_nguong_thoi_gian_test_khong_bi_chep_lech_khoi_test_strategy():
+    """Ngân sách thời gian test chỉ có MỘT nguồn: `test-strategy.md`.
+
+    Lỗi thật 25/09: `roadmap.md` lưu ba con số của lần nới 13/09 (30s/45s/90s) như thể
+    là số cuối, trong khi ngân sách đã nới **lần hai** ngày 18/09 thành 40s/60s/100s.
+    Con số "ngưỡng 90s" từ dòng đó bị chép sang `codebase-map.md`, hai log phiên và một
+    kế hoạch — **năm tài liệu, ba phiên** — rồi agent dùng nó làm cơ sở báo cáo sai cho
+    người dùng rằng bộ test "vượt ngưỡng 90s".
+
+    Cùng lớp lỗi với con số lỗi tồn bị chép sai qua ba file suốt năm ngày, và cùng lý do
+    `CLAUDE.md` mục 10 bắt "đếm lại từ nguồn, đừng chép số từ tài liệu".
+
+    NẾU TEST NÀY ĐỎ: sửa con số trong tài liệu bị nêu tên cho khớp `test-strategy.md`,
+    **đừng** sửa `test-strategy.md` cho khớp tài liệu kia.
+    """
+    chien_luoc = _doc(GOC / "docs" / "testing" / "test-strategy.md")
+    moc = re.search(r"\|\s*\*\*Regression\*\*.*?\|\s*<\s*(\d+)s\s*\|", chien_luoc)
+    assert moc is not None, "Không đọc được ngân sách tầng Regression trong test-strategy.md"
+    that = int(moc.group(1))
+
+    # Bỏ qua log phiên và báo cáo: đó là bản ghi lịch sử, con số trong đó đúng với ngày
+    # viết ra và không được sửa lại.
+    bo_qua = {"sessions", "reports"}
+    lech = []
+    for p in [GOC / "README.md", *(GOC / "docs").rglob("*.md")]:
+        if bo_qua & set(p.parts) or p.name == "test-strategy.md":
+            continue
+        # Chỉ bắt dạng câu KHẲNG ĐỊNH một ngưỡng hiện hành. Chỗ chỉ trích dẫn con số
+        # cũ ("trên ngưỡng xem lại 20s" của lượt đo 11/09) là bản ghi lịch sử, không
+        # phải lỗi — phép canh vồ cả những chỗ đó thì chính nó thành báo động giả, đúng
+        # cái vừa sửa sáng nay ở phép canh đếm log phiên.
+        for ghi in re.finditer(r"vượt ngưỡng[^0-9\n]{0,15}(\d+)\s*s\b", _doc(p)):
+            if int(ghi.group(1)) != that:
+                lech.append(f"{p.relative_to(GOC).as_posix()}: ngưỡng {ghi.group(1)}s")
+
+    assert not lech, (
+        f"test-strategy.md nói ngưỡng toàn bộ suite là {that}s, nhưng:"
+        + "".join("\n  " + d for d in lech)
+    )
 
 
 def _cot_trong_erd() -> dict[str, dict[str, str]]:

@@ -86,7 +86,7 @@ trong `config.py` phải có mặt trong `.env.example`. **782 test xanh**, ma t
 1 ⬜ · 1 ➖**. Ba ô smoke P8 đã có bằng chứng kiểm bằng lệnh — `.env` chưa từng vào git lần nào,
 CSDL trống dựng đủ 14 bảng không một lỗi 500, **29 bản ghi `ai_logs` không chứa dữ liệu cá nhân** —
 nhưng **agent không tick**, vì ô smoke đo trải nghiệm trên trình duyệt. Việc lớn của P8 (README hoàn
-chỉnh, báo cáo, slide, CI) **chưa bắt đầu**.
+chỉnh, báo cáo, slide, CI) **chưa bắt đầu** *(CI đã dựng xong ngày 25/09 — xem mục dưới)*.
 
 Ngày 24/09, phần 3 ([kế hoạch](plans/2026-09-24-11-loi-con-lai.md)): sửa **toàn bộ 11 lỗi còn lại**
 — M-03, M-05, M-07, L-01 → L-07, D-02. Cả 11 **tái hiện bằng Chrome trước khi sửa** và **nghiệm thu
@@ -94,6 +94,17 @@ lại bằng Chrome sau khi sửa**, trên bản sao cơ sở dữ liệu. **15/
 Con số lỗi còn lại được đính chính: ghi "11" từ 20/09 nhưng liệt kê 12 mã, và "10" ở cuối phiên 24/09
 — đếm lại đúng là **11**, nay còn **0**. Thêm `app/services/tien.py` gom luật đọc số tiền vốn nằm
 trùng ở hai router.
+
+Ngày 25/09 ([kế hoạch](plans/2026-09-25-ci-va-dac-ta-theo-kip.md) ·
+[log phiên](sessions/2026-09-25-01.md)): dựng **CI GitHub Actions** chạy matrix Windows + Linux, và
+cho **đặc tả theo kịp code** — `user-stories.md` đi từ **104 lên 118 tiêu chí**, thêm luật nghiệp vụ
+sinh ra từ đợt sửa 12 lỗi ngày 24/09 (giờ mở cửa · định dạng số điện thoại và email · các trần dữ
+liệu · lịch đã hủy · số lượt trong gói · trần độ dài câu hỏi AI). Bốn lỗi thuần giao diện ở lại
+`test-cases.md` theo quyết định của người dùng. Ma trận giữ nguyên **133 ca: 131 ✅ · 1 ⬜ · 1 ➖**.
+Sửa thêm một **phép canh tự báo động giả** (đếm cả khung log phiên rỗng mà hook vừa tạo) — nay
+**54 phép canh**. Đo lại thời gian test và tìm nguyên nhân theo đúng luật của `test-strategy.md`:
+**không test nào đáng cắt**, 20 ca chậm nhất cộng lại chỉ ~24s trong ~115s, phần còn lại là chi phí
+fixture rải đều — riêng `create_all` từng test tốn **25,6 ms × 904 ≈ 23s**.
 
 ---
 
@@ -214,6 +225,11 @@ thú y."*
 2. ✅ **Thời gian tầng unit.** Nới ngân sách cho khớp thực đo (unit 30s, integration 45s, toàn bộ
    90s) thay vì đổi fixture `db` ngay trước phase khó nhất. Lý do đầy đủ ghi ở
    [`testing/test-strategy.md`](testing/test-strategy.md).
+   > ⚠️ **Ba con số trên là của ngày 13/09 và ĐÃ CŨ.** Ngân sách nới **lần hai ngày 18/09**
+   > thành **unit 40s · integration 60s · toàn bộ 100s**; nguồn đúng luôn là
+   > `test-strategy.md`, không phải dòng này. Ba con số cũ ở đây đã bị chép lại thành
+   > "ngưỡng 90s" trong **năm** tài liệu suốt ba phiên trước khi có người đọc lại nguồn
+   > (25/09). Giữ nguyên dòng gốc làm mốc lịch sử, thêm cảnh báo này để không ai chép tiếp.
 3. ✅ **Kẽ hở phép canh `codebase-map`.** Nay so theo **đuôi đường dẫn cắt trên dấu `/`**, và dòng
    chỉ ghi mỗi tên file chỉ được chấp nhận khi tên đó không trùng với file ở thư mục khác. Bắt được
    thêm một chỗ thật: `app/auth.py` từng được nhận nhờ dòng của `routers/auth.py`.
@@ -266,6 +282,12 @@ là M-06 trong báo cáo đó — **đã sửa 24/09**, xem [kế hoạch](plans
 Dự án **đã đẩy lên GitHub ngày 18/09**: <https://github.com/dtc245010034-rgb/Veterinary-management-system>
 (repo công khai; `.env` và `petcare.db` nằm ngoài repo theo `.gitignore`). Vì vậy việc dựng CI ở phase
 này là làm được ngay — một workflow chạy `pytest` mỗi lần push là đủ.
+
+✅ *Xong 25/09 ([kế hoạch](plans/2026-09-25-ci-va-dac-ta-theo-kip.md)).* `.github/workflows/ci.yml`
+chạy toàn bộ suite trên **cả `windows-latest` lẫn `ubuntu-latest`**, `fail-fast: false`, và **cố ý
+không tạo `.env`** — job xanh chính là bằng chứng người chấm clone repo về là test được ngay.
+Dự án chưa từng chạy trên Linux, nên **lượt chạy đầu tiên của job Linux là phép thử thật**; đỏ ở
+đó chưa chắc là lỗi code, và tuyệt đối không sửa assert cho hợp màu xanh.
 
 **DoD:** ma trận [`testing/test-cases.md`](testing/test-cases.md) không còn ô ⬜; toàn bộ suite xanh;
 smoke P8 tick đủ; báo cáo dựng được từ chính `docs/` và `docs/sessions/`.

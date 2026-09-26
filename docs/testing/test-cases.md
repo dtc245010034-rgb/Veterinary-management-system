@@ -235,7 +235,7 @@ tám ca unit chạy đỏ trước khi sửa và **bốn lượt đột biến**
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-122 | US-10, US-11, US-07 | **Giờ mở cửa (M-06 = S6):** buổi phải nằm trọn trong 08:00–18:00 cùng một ngày — 07:59 bị từ chối · 08:00 nhận · kết thúc đúng 18:00 nhận · vượt 18:00 từ chối · lấn qua nửa đêm từ chối · **`doi_lich` chịu cùng luật** · dịch vụ 2.000 phút không đặt được · thời lượng dịch vụ > 600 phút bị chặn lúc tạo và lúc sửa · dữ liệu mẫu không sinh lịch ngoài giờ | U, I | `test_scheduling.py::test_dat_lich_truoc_gio_mo_cua_bi_tu_choi` và 7 ca cùng nhóm, `test_catalog_service.py::test_thoi_luong_*_ngay_lam_viec_*` (4 ca), `test_appointments.py::test_dat_lich_ngoai_gio_mo_cua_ra_400_va_cau_tieng_viet` (+ ca đối chứng), `test_seed.py::test_moi_lich_mau_deu_nam_trong_gio_mo_cua` | ✅ |
+| TC-122 | US-10, US-11, US-12, US-07 | **Giờ mở cửa (M-06 = S6):** buổi phải nằm trọn trong 08:00–18:00 cùng một ngày — 07:59 bị từ chối · 08:00 nhận · kết thúc đúng 18:00 nhận · vượt 18:00 từ chối · lấn qua nửa đêm từ chối · **`doi_lich` chịu cùng luật** · dịch vụ 2.000 phút không đặt được · thời lượng dịch vụ > 600 phút bị chặn lúc tạo và lúc sửa · dữ liệu mẫu không sinh lịch ngoài giờ | U, I | `test_scheduling.py::test_dat_lich_truoc_gio_mo_cua_bi_tu_choi` và 7 ca cùng nhóm, `test_catalog_service.py::test_thoi_luong_*_ngay_lam_viec_*` (4 ca), `test_appointments.py::test_dat_lich_ngoai_gio_mo_cua_ra_400_va_cau_tieng_viet` (+ ca đối chứng), `test_seed.py::test_moi_lich_mau_deu_nam_trong_gio_mo_cua` | ✅ |
 
 ## O. Mười một lỗi còn lại — sửa ngày 24/09
 
@@ -245,7 +245,7 @@ bị bắt đúng nhóm ca.
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-123 | US-27 | **M-03:** câu hỏi AI quá 1.000 ký tự bị từ chối **trước khi gọi API** — không tốn lượt quota, không ghi `ai_logs`; ca biên đúng trần vẫn hỏi được | U, I | `test_ai_service.py::test_cau_hoi_qua_dai_*`, `…::test_cau_hoi_dung_tran_*`, `test_ai.py::test_cau_hoi_qua_dai_bao_loi_tieng_viet_*` | ✅ |
+| TC-123 | US-26, US-27 | **M-03:** câu hỏi AI quá 1.000 ký tự bị từ chối **trước khi gọi API** — không tốn lượt quota, không ghi `ai_logs`; ca biên đúng trần vẫn hỏi được | U, I | `test_ai_service.py::test_cau_hoi_qua_dai_*`, `…::test_cau_hoi_dung_tran_*`, `test_ai.py::test_cau_hoi_qua_dai_bao_loi_tieng_viet_*` | ✅ |
 | TC-124 | US-04 | **M-05:** số điện thoại phải là số Việt Nam 10 chữ số; `+84`, dấu cách, chấm, gạch đều quy về một dạng; email kiểm định dạng nhưng vẫn không bắt buộc; áp cho cả tạo lẫn sửa | U | `test_owners_service.py::test_so_dien_thoai_*` (8 ca), `…::test_email_*` (3 ca), `…::test_chuan_hoa_so_dien_thoai` | ✅ |
 | TC-125 | US-04 | **M-07:** số trùng thì **hỏi trước khi tạo** — bản ghi chưa được tạo, trang xác nhận giữ lại mọi ô đã gõ, xác nhận rồi mới tạo; số gõ khác định dạng vẫn nhận ra trùng | I | `test_owners.py::test_trung_so_dien_thoai_hien_trang_hoi_lai_va_CHUA_tao`, `…::test_xac_nhan_roi_thi_tao_that`, `…::test_trang_hoi_lai_giu_lai_moi_o_da_go`, `…::test_so_go_khac_dinh_dang_van_nhan_ra_trung`, `…::test_khong_trung_thi_tao_thang_khong_hoi` | ✅ |
 | TC-126 | US-02 | **L-01:** thẻ trang chủ khớp thanh điều hướng theo **từng vai trò**, cả hai chiều | I | `test_auth.py::test_moi_link_menu_deu_co_the_tuong_ung_theo_tung_vai_tro` (3 vai trò), `…::test_khong_co_the_nao_tro_toi_cho_vai_tro_khong_vao_duoc` (3 vai trò) | ✅ |

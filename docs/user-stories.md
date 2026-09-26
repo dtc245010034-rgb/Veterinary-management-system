@@ -66,6 +66,10 @@ chức năng thuộc quyền của mình.
 - Given số điện thoại đã tồn tại trong hệ thống, When thêm chủ nuôi mới cùng số đó, Then cảnh báo trùng và hỏi có phải khách cũ không.
 - Given một chủ nuôi đã lưu, When sửa họ tên, số điện thoại, email, địa chỉ hoặc ghi chú, Then thông tin mới hiện ngay trên trang chi tiết; bỏ trống họ tên hoặc số điện thoại thì bị từ chối.
 - Given chủ nuôi đang có thú cưng, When xóa chủ nuôi, Then bị chặn với thông báo phải xử lý thú cưng trước.
+- Given số điện thoại không phải số Việt Nam 10 chữ số, When lưu chủ nuôi, Then bị từ chối; số gõ dạng `+84` hay `84`, hoặc có dấu cách, chấm, gạch, được **chuẩn hóa về 10 chữ số trước khi lưu và trước khi kiểm trùng**, nên `+84912345678` và `0912345678` là cùng một khách.
+- Given email sai định dạng, When lưu chủ nuôi, Then bị từ chối; ô email **để trống vẫn hợp lệ** vì đây không phải trường bắt buộc.
+- Given họ tên, địa chỉ hoặc ghi chú dài quá trần của ô đó, When lưu chủ nuôi, Then bị từ chối kèm thông báo nêu rõ trần — SQLite không tự ép độ dài nên đây là ràng buộc thật sự duy nhất.
+- Given bất kỳ phép kiểm nào ở trên, When **sửa** chủ nuôi thay vì thêm mới, Then luật áp dụng y như nhau.
 
 ### US-05 — Quản lý thú cưng
 **Là** lễ tân, **tôi muốn** quản lý thú cưng gắn với chủ nuôi, **để** biết đang chăm sóc con vật nào của ai.
@@ -75,6 +79,8 @@ chức năng thuộc quyền của mình.
 - Given form thêm thú cưng, When nhập cân nặng âm hoặc bằng 0, Then bị từ chối.
 - Given một thú cưng đã lưu, When sửa tên, loài, giống, giới tính, ngày sinh hoặc cân nặng, Then thông tin mới hiện ngay; các phép kiểm ngày sinh và cân nặng áp dụng y như lúc thêm mới.
 - Given một thú cưng, When mở trang chi tiết, Then thấy thông tin chủ nuôi, lịch sử chăm sóc và lịch tiêm.
+- Given cân nặng quá 200 kg hoặc ngày sinh cách nay quá 40 năm, When lưu thú cưng, Then bị từ chối — đây là chặn số gõ nhầm, không phải giới hạn sinh học.
+- Given giới tính không nằm trong danh sách cho phép, When lưu thú cưng, Then bị từ chối; ô chọn trên giao diện **dựng từ chính danh sách đó** nên giao diện và phép kiểm không thể lệch nhau.
 
 ### US-06 — Tra cứu nhanh
 **Là** lễ tân, **tôi muốn** tìm chủ nuôi hoặc thú cưng theo tên hoặc số điện thoại, **để** phục vụ khách ngay tại quầy.
@@ -93,6 +99,8 @@ chức năng thuộc quyền của mình.
 - Given form thêm dịch vụ, When nhập tên, giá và thời lượng hợp lệ, Then dịch vụ xuất hiện trong danh sách chọn khi đặt lịch.
 - Given form thêm dịch vụ, When nhập giá âm hoặc thời lượng nhỏ hơn hoặc bằng 0, Then bị từ chối.
 - Given một dịch vụ đã dùng trong hóa đơn cũ, When đổi giá dịch vụ, Then hóa đơn cũ **giữ nguyên** giá tại thời điểm lập, chỉ lịch hẹn mới dùng giá mới.
+- Given giá vượt 1 tỷ đồng, hoặc ô giá gõ có phần lẻ, When lưu dịch vụ, Then bị từ chối — giá **chỉ nhận số nguyên đồng**, còn dấu chấm, phẩy và khoảng trắng đều hiểu là phân cách nghìn (`150.000` và `150000` là một).
+- Given thời lượng dài hơn một ngày làm việc, When lưu dịch vụ, Then bị từ chối — dịch vụ dài hơn giờ mở cửa thì không buổi nào đặt vừa (xem US-10).
 
 ### US-08 — Gói dịch vụ
 **Là** quản lý, **tôi muốn** gộp nhiều dịch vụ thành gói có giá riêng, **để** bán combo cho khách quen.
@@ -100,6 +108,7 @@ chức năng thuộc quyền của mình.
 - Given các dịch vụ đã có, When tạo gói gồm 3 dịch vụ với giá gói, Then gói hiện trong danh sách chọn khi lập hóa đơn.
 - Given một gói, When xem chi tiết, Then thấy danh sách dịch vụ thành phần, số lượng mỗi loại và tổng giá lẻ để so sánh với giá gói.
 - Given gói chưa có dịch vụ thành phần nào, When lưu gói, Then bị từ chối.
+- Given một dòng trong gói có số lượt nhỏ hơn hoặc bằng 0, hoặc không phải số, When lưu gói, Then bị từ chối kèm thông báo nêu đúng lý do — **không** âm thầm bỏ qua dòng sai rồi báo nhầm thành "gói rỗng". Ô số lượt **để trống** vẫn là cách bỏ chọn dịch vụ đó.
 
 ### US-09 — Ngưng bán dịch vụ
 **Là** quản lý, **tôi muốn** ngưng bán một dịch vụ thay vì xóa, **để** không mất dữ liệu lịch sử.
@@ -122,6 +131,7 @@ tham gia kiểm tra trùng.
 - Given giờ bắt đầu nằm trong quá khứ, When đặt lịch, Then bị từ chối.
 - Given nhân viên được chọn có vai trò không phải `caretaker`, When đặt lịch, Then bị từ chối.
 - Given lịch vừa tạo, When xem lịch theo ngày, Then thấy lịch đó ở đúng khung giờ và đúng nhân viên.
+- Given buổi hẹn có phần nào rơi ra ngoài giờ mở cửa 08:00–18:00, hoặc kéo sang ngày hôm sau, When đặt lịch, Then bị từ chối kèm thông báo nêu giờ làm việc và giờ thật của buổi bị từ chối — **cả buổi** phải nằm trọn trong một ngày làm việc, không chỉ giờ bắt đầu.
 
 ### US-11 — Chặn trùng lịch
 **Là** lễ tân, **tôi muốn** hệ thống từ chối lịch bị trùng và gợi ý khung giờ trống, **để** không xảy ra hai khách cùng một nhân viên một thời điểm.
@@ -140,6 +150,8 @@ tham gia kiểm tra trùng.
 - Given một lịch `booked`, When đổi sang khung giờ đã có lịch khác, Then bị từ chối và lịch **giữ nguyên** giờ cũ — không được để lịch rơi vào trạng thái nửa vời.
 - Given một lịch đang đổi, When kiểm tra trùng, Then **không** tự so sánh với chính nó và báo trùng.
 - Given một lịch đã `cancelled` hoặc `done`, When đổi lịch, Then bị từ chối.
+- Given giờ mới đưa buổi ra ngoài giờ mở cửa, When đổi lịch, Then bị từ chối — luật giờ mở cửa của US-10 áp cho đổi lịch y hệt như đặt lịch.
+- Given đổi lịch nhưng giữ nguyên **cả** giờ lẫn nhân viên, When lưu, Then lịch **không** chuyển sang `rescheduled`: trạng thái chỉ đổi khi thật sự có thứ đổi.
 
 ### US-13 — Hủy lịch
 **Là** lễ tân, **tôi muốn** hủy lịch kèm lý do, **để** giải phóng khung giờ cho khách khác.
@@ -217,6 +229,7 @@ tham gia kiểm tra trùng.
 - Given hóa đơn có nhiều dòng, When xem tổng tiền, Then tổng bằng đúng tổng các dòng `qty * unit_price`.
 - Given một lịch chưa `done`, When lập hóa đơn, Then bị từ chối.
 - Given một lịch đã có hóa đơn, When lập hóa đơn lần hai, Then bị từ chối.
+- Given một lịch đã `cancelled`, When lập hóa đơn, Then bị từ chối kèm lý do nói rõ **buổi đã hủy** — không báo nhầm thành "chưa ghi hồ sơ chăm sóc", vì hai tình huống đó cần hai cách xử lý khác nhau.
 
 > **Ghi chú phạm vi P5, ngày 2026-09-06.** Ở P5 mỗi hóa đơn lập từ đúng một lịch hẹn nên bảng
 > `invoice_items` **luôn chỉ có một dòng**: tiêu chí "tổng bằng tổng các dòng" đúng nhưng cộng đúng
@@ -297,6 +310,7 @@ kèm khuyến cáo liên hệ bác sĩ thú y.
 - Given câu hỏi chăm sóc thông thường ("bao lâu nên tắm cho chó một lần"), When hỏi AI, Then nhận câu trả lời tham khảo bằng tiếng Việt kèm khuyến cáo.
 - Given màn hình trả lời AI, When xem giao diện, Then luôn hiển thị dòng cảnh báo cố định rằng AI không thay thế bác sĩ thú y — hiện **kể cả khi** lời gọi AI thất bại.
 - Given mỗi lượt hỏi đáp, When kiểm tra CSDL, Then có bản ghi trong `ai_logs` lưu tính năng, prompt và phản hồi.
+- Given câu hỏi dài quá 1.000 ký tự, When gửi, Then bị từ chối **trước khi gọi API**: không tốn lượt quota và **không** ghi `ai_logs` — câu quá dài từng làm mô hình trả lời lạc hẳn đề.
 
 ### US-27 — Guardrail cho câu hỏi vượt phạm vi
 **Là** quản lý, **tôi muốn** AI từ chối chẩn đoán và luôn hướng khách tới bác sĩ thú y, **để** cửa hàng không đưa ra lời khuyên y tế sai.
