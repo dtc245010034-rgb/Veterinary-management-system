@@ -113,6 +113,7 @@ def dat_lai_mat_khau(db: Session, ma_tai_khoan: int, mat_khau_moi: str) -> User:
 
     kiem_mat_khau(mat_khau_moi)
     tai_khoan.password_hash = hash_password(mat_khau_moi)
+    tai_khoan.session_version += 1
     db.commit()
     db.refresh(tai_khoan)
     return tai_khoan
@@ -135,6 +136,7 @@ def doi_mat_khau(
 
     kiem_mat_khau(mat_khau_moi)
     tai_khoan.password_hash = hash_password(mat_khau_moi)
+    tai_khoan.session_version += 1
     db.commit()
     db.refresh(tai_khoan)
     return tai_khoan
@@ -162,6 +164,25 @@ def _dat_trang_thai(db: Session, ma_tai_khoan: int, dang_hoat_dong: bool) -> Use
         raise LoiKhongTimThay("Không tìm thấy tài khoản.")
 
     tai_khoan.is_active = dang_hoat_dong
+    # Khóa phải thu hồi cả cookie cũ: nếu không, mở khóa lại sẽ làm cookie đã đánh cắp sống dậy.
+    if not dang_hoat_dong:
+        tai_khoan.session_version += 1
+    db.commit()
+    db.refresh(tai_khoan)
+    return tai_khoan
+
+
+def thu_hoi_phien(db: Session, ma_tai_khoan: int) -> User:
+    """Làm mọi cookie phiên đã cấp cho tài khoản này hết hiệu lực (R-3).
+
+    Cookie phiên là chuỗi tự đủ, ký chứ không lưu trên máy chủ, nên xóa cookie ở trình duyệt không
+    ngăn được ai đã chép nó. Đổi số phiên bản là cách duy nhất để máy chủ từ chối cookie cũ.
+    """
+    tai_khoan = db.get(User, ma_tai_khoan)
+    if tai_khoan is None:
+        raise LoiKhongTimThay("Không tìm thấy tài khoản.")
+
+    tai_khoan.session_version += 1
     db.commit()
     db.refresh(tai_khoan)
     return tai_khoan

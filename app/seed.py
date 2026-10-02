@@ -214,6 +214,7 @@ def main() -> None:
                     created_by=le_tan.id,
                 )
                 db.add(lich)
+                lich_moi += 1
                 db.flush()
                 db.add(
                     CareRecord(

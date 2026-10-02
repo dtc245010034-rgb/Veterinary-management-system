@@ -1,6 +1,6 @@
 # Lộ trình dự án
 
-Đề bài: [`../đề-bài.md`](../đề-bài.md) · Yêu cầu: [`user-stories.md`](user-stories.md) · Kiểm thử: [`testing/test-strategy.md`](testing/test-strategy.md)
+Đề bài: [`../đề-bài.md`](../đề-bài.md) · Yêu cầu: [`user-stories/README.md`](user-stories/README.md) · Kiểm thử: [`testing/test-strategy.md`](testing/test-strategy.md)
 
 Chín phase, gắn với bốn mốc nộp của môn học. Mỗi phase sinh ra một kế hoạch riêng trong
 [`plans/`](plans/) và kết thúc bằng một báo cáo kiểm thử trong [`testing/reports/`](testing/reports/).
@@ -120,7 +120,7 @@ Kế hoạch: [`plans/2026-09-04-kt1-bo-context-va-dac-ta.md`](plans/2026-09-04-
 Đáp ứng yêu cầu đề bài mục 6: *"KT1: Dùng AI phân tích nghiệp vụ đặt lịch, chăm sóc, nhắc lịch;
 thiết kế use case và ERD."*
 
-**DoD:** `user-stories.md`, `erd.md`, `architecture.md`, `ai-safety.md`, `testing/` đủ 4 file;
+**DoD:** `user-stories/`, `erd.md`, `architecture.md`, `ai-safety.md`, `testing/` đủ 4 file;
 mọi chức năng đề bài map được tới user story; hook chạy được.
 
 ### P1 — Nền tảng và xác thực · KT2

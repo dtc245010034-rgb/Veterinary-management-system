@@ -30,26 +30,58 @@ os.environ["GEMINI_API_KEY"] = ""
 MOC_THOI_GIAN = datetime(2026, 3, 12, 8, 0, 0)
 
 
-@pytest.fixture
-def db():
-    """Session SQLAlchemy trên SQLite in-memory, bảng tạo mới cho từng test.
+@pytest.fixture(autouse=True)
+def xoa_bo_dem_dang_nhap():
+    """Bộ đếm đăng nhập sai là trạng thái toàn cục của tiến trình; test nào cũng POST /login.
 
-    Không mock CSDL. SQLite in-memory nhanh tới mức không có lý do gì để mock, và
-    dùng CSDL thật thì test bắt được cả lỗi ràng buộc UNIQUE, NOT NULL, CHECK.
+    Không xóa thì vài test cố ý đăng nhập sai nhiều lần sẽ khóa nhầm test chạy sau cùng IP
+    `testclient`. Import trong thân hàm theo quy ước đầu file.
+    """
+    from app.services.login_throttle import gioi_han_dang_nhap
+
+    gioi_han_dang_nhap.reset()
+    yield
+
+
+@pytest.fixture(scope="session")
+def khung_csdl_rong():
+    """Ảnh nhị phân của CSDL đã có đủ bảng nhưng chưa có dòng nào, dựng đúng một lần cho cả phiên.
+
+    `create_all` mất ~8ms mỗi lần, nhân với hàng trăm test. Sao ảnh này vào CSDL mới của từng
+    test (`deserialize`, ~0,5ms) cho kết quả y hệt mà không đổi ngữ nghĩa cách ly: mỗi test vẫn
+    một CSDL riêng, vẫn commit/rollback thật — khác hướng "một CSDL + rollback từng test" ở chỗ
+    test nào gọi `commit()` hay mở luồng riêng cũng không làm lọt dữ liệu sang test sau.
     """
     from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
     from sqlalchemy.pool import StaticPool
 
     import app.models  # noqa: F401 — đăng ký mọi bảng vào metadata trước create_all
     from app.db import Base
+
+    engine = create_engine("sqlite://", poolclass=StaticPool)
+    Base.metadata.create_all(engine)
+    anh = engine.raw_connection().driver_connection.serialize()
+    engine.dispose()
+    return anh
+
+
+@pytest.fixture
+def db(khung_csdl_rong):
+    """Session SQLAlchemy trên SQLite in-memory, bảng có sẵn (sao từ `khung_csdl_rong`) cho từng test.
+
+    Không mock CSDL. SQLite in-memory nhanh tới mức không có lý do gì để mock, và
+    dùng CSDL thật thì test bắt được cả lỗi ràng buộc UNIQUE, NOT NULL, CHECK.
+    """
+    from sqlalchemy import create_engine, event
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
 
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,  # giữ nguyên một kết nối, nếu không DB in-memory sẽ bị xóa
     )
-    Base.metadata.create_all(engine)
+    event.listen(engine, "connect", lambda dbapi, _rec: dbapi.deserialize(khung_csdl_rong))
 
     Session = sessionmaker(bind=engine)
     session = Session()

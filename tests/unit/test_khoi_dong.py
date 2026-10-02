@@ -57,3 +57,19 @@ def test_khoi_dong_binh_thuong_khi_da_doi_secret_key(monkeypatch):
     monkeypatch.setattr(main.settings, "secret_key", "mot-chuoi-rieng-cua-cua-hang")
 
     _chay_lifespan()
+
+
+def test_khoi_dong_them_cot_con_thieu_vao_csdl_cu(engine_tam, monkeypatch):
+    """Lỗi tái hiện: `petcare.db` dựng từ bản cũ thiếu cột mới thì chỉ `create_all` là không đủ."""
+    import app.main as main
+    from app.db import Base
+    from sqlalchemy import inspect, text
+
+    monkeypatch.setattr(main.settings, "secret_key", "mot-chuoi-rieng-cua-cua-hang")
+    Base.metadata.create_all(engine_tam)
+    with engine_tam.begin() as c:
+        c.execute(text("ALTER TABLE owners DROP COLUMN email"))
+
+    _chay_lifespan()
+
+    assert "email" in {c["name"] for c in inspect(engine_tam).get_columns("owners")}

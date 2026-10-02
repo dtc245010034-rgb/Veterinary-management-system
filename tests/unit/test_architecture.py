@@ -684,3 +684,60 @@ def test_quy_trinh_mo_phien_tro_toi_muc_10():
         "Quy trình mở phiên (mục 6) không trỏ tới mục 10, nên quy ước làm việc "
         "sẽ không được đọc"
     )
+
+
+# --- Đặc tả user story tách theo nhóm (P9 chặng 1) ---------------------------------------
+
+THU_MUC_US = GOC / "docs" / "user-stories"
+BA_MUC_US = ["Mục tiêu", "Tiêu chí chấp nhận", "Điều kiện biên"]
+
+
+def _khoi_us() -> list[tuple[str, str, str]]:
+    """Trả về (tên file, mã US, nội dung khối) của mọi story trong `docs/user-stories/`."""
+    ket_qua = []
+    for p in sorted(THU_MUC_US.glob("*.md")):
+        if p.name == "README.md":
+            continue
+        phan = re.split(r"(?m)^### (US-\d{2}) ", _doc(p))
+        # phan = [phần đầu, mã1, nội dung1, mã2, nội dung2, ...]
+        for ma, noi_dung in zip(phan[1::2], phan[2::2]):
+            ket_qua.append((p.name, ma, noi_dung))
+    return ket_qua
+
+
+def test_moi_user_story_co_du_ba_muc_theo_dung_thu_tu():
+    """Giảng viên nhận xét đặc tả trộn điều kiện biên lẫn vào tiêu chí (25/09).
+
+    Mỗi story phải có ba mục `#### Mục tiêu`, `#### Tiêu chí chấp nhận`,
+    `#### Điều kiện biên`, đúng thứ tự — để ai đọc cũng biết biên nằm ở đâu.
+
+    NẾU TEST NÀY ĐỎ: thêm mục còn thiếu vào story, đừng xóa test. Story chưa có biên nào
+    thì ghi rõ một dòng nói vậy, không bỏ trống mục.
+    """
+    khoi = _khoi_us()
+    assert len(khoi) >= 28, f"Chỉ tìm thấy {len(khoi)} story trong docs/user-stories/"
+
+    loi = []
+    for ten_file, ma, noi_dung in khoi:
+        tieu_de = re.findall(r"(?m)^#### (.+?)\s*$", noi_dung)
+        if tieu_de != BA_MUC_US:
+            loi.append(f"{ten_file} {ma}: có {tieu_de}, cần {BA_MUC_US}")
+
+    assert not loi, "Story sai cấu trúc ba mục:\n  " + "\n  ".join(loi)
+
+
+def test_ma_us_trong_ma_tran_test_deu_ton_tai_trong_dac_ta():
+    """Ma trận test trỏ tới story đã bị xóa hoặc đánh sai mã thì truy vết mất nghĩa."""
+    co_san = {ma for _, ma, _ in _khoi_us()}
+    nhac = set(re.findall(r"US-\d{2}", _doc(GOC / "docs" / "testing" / "test-cases.md")))
+
+    thieu = sorted(nhac - co_san)
+    assert not thieu, f"test-cases.md nhắc story không có trong đặc tả: {thieu}"
+
+
+def test_khong_ma_us_nao_bi_khai_bao_hai_lan():
+    """Tách file dễ sinh bản sao: cùng một story nằm ở hai nhóm."""
+    ma_us = [ma for _, ma, _ in _khoi_us()]
+
+    trung = sorted({m for m in ma_us if ma_us.count(m) > 1})
+    assert not trung, f"Story khai báo nhiều lần: {trung}"

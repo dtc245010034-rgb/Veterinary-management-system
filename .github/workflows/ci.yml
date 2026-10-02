@@ -41,3 +41,24 @@ jobs:
 
       - name: Chạy toàn bộ bộ test
         run: pytest -rs
+
+  # Máy sạch chạy đúng lệnh người chấm sẽ gõ: run.py tự tạo .venv, .env (SECRET_KEY ngẫu nhiên),
+  # seed CSDL rồi khởi động uvicorn thật. --check đợi /login trả 200 rồi tắt. Job pytest ở trên
+  # cố ý không có .env; job này kiểm đường ngược lại — đường có .env do run.py sinh ra.
+  run-py:
+    name: python run.py trên ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Khởi động bằng run.py và đợi /login
+        run: python run.py --no-open --check

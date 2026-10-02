@@ -16,6 +16,15 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./petcare.db"
     secret_key: str = SECRET_KEY_MAC_DINH
 
+    # Cookie phiên chỉ được gửi qua HTTPS (cờ `Secure`). Bật khi công khai ra Internet qua tunnel
+    # HTTPS; để tắt khi chạy http://127.0.0.1 vì trình duyệt sẽ không gửi lại cookie Secure qua HTTP.
+    session_https_only: bool = False
+
+    # Địa chỉ công khai của ứng dụng, ví dụ https://abc.ngrok.app. Tunnel/proxy có thể đổi `Host` nên
+    # `Origin` của trình duyệt không còn khớp `Host` nhận được; địa chỉ này được tin thêm ở bước chặn
+    # POST từ trang khác (app/security.py). Để trống khi chạy cục bộ.
+    app_origin: str = ""
+
     # Số vòng băm bcrypt. 12 là mặc định của bcrypt và là giá trị dùng khi chạy thật.
     # Test hạ xuống 4 qua biến môi trường: bcrypt cố ý chậm (~1,5s mỗi lần băm), mà mỗi
     # test integration phải đăng nhập một lần. Đây là tham số cấu hình hợp lệ, không phải

@@ -38,6 +38,21 @@ Xem lượt gọi AI còn lại trong ngày: `python -m app.ai.quota`.
 Cần Python 3.11 trở lên (đã kiểm trên 3.14.6).
 
 ```bash
+python run.py
+```
+
+Một lệnh làm hết: tạo `.venv`, cài thư viện, tạo `.env` (khóa `SECRET_KEY` ngẫu nhiên; `.env` có sẵn thì **không bao giờ bị ghi đè**), nạp dữ liệu mẫu nếu CSDL chưa có, chạy web và mở trình duyệt. Dừng bằng Ctrl+C.
+
+| Lệnh | Việc |
+|---|---|
+| `python run.py --port 9000 --no-open --reload` | chọn cổng, không mở trình duyệt, tự nạp lại khi sửa code |
+| `python run.py status` | xem tình trạng môi trường |
+| `python run.py reset` | xóa CSDL SQLite (hỏi xác nhận); lần chạy sau seed lại |
+| `python run.py test` hoặc `python test.py` | chạy pytest, truyền nguyên tham số (`python test.py -k dang_nhap`) |
+
+<details><summary>Chạy tay từng bước (không dùng run.py)</summary>
+
+```bash
 python -m venv .venv
 .venv\Scripts\activate            # Windows
 # source .venv/bin/activate       # macOS / Linux
@@ -47,6 +62,8 @@ copy .env.example .env            # bắt buộc; sửa SECRET_KEY thành chuỗ
 python -m app.seed                # dữ liệu mẫu: tài khoản, chủ nuôi, thú cưng, lịch, hóa đơn…
 uvicorn app.main:app --reload
 ```
+
+</details>
 
 Mở `http://127.0.0.1:8000`.
 
@@ -100,7 +117,7 @@ Kết quả từng phase: [`docs/testing/reports/`](docs/testing/reports/).
 
 | File | Nội dung |
 |---|---|
-| [`docs/user-stories.md`](docs/user-stories.md) | 28 user story, 118 tiêu chí chấp nhận Given/When/Then |
+| [`docs/user-stories/README.md`](docs/user-stories/README.md) | 28 user story tách thành 9 file theo nhóm A–I, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên; 118 tiêu chí Given/When/Then |
 | [`docs/erd.md`](docs/erd.md) | 14 bảng, sơ đồ quan hệ, mô tả cột và ràng buộc — tất cả đã dựng |
 | [`docs/architecture.md`](docs/architecture.md) | Ba lớp, ranh giới, luồng dữ liệu, cách xử lý lỗi |
 | [`docs/ai-safety.md`](docs/ai-safety.md) | System prompt, ba lớp guardrail trong code, 20 ca kiểm thử an toàn AI |

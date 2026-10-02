@@ -28,13 +28,15 @@ from app.routers import services as services_router
 from app.routers import stats as stats_router
 from app.routers import users as users_router
 from app.routers import vaccinations as vaccinations_router
+from app.security import la_post_cheo_nguon
 from app.services.errors import LoiKhongTimThay, LoiNghiepVu
+from app.services.schema import nang_cap_schema
 from app.templates import templates
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Tạo bảng nếu chưa có. Đủ dùng cho dự án môn học, không cần Alembic.
+    """Tạo bảng chưa có, rồi thêm cột còn thiếu vào bảng cũ (app/services/schema.py). Không cần Alembic.
 
     Kiểm SECRET_KEY trước tiên: khóa mặc định nằm công khai trong repo, chạy với nó thì
     ai cũng tự ký được cookie phiên quản lý. Dừng hẳn còn hơn chạy âm thầm không an toàn.
@@ -45,13 +47,33 @@ async def lifespan(app: FastAPI):
             "thành .env và đặt SECRET_KEY là một chuỗi ngẫu nhiên riêng trước khi chạy."
         )
     Base.metadata.create_all(engine)
+    nang_cap_schema(engine, Base.metadata)
     yield
 
 
 app = FastAPI(title="Quản lý thú cưng và lịch chăm sóc", lifespan=lifespan)
 
-app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
+app.add_middleware(SessionMiddleware, secret_key=settings.secret_key, https_only=settings.session_https_only)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+@app.middleware("http")
+async def chan_cheo_nguon(request: Request, call_next):
+    """Từ chối yêu cầu ghi do trang web khác gửi tới (R-2) — xem `la_post_cheo_nguon`."""
+    if la_post_cheo_nguon(
+        request.method,
+        request.headers.get("origin"),
+        request.headers.get("sec-fetch-site"),
+        request.headers.get("host"),
+        settings.app_origin,
+    ):
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {"ma_loi": 403, "thong_diep": "Yêu cầu bị từ chối vì không xuất phát từ trang của hệ thống."},
+            status_code=403,
+        )
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -69,6 +91,19 @@ async def khong_luu_dem(request: Request, call_next):
     if not request.url.path.startswith("/static"):
         phan_hoi.headers["Cache-Control"] = "no-store, must-revalidate"
     return phan_hoi
+
+@app.middleware("http")
+async def them_header_bao_mat(request: Request, call_next):
+    """Header chống nhúng khung, đoán kiểu nội dung và lộ Referer (R-4) trên mọi phản hồi.
+
+    Đăng ký SAU cùng nên là lớp ngoài cùng: cả phản hồi 403 do `chan_cheo_nguon` và tệp `/static` đều có.
+    """
+    phan_hoi = await call_next(request)
+    phan_hoi.headers["X-Frame-Options"] = "DENY"
+    phan_hoi.headers["X-Content-Type-Options"] = "nosniff"
+    phan_hoi.headers["Referrer-Policy"] = "same-origin"
+    return phan_hoi
+
 
 app.include_router(auth_router.router)
 app.include_router(users_router.router)

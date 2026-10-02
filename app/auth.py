@@ -14,6 +14,7 @@ from app.db import get_db
 from app.models.user import User
 
 KHOA_SESSION = "user_id"
+KHOA_PHIEN_BAN = "sv"
 
 
 class ChuaDangNhap(Exception):
@@ -22,10 +23,12 @@ class ChuaDangNhap(Exception):
 
 def dang_nhap_session(request: Request, user: User) -> None:
     request.session[KHOA_SESSION] = user.id
+    request.session[KHOA_PHIEN_BAN] = user.session_version
 
 
 def dang_xuat_session(request: Request) -> None:
     request.session.pop(KHOA_SESSION, None)
+    request.session.pop(KHOA_PHIEN_BAN, None)
 
 
 def nguoi_dung_hien_tai_hoac_none(request: Request, db: Session = Depends(get_db)) -> User | None:
@@ -38,6 +41,10 @@ def nguoi_dung_hien_tai_hoac_none(request: Request, db: Session = Depends(get_db
     # Tài khoản bị khóa giữa chừng thì phiên cũ phải hết hiệu lực ngay, không đợi
     # người dùng đăng xuất.
     if user is None or not user.is_active:
+        return None
+
+    # Cookie cũ không có khóa này (phiên mở trước R-3) được coi là phiên bản 0.
+    if request.session.get(KHOA_PHIEN_BAN, 0) != user.session_version:
         return None
 
     return user

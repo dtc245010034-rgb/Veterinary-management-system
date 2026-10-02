@@ -267,3 +267,44 @@ def test_doi_mat_khau_van_theo_luat_do_dai(db, seed_basic):
         nv.doi_mat_khau(db, letan.id, mat_khau_cu="matkhau123", mat_khau_moi="ngan")
 
     assert verify_password("matkhau123", letan.password_hash)
+
+
+# --- Thu hồi phiên (R-3) -----------------------------------------------------------
+
+
+def test_thu_hoi_phien_tang_session_version_moi_lan_goi(db, seed_basic):
+    u = seed_basic["receptionist"]
+    assert u.session_version == 0
+
+    nv.thu_hoi_phien(db, u.id)
+    nv.thu_hoi_phien(db, u.id)
+
+    db.refresh(u)
+    assert u.session_version == 2
+
+
+def test_thu_hoi_phien_tai_khoan_khong_ton_tai_bao_loi_khong_tim_thay(db, seed_basic):
+    from app.services.errors import LoiKhongTimThay
+
+    with pytest.raises(LoiKhongTimThay):
+        nv.thu_hoi_phien(db, 99999)
+
+
+def test_doi_dat_lai_mat_khau_va_khoa_deu_tang_session_version(db, seed_basic):
+    u = seed_basic["receptionist"]
+
+    nv.doi_mat_khau(db, u.id, mat_khau_cu="matkhau123", mat_khau_moi="matkhaumoi456")
+    assert u.session_version == 1
+    nv.dat_lai_mat_khau(db, u.id, "matkhaumoi789")
+    assert u.session_version == 2
+    nv.khoa_tai_khoan(db, u.id, nguoi_thao_tac_id=seed_basic["manager"].id)
+    assert u.session_version == 3
+
+
+def test_doi_mat_khau_sai_mat_khau_cu_khong_tang_session_version(db, seed_basic):
+    u = seed_basic["receptionist"]
+
+    with pytest.raises(LoiNghiepVu):
+        nv.doi_mat_khau(db, u.id, mat_khau_cu="sai-hoai", mat_khau_moi="matkhaumoi456")
+
+    assert u.session_version == 0

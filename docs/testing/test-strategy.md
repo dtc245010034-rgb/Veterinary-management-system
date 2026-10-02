@@ -1,6 +1,6 @@
 # Chiến lược kiểm thử
 
-Yêu cầu: [`../user-stories.md`](../user-stories.md) · Kiến trúc: [`../architecture.md`](../architecture.md) · Ma trận: [`test-cases.md`](test-cases.md)
+Yêu cầu: [`../user-stories/README.md`](../user-stories/README.md) · Kiến trúc: [`../architecture.md`](../architecture.md) · Ma trận: [`test-cases.md`](test-cases.md)
 
 Đề bài yêu cầu *"có test cho lịch hẹn, hóa đơn, hồ sơ và AI"*. File này định nghĩa cách tổ chức để
 yêu cầu đó được đáp ứng thật, không phải chỉ có file test tồn tại.
@@ -102,7 +102,7 @@ def test_tom_tat_ho_so_prompt_khong_chua_so_dien_thoai(): ...
 
 Tên tiếng Việt không dấu ở đây là ngoại lệ có chủ đích so với quy ước "định danh tiếng Anh": khi test
 đỏ, dòng tên test chính là thông tin đầu tiên đọc được, và nó cần khớp thẳng với tiêu chí chấp nhận
-trong [`../user-stories.md`](../user-stories.md).
+trong [`../user-stories/README.md`](../user-stories/README.md).
 
 ---
 

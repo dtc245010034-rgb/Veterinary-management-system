@@ -1,6 +1,6 @@
 # Kiến trúc hệ thống
 
-Yêu cầu: [`user-stories.md`](user-stories.md) · Dữ liệu: [`erd.md`](erd.md) · Kiểm thử: [`testing/test-strategy.md`](testing/test-strategy.md)
+Yêu cầu: [`user-stories/README.md`](user-stories/README.md) · Dữ liệu: [`erd.md`](erd.md) · Kiểm thử: [`testing/test-strategy.md`](testing/test-strategy.md)
 
 ## Stack
 
@@ -224,6 +224,33 @@ class AIProvider(Protocol):
 `GeminiProvider` gọi API thật; `FakeProvider` trả chuỗi cố định có chứa câu khuyến cáo. `config.py`
 chọn implementation theo biến `AI_PROVIDER`. Toàn bộ test chạy với `FakeProvider` — không tốn quota,
 không cần mạng, kết quả tất định.
+
+---
+
+## Bảo mật cho việc công khai (chặng 0.5, 02/10)
+
+Ứng dụng từng chỉ chạy ở quầy nên chưa cần các lớp này; khi mở cổng cho khách (P9) chúng bắt buộc.
+Lớp ngoài cùng đi vào trước (thứ tự đăng ký trong `app/main.py`, lớp đăng ký sau nằm ngoài):
+
+| Lớp | Việc | Ở đâu |
+|---|---|---|
+| `them_header_bao_mat` | `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` trên **mọi** phản hồi (R-4) | `app/main.py` |
+| `khong_luu_dem` | `Cache-Control: no-store` trừ `/static` (L-02) | `app/main.py` |
+| `chan_cheo_nguon` | 403 cho yêu cầu ghi từ trang web khác (R-2); quyết định nằm ở hàm thuần `la_post_cheo_nguon` | `app/main.py`, `app/security.py` |
+| `SessionMiddleware` | cookie ký bằng `SECRET_KEY`; cờ `Secure` theo `SESSION_HTTPS_ONLY` | `app/main.py` |
+| `/login` | giới hạn đăng nhập sai theo cặp (IP, tên đăng nhập), trễ tăng dần, trong bộ nhớ (R-1) | `app/routers/auth.py`, `app/services/login_throttle.py` |
+| `nguoi_dung_hien_tai_hoac_none` | cookie phải mang `sv` bằng `users.session_version` (R-3) | `app/auth.py` |
+
+Hai điều cần nhớ khi đụng vào:
+
+- **Phiên là cookie ký, không lưu ở máy chủ.** Muốn thu hồi cookie đã phát phải đổi `session_version`
+  (`services/users.thu_hoi_phien`). Đăng xuất vì thế đăng xuất **mọi thiết bị** của tài khoản đó — đánh đổi chấp nhận được
+  với ứng dụng này, đổi lấy việc không cần bảng phiên.
+- **Bộ đếm đăng nhập sai nằm trong bộ nhớ tiến trình**: khởi động lại là mất, chạy nhiều worker là mỗi worker đếm riêng.
+  Đúng với SQLite một tiến trình hiện tại; phải làm lại nếu đổi sang nhiều worker.
+
+CSDL cũ không có cột mới: `create_all` chỉ tạo bảng thiếu. `services/schema.nang_cap_schema` thêm cột thiếu
+khi khởi động (xem `lifespan`).
 
 ---
 

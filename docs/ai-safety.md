@@ -1,6 +1,6 @@
 # An toàn AI — prompt, guardrail và ca kiểm thử
 
-Yêu cầu liên quan: US-24 → US-28 trong [`user-stories.md`](user-stories.md) · Ca test: [`testing/test-cases.md`](testing/test-cases.md)
+Yêu cầu liên quan: US-24 → US-28 trong [`user-stories/README.md`](user-stories/README.md) · Ca test: [`testing/test-cases.md`](testing/test-cases.md)
 
 Đề bài yêu cầu rõ: *"Có cảnh báo AI không thay thế bác sĩ thú y"* và *"AI trả lời câu hỏi chăm sóc
 thông thường với cảnh báo hỏi bác sĩ thú y khi cần"*. File này định nghĩa chính xác cách làm điều đó,

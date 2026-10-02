@@ -1,6 +1,6 @@
 # Kế hoạch P9 — Cổng khách hàng, đóng gói, và làm lại đặc tả
 
-**Trạng thái: CHƯA DUYỆT — chờ người dùng chốt.** Viết sau buổi giảng viên kiểm tra tiến độ
+**Trạng thái: ĐÃ DUYỆT 02/10/2026** (người dùng: "Commit và push và duyệt P9"). Chặng 0 và 1 xong; chặng 2 là việc kế tiếp. Viết sau buổi giảng viên kiểm tra tiến độ
 ngày 25/09. Mười quyết định bên dưới đã được người dùng trả lời qua hai vòng hỏi; kế hoạch này là
 bản chốt lại để người dùng duyệt trước khi gõ dòng code đầu tiên.
 
@@ -141,22 +141,26 @@ và có sẵn nhật ký để đối chiếu khi tranh cãi. `ai_quota` giữ n
 
 ### Chặng 0 — Quyết trước khi gõ code
 
-- [ ] 0.1 Chốt hướng xử lý ngân sách thời gian test (xem 5.1). **Cần người dùng quyết.**
-- [ ] 0.2 Nếu chốt đổi fixture `db`: làm ngay trên 906 test, đo trước–sau.
+- [x] 0.1 Chốt hướng xử lý ngân sách thời gian test (xem 5.1). *Người dùng duyệt thứ tự "Phiên 2 = chặng 0" ở kế hoạch 02/10; chốt kỹ thuật: sao ảnh schema thay vì rollback — xem 0.2.*
+- [x] 0.2 Nếu chốt đổi fixture `db`: làm ngay trên 906 test, đo trước–sau. *(02/10: đo CPU giảm ~7s/44s; con số "~20s" ở mục 5.1 nói quá — xem log phiên 2026-10-02-01.)*
       → verify: suite xanh đủ 906 ca, ghi lại thời gian trước và sau.
 
 ### Chặng 1 — Tách và làm lại đặc tả *(việc giảng viên nhận xét trực tiếp)*
 
-- [ ] 1.1 Tách `docs/user-stories.md` thành `docs/user-stories/` — **9 file theo đúng 9 nhóm A–I
+- [x] 1.1 Tách `docs/user-stories.md` thành `docs/user-stories/` — **9 file theo đúng 9 nhóm A–I
       đã có sẵn**, cộng `README.md` làm mục lục và bảng đối chiếu đề bài.
-- [ ] 1.2 Viết lại **từng US** theo ba mục: **Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên**.
+      *(02/10: `docs/user-stories/` có 9 file nhóm + README; file cũ đã xóa.)*
+- [x] 1.2 Viết lại **từng US** theo ba mục: **Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên**.
       Tách các tiêu chí biên đang nằm lẫn ra đúng mục của nó.
       → verify: đếm lại tổng tiêu chí bằng lệnh, phải **không mất** tiêu chí nào so với 118.
-- [ ] 1.3 Sửa link ở **23 tài liệu** đang trỏ tới `user-stories.md`.
+      *(02/10: 60 chấp nhận + 58 biên = 118; so từng dòng `- Given` với `git show HEAD:docs/user-stories.md` — giống hệt, chỉ khác đường dẫn link.)*
+- [x] 1.3 Sửa link ở **23 tài liệu** đang trỏ tới `user-stories.md`.
       → verify: `test_moi_link_tuong_doi_trong_tai_lieu_deu_ton_tai` xanh.
-- [ ] 1.4 Phép canh mới: mỗi file US phải có đủ ba mục, và mọi mã `US-xx` nhắc trong
+      *(02/10: đếm lại thực tế chỉ **11** tài liệu có link, không phải 23 — số 23 đếm cả chỗ nhắc tên không phải link ở log và kế hoạch cũ; những chỗ đó là lịch sử nên giữ nguyên chữ.)*
+- [x] 1.4 Phép canh mới: mỗi file US phải có đủ ba mục, và mọi mã `US-xx` nhắc trong
       `test-cases.md` phải tồn tại.
       → verify: đột biến xóa một mục, xác nhận đỏ đúng chỗ.
+      *(02/10: 3 phép canh trong `test_architecture.py`; 3 đột biến — bỏ tiêu đề mục biên, trùng mã US-05, nhắc US-99 — đều bị bắt đúng phép canh.)*
 
 ### Chặng 2 — Đóng gói Docker
 

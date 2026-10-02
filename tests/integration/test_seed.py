@@ -17,21 +17,27 @@ GOC = Path(__file__).resolve().parents[2]
 
 
 def _chay_seed(tmp_path: Path) -> Path:
+    return _chay_seed_lay_dau_ra(tmp_path)[0]
+
+
+def _chay_seed_lay_dau_ra(tmp_path: Path) -> tuple[Path, str]:
     csdl = tmp_path / "seed.db"
     moi_truong = {
         **os.environ,
         "DATABASE_URL": f"sqlite:///{csdl.as_posix()}",
         "BCRYPT_ROUNDS": "4",
     }
-    subprocess.run(
+    ket_qua = subprocess.run(
         [sys.executable, "-m", "app.seed"],
         cwd=GOC,
         env=moi_truong,
         check=True,
         capture_output=True,
+        text=True,
+        encoding="utf-8",
         timeout=120,
     )
-    return csdl
+    return csdl, ket_qua.stdout
 
 
 def test_hoa_don_va_thanh_toan_mau_mang_ngay_cua_buoi_cham_soc(tmp_path):
@@ -96,3 +102,18 @@ def test_moi_lich_mau_deu_nam_trong_gio_mo_cua(tmp_path):
             vi_pham.append((ma, bat_dau, ket_thuc))
 
     assert not vi_pham, f"Lịch mẫu nằm ngoài giờ {GIO_MO_CUA}h–{GIO_DONG_CUA}h: {vi_pham}"
+
+
+def test_dong_tong_ket_cua_seed_dem_dung_so_lich_hen_thuc_te(tmp_path):
+    """R-5 (rà soát 02/10): dòng in báo "5 lịch hẹn" trong khi CSDL có 8 — ba buổi đã xong kèm hồ sơ
+    được thêm vào bảng nhưng không được đếm. Người đọc dòng này để biết seed có chạy đúng không."""
+    import re
+
+    csdl, dau_ra = _chay_seed_lay_dau_ra(tmp_path)
+
+    with closing(sqlite3.connect(csdl)) as c:
+        thuc_te = c.execute("SELECT COUNT(*) FROM appointments").fetchone()[0]
+    khop = re.search(r"(\d+) lịch hẹn", dau_ra)
+    assert khop, f"không thấy mục đếm lịch hẹn trong: {dau_ra!r}"
+    assert thuc_te > 0
+    assert int(khop.group(1)) == thuc_te

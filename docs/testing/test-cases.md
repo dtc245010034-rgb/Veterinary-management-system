@@ -1,8 +1,8 @@
 # Ma trận truy vết test case
 
-Nguồn: [`../user-stories.md`](../user-stories.md) · Guardrail: [`../ai-safety.md`](../ai-safety.md) · Chiến lược: [`test-strategy.md`](test-strategy.md)
+Nguồn: [`../user-stories/README.md`](../user-stories/README.md) · Guardrail: [`../ai-safety.md`](../ai-safety.md) · Chiến lược: [`test-strategy.md`](test-strategy.md)
 
-**Cách dùng file này.** Mỗi tiêu chí chấp nhận Given/When/Then trong `user-stories.md` sinh ra một
+**Cách dùng file này.** Mỗi tiêu chí chấp nhận Given/When/Then trong `user-stories/` (cả mục *Tiêu chí chấp nhận* lẫn *Điều kiện biên*) sinh ra một
 test case ở đây. Khi cài đặt một phase, điền cột **File test** và đổi **Trạng thái** thành ✅. Cuối
 kỳ, file này là bằng chứng mọi yêu cầu của đề bài đều có test — đặc biệt yêu cầu ở mục 4:
 *"có test cho lịch hẹn, hóa đơn, hồ sơ và AI"*.
@@ -256,6 +256,22 @@ bị bắt đúng nhóm ca.
 | TC-131 | US-12, US-19 | **L-06:** lịch đã hủy báo đúng lý do thay vì bảo đi ghi hồ sơ; đổi lịch **không đổi gì** thì không ghi "Đã đổi lịch" | U | `test_scheduling.py::test_lap_hoa_don_cho_lich_da_huy_bao_dung_ly_do`, `…::test_doi_lich_giu_nguyen_gio_va_nhan_vien_khong_doi_trang_thai`, cộng 3 ca đối chứng | ✅ |
 | TC-132 | US-01 | **L-07:** đăng nhập sai giữ lại tên đã gõ, **không** giữ mật khẩu; tài khoản bị khóa cũng vậy | I | `test_auth.py::test_dang_nhap_sai_van_giu_lai_ten_da_go`, `…::test_dang_nhap_sai_KHONG_giu_lai_mat_khau`, `…::test_tai_khoan_bi_khoa_cung_giu_lai_ten` | ✅ |
 | TC-133 | US-08 | **D-02:** số lượt sai trong gói báo đúng ô hỏng thay vì "gói phải có ít nhất một dịch vụ"; ô trống vẫn là cách bỏ chọn | U, I | `test_services.py::test_so_luot_am_*`, `…::test_so_luot_khong_phai_so_*`, `…::test_o_so_luot_de_trong_van_la_cach_bo_chon_dich_vu`, `test_catalog_service.py::test_so_luot_am_bao_dung_loi_*` | ✅ |
+
+
+## P. Bảo mật trước khi mở cổng khách — chặng 0.5, 02/10
+
+Sinh ra từ [báo cáo rà soát 02/10](../../bao-cao-ra-soat-2026-10-02.md) (R-1 → R-5) và
+[kế hoạch](../plans/2026-10-02-run-py-va-bao-mat-truoc-p9.md). Mỗi mục đỏ trước khi sửa, có lượt đột biến sau khi xanh.
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-134 | US-01 | **R-1:** 5 lần đăng nhập sai miễn phí, từ lần thứ 6 bị 429 kèm `Retry-After`, mỗi lần sai tiếp theo khóa gấp đôi (trần 900 giây); khóa theo cặp (IP, tên đăng nhập) nên người khác/IP khác không bị ảnh hưởng; mật khẩu đúng cũng bị từ chối khi đang khóa; đăng nhập đúng xóa bộ đếm | U, I | `test_login_throttle.py`, `test_gioi_han_dang_nhap.py` | ✅ |
+| TC-135 | nhiều | **R-2:** POST/PUT/PATCH/DELETE có `Origin` khác `Host` hoặc `Sec-Fetch-Site` khác `same-origin`/`none` bị 403 **và không được thực thi** (kể cả `/login`); không có header (curl, script) vẫn qua; `APP_ORIGIN` được tin thêm khi proxy đổi `Host` | U, I | `test_csrf_origin.py`, `test_chan_cheo_nguon.py` | ✅ |
+| TC-136 | US-01, US-03 | **R-3:** cookie cũ chết sau đăng xuất, đổi mật khẩu, đặt lại mật khẩu, khóa rồi mở khóa (`session_version`); máy vừa đổi mật khẩu không bị đá; cookie cũ chưa có `sv` vẫn hợp lệ; CSDL cũ được nâng cấp thêm cột | U, I | `test_users_service.py::test_thu_hoi_phien_*`, `test_thu_hoi_phien.py`, `test_schema_upgrade.py` | ✅ |
+| TC-137 | nhiều | **R-4:** `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: same-origin` trên mọi loại phản hồi (trang, `/static`, 404, chuyển hướng, 403 của middleware khác) | I | `test_header_bao_mat.py` | ✅ |
+| TC-138 | US-01 | `SESSION_HTTPS_ONLY` bật cờ `Secure` của cookie phiên; mặc định tắt | U | `test_cau_hinh_phien.py` | ✅ |
+| TC-139 | nhiều | **R-5:** dòng tổng kết của seed đếm đúng số lịch hẹn có trong CSDL | I | `test_seed.py::test_dong_tong_ket_cua_seed_dem_dung_so_lich_hen_thuc_te` | ✅ |
+| TC-140 | nhiều | `nang_cap_schema` thêm cột thiếu bằng `ALTER TABLE`, chạy hai lần chỉ thêm một lần, từ chối cột không thêm được | U | `test_schema_upgrade.py`, `test_khoi_dong.py` | ✅ |
 
 
 ## J. Hệ thống hoàn chỉnh — chạy cuối mỗi phase từ P5

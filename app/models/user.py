@@ -5,7 +5,7 @@ Theo docs/erd.md. Phục vụ US-01 (đăng nhập), US-02 (phân quyền), US-0
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, Integer, String
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -37,6 +37,10 @@ class User(Base):
 
     # Khóa tài khoản thay vì xóa, để hồ sơ chăm sóc và lịch hẹn cũ giữ nguyên (US-03)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    # Cookie phiên mang số này lúc đăng nhập; tăng nó thì mọi cookie cũ của tài khoản hết hiệu lực (R-3).
+    # `server_default` để `nang_cap_schema` thêm được cột vào CSDL cũ, các dòng cũ nhận 0.
+    session_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default=text("0"))
 
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=clock.now)
 

@@ -1,6 +1,6 @@
 # Mô hình dữ liệu (ERD)
 
-Nguồn yêu cầu: [`user-stories.md`](user-stories.md) · Kiến trúc: [`architecture.md`](architecture.md)
+Nguồn yêu cầu: [`user-stories/README.md`](user-stories/README.md) · Kiến trúc: [`architecture.md`](architecture.md)
 
 14 bảng. Tên bảng và tên cột dùng tiếng Anh không dấu theo quy ước trong [`../CLAUDE.md`](../CLAUDE.md).
 Mọi bảng đều có `id` khóa chính tự tăng.
@@ -43,6 +43,7 @@ erDiagram
         string full_name
         string role
         bool is_active
+        int session_version
         datetime created_at
     }
     owners {
@@ -190,6 +191,7 @@ Phục vụ US-01, US-02, US-03.
 | `full_name` | varchar(100) | NOT NULL | Tên hiển thị |
 | `role` | varchar(20) | NOT NULL, CHECK | `manager` \| `receptionist` \| `caretaker` |
 | `is_active` | bool | NOT NULL, mặc định `true` | Khóa tài khoản thay vì xóa, để giữ lịch sử (US-03) |
+| `session_version` | int | NOT NULL, mặc định `0` | Cookie phiên mang số này lúc đăng nhập; tăng khi đăng xuất, đổi/đặt lại mật khẩu, khóa tài khoản thì mọi cookie cũ hết hiệu lực (R-3). Cột thêm sau, nên có `server_default` để `nang_cap_schema` nâng cấp CSDL cũ |
 | `created_at` | datetime | NOT NULL | |
 
 ### `owners` — chủ nuôi

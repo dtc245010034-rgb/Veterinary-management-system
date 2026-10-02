@@ -203,7 +203,7 @@ Tám lỗi tìm ra khi agent bấm thử, xem [`reports/2026-09-07-ra-luong-P5-c
 >    ô sau, không cần mở thêm tab.
 >
 > Ô thứ hai đổi so với bản viết ở KT1 — xem ghi chú phạm vi dưới US-21 trong
-> [`../user-stories.md`](../user-stories.md): hóa đơn chỉ lập từ lịch đã hoàn thành, mà lịch đã
+> [`../user-stories/README.md`](../user-stories/README.md): hóa đơn chỉ lập từ lịch đã hoàn thành, mà lịch đã
 > hoàn thành thì không hủy được, kể cả sau khi hủy hóa đơn.
 
 - [x] Bấm **Hủy** ở tab A khi lịch đã có hóa đơn → bị chặn, thông báo **nêu mã hóa đơn**, vẫn ở lưới lịch

@@ -162,8 +162,10 @@
 | `CLAUDE.md` | Nguyên tắc làm việc + ngữ cảnh dự án + quy trình mỗi phiên + luật kiểm thử + **mục 10: quy ước làm việc với người dùng** (chuyển từ bộ nhớ agent vào repo ngày 25/09, có phép canh giữ) |
 | `đề-bài.md` | Đề bài gốc của môn học. **Không sửa** |
 | `README.md` | Giới thiệu, cách chạy, cách chạy test |
+| `run.py` | **Chạy dự án bằng một lệnh** (chỉ thư viện chuẩn): tạo `.venv`, cài `requirements.txt` khi file đổi, tạo `.env` từ `.env.example` với `SECRET_KEY` ngẫu nhiên, seed khi CSDL chưa có, chọn cổng trống, chạy uvicorn, mở trình duyệt. Lệnh con: `reset` (xóa SQLite sau xác nhận), `status`, `test`; cờ `--check` (đợi `/login` 200 rồi tắt, dùng trong CI). **Cam kết: `.env` có sẵn không bao giờ bị ghi đè** — chỉ dòng `SECRET_KEY` bị thay khi thiếu hoặc còn giá trị mặc định |
+| `test.py` | Lối tắt của `python run.py test`: truyền nguyên tham số cho pytest, trả nguyên mã thoát |
 | `.gitignore` | Bỏ qua `.venv`, `__pycache__`, `*.db`, `.env`, `.claude/settings.local.json` |
-| `.env.example` | Mẫu biến môi trường: khóa, **danh sách model Gemini**, ước tính hạn mức, `GEMINI_THINKING_BUDGET`, ngân sách thời gian mỗi lượt gọi AI. `.env` thật không vào repo. Có phép canh: mọi biến trong `config.py` phải có mặt ở đây |
+| `.env.example` | Mẫu biến môi trường: khóa, **`SESSION_HTTPS_ONLY`, `APP_ORIGIN`**, **danh sách model Gemini**, ước tính hạn mức, `GEMINI_THINKING_BUDGET`, ngân sách thời gian mỗi lượt gọi AI. `.env` thật không vào repo. Có phép canh: mọi biến trong `config.py` phải có mặt ở đây |
 
 ### `.claude/` — cấu hình agent, nằm trong repo
 
@@ -177,22 +179,31 @@
 
 | File | Vai trò |
 |---|---|
-| `workflows/ci.yml` | Chạy toàn bộ bộ test mỗi lần push lên `main` và mỗi pull request, trên **cả `windows-latest` lẫn `ubuntu-latest`** (`fail-fast: false` để Linux đỏ vẫn biết Windows xanh hay không). **Cố ý không tạo `.env`**: job xanh chính là bằng chứng suite chạy được bằng giá trị mặc định của `config.py`, tức người chấm clone repo về là test được ngay. Chạy `pytest -rs` để chỗ bỏ qua hiện ra trong log thay vì lẫn vào màu xanh — **Windows 0 ca bỏ qua, Linux đúng 1** (`test_hooks.py`, nó tìm lệnh `powershell` chứ không phải `pwsh`) |
+| `workflows/ci.yml` | Chạy toàn bộ bộ test mỗi lần push lên `main` và mỗi pull request, trên **cả `windows-latest` lẫn `ubuntu-latest`** (`fail-fast: false` để Linux đỏ vẫn biết Windows xanh hay không). **Cố ý không tạo `.env`**: job xanh chính là bằng chứng suite chạy được bằng giá trị mặc định của `config.py`, tức người chấm clone repo về là test được ngay. Chạy `pytest -rs` để chỗ bỏ qua hiện ra trong log thay vì lẫn vào màu xanh — **Windows 0 ca bỏ qua, Linux đúng 1** (`test_hooks.py`, nó tìm lệnh `powershell` chứ không phải `pwsh`) **Job thứ hai `run-py`** (thêm 02/10) chạy `python run.py --no-open --check` trên máy sạch cả hai hệ: run.py tự dựng `.venv`, `.env`, seed rồi khởi động uvicorn thật và đợi `/login` trả 200 — đường có `.env`, ngược với job pytest |
 
 ### `docs/`
 
 | File | Vai trò |
 |---|---|
-| `user-stories.md` | 28 user story, **118** tiêu chí Given/When/Then, bảng đối chiếu với đề bài. 14 tiêu chí thêm ngày 25/09 cho các luật nghiệp vụ sinh ra từ lượt sửa lỗi 24/09 — xem [kế hoạch](plans/2026-09-25-ci-va-dac-ta-theo-kip.md) |
+| `user-stories/README.md` | Mục lục đặc tả: bảng 9 nhóm với số story và số tiêu chí, quy ước ba mục, bảng đối chiếu với đề bài. 28 user story, **118** tiêu chí Given/When/Then (60 chấp nhận + 58 biên) — tách file ngày 02/10, xem [kế hoạch P9](plans/2026-09-25-p9-cong-khach-hang.md) |
+| `user-stories/a-dang-nhap-phan-quyen.md` | Nhóm A · US-01→03: 15 tiêu chí, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên |
+| `user-stories/b-chu-nuoi-thu-cung.md` | Nhóm B · US-04→06: 19 tiêu chí, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên |
+| `user-stories/c-dich-vu-bang-gia.md` | Nhóm C · US-07→09: 11 tiêu chí, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên |
+| `user-stories/d-lich-hen.md` | Nhóm D · US-10→14: 23 tiêu chí, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên |
+| `user-stories/e-ho-so-cham-soc.md` | Nhóm E · US-15→16: 6 tiêu chí, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên |
+| `user-stories/f-tiem-phong.md` | Nhóm F · US-17→18: 7 tiêu chí, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên |
+| `user-stories/g-hoa-don-thanh-toan.md` | Nhóm G · US-19→21: 12 tiêu chí, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên |
+| `user-stories/h-thong-ke.md` | Nhóm H · US-22→23: 6 tiêu chí, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên |
+| `user-stories/i-chuc-nang-ai.md` | Nhóm I · US-24→28: 19 tiêu chí, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên |
 | `erd.md` | 14 bảng, sơ đồ Mermaid, mô tả cột và ràng buộc |
 | `architecture.md` | Cây thư mục, ranh giới ba lớp, 3 sequence diagram, cách xử lý lỗi |
 | `ai-safety.md` | System prompt 3 tính năng (có phép canh khớp `prompts.py`), `DISCLAIMER`, 20 ca guardrail G-01→G-20, kết quả chạy Gemini thật 19/09 |
 | `codebase-map.md` | File này |
 | `roadmap.md` | Lộ trình P0→P8 gắn với mốc KT1/KT2/KT3/cuối kỳ, kèm Definition of Done |
 | `plans/README.md` | Quy ước lưu kế hoạch đã duyệt |
-| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 21: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập, vá dữ liệu và sửa 4 lỗi ưu tiên (20/09), M-06 giờ mở cửa (24/09), 11 lỗi còn lại (24/09), **bộ đo AI có RAGAS (25/09 — đã duyệt, chưa làm)**, **CI và đặc tả theo kịp (25/09)**, **P9 cổng khách hàng (25/09 — CHƯA DUYỆT)** |
+| `plans/YYYY-MM-DD-<slug>.md` | Một file mỗi kế hoạch đã duyệt, kèm checklist tick trong lúc làm. Hiện có 22: KT1/P0, P1, P2a, P2b, P3, P4, P5, e2e xuyên suốt, trả nợ kiến trúc, P6, dọn việc tồn P6, P7, rà soát P1→P7, sửa lỗi cao sau rà soát, chế độ AI giả lập, vá dữ liệu và sửa 4 lỗi ưu tiên (20/09), M-06 giờ mở cửa (24/09), 11 lỗi còn lại (24/09), **bộ đo AI có RAGAS (25/09 — đã duyệt, chưa làm)**, **CI và đặc tả theo kịp (25/09)**, **P9 cổng khách hàng (25/09 — CHƯA DUYỆT)**, **`run.py`/`test.py` và chặng bảo mật 0.5 trước P9 (02/10 — đã duyệt, Phiên 1 đang làm)** |
 | `sessions/README.md` | Quy ước log phiên làm việc |
-| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 15 |
+| `sessions/YYYY-MM-DD-NN.md` | Một file mỗi phiên chat, hook tạo khung sẵn. Hiện có 16 |
 | `testing/test-strategy.md` | 4 tầng test, 3 luật chống test giả, fixture, kịch bản e2e |
 | `testing/test-cases.md` | Ma trận truy vết US → TC → file test, 133 test case — 131 ✅ · 0 🟡 · 1 ⬜ (TC-102 smoke) · 1 ➖ ngoài phạm vi (24/09 thêm TC-121 → TC-133; 20/09 thêm TC-117 → TC-120) |
 | `testing/smoke-checklist.md` | Checklist bấm tay theo từng phase |
@@ -203,15 +214,15 @@
 
 | File | Vai trò |
 |---|---|
-| `main.py` | Khởi tạo FastAPI, session middleware, **middleware `Cache-Control: no-store` cho mọi trang trừ `/static`** (L-02), đăng ký router, **từ chối khởi động khi `SECRET_KEY` còn mặc định** (S1), 3 trình xử lý lỗi (403/404 ra trang có bố cục, chưa đăng nhập thì chuyển về `/login`, `LoiNghiepVu` lọt khỏi router → trang 404/400 thay vì 500 — H-03) |
-| `config.py` | Đọc `.env` qua pydantic-settings: `DATABASE_URL`, `SECRET_KEY`, `AI_PROVIDER`, `GEMINI_API_KEY`. Hằng `SECRET_KEY_MAC_DINH` để `main.py` chặn khởi động với khóa công khai (S1) |
+| `main.py` | Khởi tạo FastAPI, session middleware, **middleware `Cache-Control: no-store` cho mọi trang trừ `/static`** (L-02), **middleware `chan_cheo_nguon` trả 403 cho yêu cầu ghi từ trang khác** (R-2), **middleware `them_header_bao_mat` (lớp ngoài cùng, R-4)**, cờ `https_only` của session từ `SESSION_HTTPS_ONLY`, gọi `nang_cap_schema` sau `create_all`, đăng ký router, **từ chối khởi động khi `SECRET_KEY` còn mặc định** (S1), 3 trình xử lý lỗi (403/404 ra trang có bố cục, chưa đăng nhập thì chuyển về `/login`, `LoiNghiepVu` lọt khỏi router → trang 404/400 thay vì 500 — H-03) |
+| `config.py` | Đọc `.env` qua pydantic-settings: `DATABASE_URL`, `SECRET_KEY`, `AI_PROVIDER`, `GEMINI_API_KEY`, **`SESSION_HTTPS_ONLY`** (cờ Secure cho cookie phiên), **`APP_ORIGIN`** (địa chỉ công khai được tin ở bước chặn POST từ trang khác). Hằng `SECRET_KEY_MAC_DINH` để `main.py` chặn khởi động với khóa công khai (S1) |
 | `db.py` | `Base`, `engine`, `SessionLocal`, `get_db()`. Bật `PRAGMA foreign_keys` cho từng kết nối SQLite |
-| `security.py` | `hash_password()`, `verify_password()` — bcrypt trực tiếp, không qua passlib |
-| `app/auth.py` | Session cookie, `nguoi_dung_hien_tai`, `yeu_cau_vai_tro()`, ngoại lệ `ChuaDangNhap`. Ghi kèm thư mục để không lẫn với `routers/auth.py` |
+| `security.py` | `hash_password()`, `verify_password()` — bcrypt trực tiếp, không qua passlib; `la_post_cheo_nguon()` — quyết định yêu cầu ghi có đến từ trang web khác không (R-2) |
+| `app/auth.py` | Session cookie (mang `sv` = `session_version`, so khi đọc — R-3), `nguoi_dung_hien_tai`, `yeu_cau_vai_tro()`, ngoại lệ `ChuaDangNhap`. Ghi kèm thư mục để không lẫn với `routers/auth.py` |
 | `templates.py` | Cấu hình Jinja2 dùng chung, filter `tien` (`{{ so|tien }}`), và hàm `che_do_ai_gia_lap()` cho template biết đang chạy `AI_PROVIDER=fake` |
 | `seed.py` | 4 tài khoản, 3 chủ nuôi, 5 thú cưng, 5 dịch vụ, 2 gói, 8 lịch hẹn, 3 hồ sơ chăm sóc, 5 mũi tiêm, 2 hóa đơn, 2 lần thanh toán. Hóa đơn và lần trả mang **ngày của buổi chăm sóc** (lập trong `clock.freeze`), không phải ngày chạy seed. Hóa đơn dựng **qua `billing.py`** chứ không gán trạng thái tay. Chạy `python -m app.seed`, không sinh trùng |
 | `models/__init__.py` | Gom mọi model — `create_all` chỉ tạo bảng đã được import |
-| `models/user.py` | Bảng `users` + hằng `VAI_TRO`, `TEN_VAI_TRO` |
+| `models/user.py` | Bảng `users` (có `session_version` — R-3) + hằng `VAI_TRO`, `TEN_VAI_TRO` |
 | `models/ai_log.py` | Bảng `ai_logs` — nhật ký gọi AI. Cột `model` NULL nghĩa là **không có lời gọi nào đi ra** (guardrail chặn trước hoặc thiếu dữ liệu) |
 | `models/ai_quota.py` | Bảng `ai_quota` — lượt đã dùng, hạn mức thật, trạng thái nghỉ/hết lượt/bị tắt của từng model theo từng ngày quota |
 | `models/owner.py` | Bảng `owners`. `search_name` tự đồng bộ qua `@validates` |
@@ -223,6 +234,8 @@
 | `services/tien.py` | `doc_tien()` — đọc số tiền người dùng gõ. **Chỉ nhận số nguyên đồng**; dấu chấm/phẩy/khoảng trắng là phân cách nghìn, chuỗi có phần lẻ bị từ chối (L-03). Gom lại từ hai bản chép tay từng nằm ở `routers/services.py` và `routers/invoices.py` |
 | `services/text.py` | `chuan_hoa()` — bỏ dấu tiếng Việt cho tìm kiếm, xử lý riêng chữ `đ` |
 | `services/errors.py` | `LoiNghiepVu` — lỗi nghiệp vụ, thông điệp hiển thị thẳng cho người dùng. Lớp con `LoiKhongTimThay` cho mọi lần tra theo id không thấy bản ghi (H-03) |
+| `services/schema.py` | `nang_cap_schema(engine, metadata)` — thêm cột còn thiếu bằng `ALTER TABLE ... ADD COLUMN`, chạy lại an toàn; `create_all` chỉ tạo bảng thiếu chứ không thêm cột. Gọi trong `lifespan` ngay sau `create_all`. Từ chối cột không thể thêm (PK, UNIQUE, NOT NULL không có `server_default`) bằng `LoiNangCap` |
+| `services/login_throttle.py` | `GioiHanDangNhap` (R-1): giới hạn đăng nhập sai theo cặp (IP, tên đăng nhập), miễn phí 5 lần rồi khóa 30 giây, mỗi lần sai tiếp theo gấp đôi, trần 900 giây; đăng nhập đúng xóa bộ đếm; quên sau 3600 giây không hoạt động. Lưu trong bộ nhớ tiến trình, có khóa luồng. Singleton `gioi_han_dang_nhap`
 | `models/care_record.py` | Bảng `care_records` — hồ sơ chăm sóc, quan hệ 1–1 với lịch hẹn (`appointment_id` UNIQUE) |
 | `models/vaccination.py` | Bảng `vaccinations` — mũi tiêm và hạn nhắc lại; property `qua_han` |
 | `services/users.py` | Nghiệp vụ tài khoản nhân viên: tạo, **sửa**, khóa, mở khóa, danh sách, **đặt lại và tự đổi mật khẩu**. Chặn quản lý tự khóa mình và tự bỏ vai trò quản lý. `kiem_mat_khau()` là cửa chung của **cả ba** đường đặt mật khẩu (M-04) |
@@ -235,7 +248,7 @@
 | `models/payment.py` | Bảng `payments` — từng lần khách trả; CHECK `amount > 0` |
 | `services/billing.py` | Nghiệp vụ hóa đơn: lập, thu tiền, hủy. Đường **duy nhất** ghi `payments` và trạng thái hóa đơn. Lập hóa đơn cho lịch có hóa đơn **đã hủy** thì mở lại chính hóa đơn đó theo giá và ngày hiện tại (S4 → S3 trong kế hoạch P7) |
 | `services/stats.py` | Thống kê theo kỳ: `thong_ke()`, `ky_mac_dinh(den_ngay)`. Có `so_lich_qua_gio_chua_ghi` — lịch đã qua giờ mà chưa ai ghi hồ sơ (S5). Ba mốc ngày cố ý khác nhau — lượt và khách theo ngày hẹn (mọi lịch chưa hủy), doanh thu theo ngày thu (`payments`), chưa thu theo ngày lập. Tính trong Python để dùng lại `Invoice.con_no`; **không** lọc dịch vụ đã ngưng bán |
-| `routers/auth.py` | `/login`, `/logout`, `/`, và `/doi-mat-khau` — tự đổi mật khẩu đặt ở đây vì cả ba vai trò đều dùng được, trong khi cả router `/users` chặn người không phải quản lý |
+| `routers/auth.py` | `/login` (có giới hạn đăng nhập sai — R-1), `/logout` (thu hồi phiên — R-3), `/`, và `/doi-mat-khau` — tự đổi mật khẩu đặt ở đây vì cả ba vai trò đều dùng được, trong khi cả router `/users` chặn người không phải quản lý |
 | `routers/users.py` | `/users` — quản lý tài khoản, chỉ vai trò `manager`. Thêm `/{id}/sua` và `/{id}/dat-lai-mat-khau` (M-02, 20/09). Chỉ HTTP, nghiệp vụ ở `services/users.py` |
 | `routers/owners.py` | `/owners`, `/owners/{id}`, `/owners/{id}/sua`, `/owners/{id}/pets`, `/pets/{id}/xoa`. Hai đường dẫn xóa có **GET trang xác nhận** và POST làm việc thật — GET không đổi dữ liệu |
 | `routers/services.py` | `/services` và `/services/goi` — chỉ `manager` sửa |
@@ -270,14 +283,14 @@
 
 | File | Vai trò |
 |---|---|
-| `conftest.py` | 5 fixture: `db`, `client`, `frozen_clock`, `fake_ai` (khung, dùng từ P7), `seed_basic` (chỉ 4 tài khoản); cộng `bam_mat_khau_mau` băm mật khẩu mẫu một lần cho cả phiên test |
+| `conftest.py` | 5 fixture: `db` (CSDL in-memory riêng cho từng test, **bảng sao từ ảnh dựng sẵn `khung_csdl_rong`** — đổi 02/10, xem `test_conftest_db.py`), `client`, `frozen_clock`, `fake_ai` (khung, dùng từ P7), `seed_basic` (chỉ 4 tài khoản); cộng `bam_mat_khau_mau` băm mật khẩu mẫu một lần cho cả phiên test |
 | `unit/test_security.py` | Băm mật khẩu (TC-005) |
 | `unit/test_clock.py` | Cố định thời gian |
 | `unit/test_models_user.py` | Ràng buộc bảng `users`: UNIQUE username, CHECK role |
 | `unit/test_text.py` | Chuẩn hóa chuỗi tiếng Việt, gồm bẫy chữ `đ` |
 | `unit/test_tien.py` | Đọc số tiền: phân cách nghìn, từ chối phần lẻ, `NaN`/`Infinity`, ô trống, số âm (L-03) |
 | `unit/test_models_owner_pet.py` | Ràng buộc `owners`, `pets`, khóa ngoại, `search_name` |
-| `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa |
+| `unit/test_users_service.py` | Nghiệp vụ tài khoản: tạo, băm mật khẩu, trùng username, chặn tự khóa; `thu_hoi_phien` và các thao tác tăng `session_version` (R-3) |
 | `unit/test_architecture.py` | **Canh ranh giới dự án** (55 phép canh), không kiểm chức năng: router không ghi thẳng CSDL, `services/` không import fastapi, router không import thẳng `app/ai`, mọi loại ô nhập dùng chung quy tắc khung, link tài liệu, `erd.md` khớp model tới từng cột (tập cột, NOT NULL, UNIQUE, FK), `codebase-map` đủ file (so **đuôi đường dẫn**, không so mỗi tên file — xem kẽ hở đã vá 13/09), hàm public có test gọi thẳng, class trong template có quy tắc CSS, chuỗi trạng thái tiền chỉ nằm ở model và service hóa đơn, thông báo lỗi không lộ mã phase, link menu nào cũng có thẻ trên trang chủ, dòng Trạng thái trong README khớp phase mới nhất, số kế hoạch/log phiên/báo cáo ghi trong chính file này khớp số file thật, ba system prompt in trong `ai-safety.md` khớp từng chữ với `prompts.py`, mọi biến trong `config.py` đều có mặt trong `.env.example`, **`CLAUDE.md` có mục 10 và mục 6 trỏ tới nó**. Phép canh đếm số log phiên **bỏ qua khung rỗng hook `SessionStart` vừa tạo** — đếm cả nó thì phép canh đỏ ở đầu mọi phiên chưa kịp ghi log, tức tự báo động giả (sửa 25/09, có test cô lập `dem_log_phien_da_ghi`). Phép canh **ngưỡng thời gian test**: mọi câu "vượt ngưỡng Ns" trong `docs/` phải khớp `test-strategy.md` — con số 90s từng bị chép lệch qua năm tài liệu, ba phiên |
 | `unit/test_khoi_dong.py` | Lifespan từ chối khởi động với `SECRET_KEY` mặc định (S1). Gọi thẳng `lifespan`, engine in-memory |
 | `unit/test_prompts.py` | Dựng prompt, ba system prompt, chèn `DISCLAIMER` (TC-082, 083, 088, 096) |
@@ -286,6 +299,12 @@
 | `unit/test_ai_quota.py` | Xoay ca model, ngày quota theo giờ Pacific, đếm lượt, bảng quota (TC-103→112) |
 | `unit/test_gemini.py` | Đọc phản hồi và phân loại lỗi HTTP; chỉ thay `urlopen` — ranh giới ngoài |
 | `unit/test_hooks.py` | Chạy thật hook `session-stop.ps1` trên bản sao dựng trong thư mục tạm: mọi log rỗng bị dọn, log đã điền (kể cả điền dở) còn nguyên. Tự bỏ qua khi máy không có PowerShell |
+| `unit/test_conftest_db.py` | Canh fixture `db`: đủ bảng của mọi model, và **một dòng commit ở test trước không lọt sang test sau** (hai ca đứng liền nhau, phụ thuộc thứ tự khai báo). Đột biến 02/10: đổi `db` thành `scope="module"` thì ca thứ hai đỏ |
+| `unit/test_run.py` | Test `run.py` (19 ca): `parse_env`, `ensure_env` **không ghi đè `.env` có sẵn (so từng byte)**, chỉ thay đúng dòng `SECRET_KEY` khi còn giá trị mặc định, khóa sinh ra đủ dài và khác nhau mỗi lần, chọn cổng, đường dẫn venv theo hệ điều hành, `db_file` từ chối CSDL không phải SQLite, lệnh con mặc định là `up`. Đột biến 02/10: vô hiệu nhánh `giu` thì hai ca đỏ |
+| `unit/test_schema_upgrade.py` | `nang_cap_schema` (8 ca, gồm ca nâng cấp bảng `users` cũ lên có `session_version`): dựng DB từ schema cũ, chạy hai lần, cột có đúng một lần, dữ liệu cũ còn nguyên, từ chối cột không thêm được |
+| `unit/test_login_throttle.py` | `GioiHanDangNhap` (13 ca): ngưỡng, khóa tăng dần, trần, đặt lại khi thành công, cách ly theo IP và tên đăng nhập, quên sau thời gian nghỉ, mật khẩu đúng vẫn bị từ chối khi đang khóa |
+| `unit/test_csrf_origin.py` | `la_post_cheo_nguon` (27 ca, R-2, gồm các ca `APP_ORIGIN`): `Origin` khác `Host`, `Sec-Fetch-Site` khác `same-origin`/`none`, `Origin: null`, cổng khác, đuôi host giả; GET/HEAD/OPTIONS không bị kiểm; thiếu cả hai header thì qua
+| `unit/test_cau_hinh_phien.py` | `SESSION_HTTPS_ONLY` đi từ biến môi trường tới `SessionMiddleware` (3 ca, mỗi giá trị một tiến trình riêng vì middleware dựng lúc import) |
 | `unit/test_owners_service.py` | Nghiệp vụ chủ nuôi, thú cưng, tra cứu |
 | `unit/test_models_service.py` | Ràng buộc `services`, gói, và **kiểu tiền `Decimal`** |
 | `unit/test_catalog_service.py` | Nghiệp vụ dịch vụ, ngưng bán, gói |
@@ -298,6 +317,10 @@
 | `unit/test_stats_service.py` | Thống kê: TC-076 → TC-081, bất biến "bảng theo dịch vụ cộng lại bằng tổng", mốc ngày đầu/cuối kỳ, hóa đơn lập kỳ trước thu kỳ này, dịch vụ đã ngưng bán, kỳ mặc định. Dữ liệu đi qua luồng thật: đặt lịch → ghi hồ sơ → lập hóa đơn → thu tiền |
 | `unit/test_scheduling.py` | **6 ca biên trùng lịch**, gợi ý khung trống, đổi lịch (TC-044→047), hủy lịch (TC-048, TC-049), chặn hủy lịch còn hóa đơn (TC-074, TC-075) |
 | `integration/test_auth.py` | Đăng nhập (TC-001→004) |
+| `integration/test_gioi_han_dang_nhap.py` | R-1 qua HTTP (6 ca): chuỗi đăng nhập sai bị 429 kèm `Retry-After`, người dùng/IP khác không bị ảnh hưởng, đăng nhập đúng xóa bộ đếm |
+| `integration/test_chan_cheo_nguon.py` | R-2 qua HTTP (6 ca, gồm `APP_ORIGIN`): POST đổi trạng thái kèm `Origin` lạ bị 403 và **không được thực thi**, cùng host vẫn chạy, không header vẫn chạy, đăng nhập từ trang lạ cũng bị chặn, GET không bị chặn
+| `integration/test_header_bao_mat.py` | R-4 (5 ca): `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` có trên trang thường, `/static`, trang 404, chuyển hướng và cả phản hồi 403 của middleware khác |
+| `integration/test_thu_hoi_phien.py` | R-3 (6 ca): cookie cũ sau đăng xuất / đổi mật khẩu / đặt lại mật khẩu / khóa rồi mở khóa đều bị 303; máy vừa đổi mật khẩu không bị đá; cookie cũ chưa có `sv` vẫn hợp lệ |
 | `integration/test_users.py` | Phân quyền và quản lý tài khoản (TC-007, 008, 010→012) |
 | `integration/test_owners.py` | Chủ nuôi, thú cưng, tra cứu qua HTTP (TC-013→023) |
 | `integration/test_services.py` | Dịch vụ, bảng giá, gói qua HTTP (TC-024→031) |
@@ -306,7 +329,7 @@
 | `integration/test_invoices.py` | Hóa đơn qua HTTP: nút trên lưới lịch, thu tiền, hủy, phân quyền (TC-065, TC-068→070, TC-072) |
 | `integration/test_ai.py` | Ba tính năng AI qua HTTP: phân quyền, Post/Redirect/Get, AI lỗi không vỡ trang, `ai_logs` sạch dữ liệu liên hệ (TC-084→100) |
 | `integration/test_stats.py` | Trang thống kê qua HTTP: TC-006 và lễ tân → 403, kỳ mặc định, kỳ trống, ngày ngược, ngày sai định dạng |
-| `integration/test_seed.py` | Chạy `python -m app.seed` trong tiến trình riêng trên CSDL tạm; ngày lập hóa đơn = ngày buổi chăm sóc, ngày thu = ngày lập |
+| `integration/test_seed.py` | Chạy `python -m app.seed` trong tiến trình riêng trên CSDL tạm; ngày lập hóa đơn = ngày buổi chăm sóc, ngày thu = ngày lập; dòng tổng kết đếm đúng số lịch hẹn (R-5) |
 | `integration/test_khong_tim_thay.py` | Quét mọi đường dẫn theo id với bản ghi không tồn tại: không bao giờ 500; chín chỗ từng lỗi phải ra 404 (TC-115, H-03) |
 | `integration/test_appointments.py` | Đặt/đổi/hủy lịch qua HTTP, lịch theo vai trò (TC-035, TC-043, TC-050→052, TC-009) |
 | `e2e/test_full_flow.py` | **Kịch bản xuyên suốt TC-101 đủ 11 bước** trên CSDL file thật, đi bằng link và nút lấy từ HTML — không tự dựng URL. Chứa `TrinhDuyet`, trình duyệt tí hon gửi form đúng như trình duyệt |
