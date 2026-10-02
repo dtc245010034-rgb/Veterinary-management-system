@@ -88,6 +88,21 @@ def test_xoa_chu_nuoi_con_thu_cung_bi_chan_kem_thong_bao(db, frozen_clock):
     assert "thú cưng" in str(loi.value).lower()
 
 
+def test_xoa_chu_nuoi_dang_noi_voi_tai_khoan_khach_bi_chan_kem_cach_go(db):
+    """P9 4b: `customers.owner_id` trỏ vào chủ nuôi. Không chặn riêng thì người dùng chỉ nhận câu
+    "còn dữ liệu liên quan" mà không biết dữ liệu nào, cũng không biết phải gỡ liên kết ở đâu."""
+    from app.models.customer import Customer
+
+    o = nv.tao_chu_nuoi(db, ho_ten="Co Khach", so_dien_thoai="0912345678")
+    db.add(Customer(email="khach@example.com", full_name="Khach", password_hash="x", owner_id=o.id))
+    db.commit()
+
+    with pytest.raises(LoiNghiepVu) as loi:
+        nv.xoa_chu_nuoi(db, o.id)
+
+    assert "liên kết" in str(loi.value).lower()
+
+
 # --- Tạo thú cưng ---------------------------------------------------------------
 
 

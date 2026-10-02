@@ -8,7 +8,7 @@ chăm sóc và trả lời câu hỏi chăm sóc thường ngày ở mức tham 
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P0→P7 xong, đang làm P8 (hoàn thiện và nộp)** — quản lý chủ nuôi, thú
+Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P0→P7 xong, đang làm P8 (hoàn thiện và nộp) và P9 (cổng khách hàng — chặng 0→2 xong: fixture test, tách đặc tả, bảo mật, Docker)** — quản lý chủ nuôi, thú
 cưng, dịch vụ, đặt/đổi/hủy lịch có chống trùng **trong giờ mở cửa**, hồ sơ chăm sóc, nhắc tiêm, hóa đơn,
 thanh toán và thống kê đều chạy được. **Ba tính năng AI đã dùng được trên giao diện** và đã kiểm chứng
 với Gemini thật (13/13 ca guardrail đạt). Lượt rà soát toàn hệ thống 19/09 tìm 18 lỗi: **đã sửa 3 lỗi
@@ -17,8 +17,9 @@ cao, 4 lỗi ưu tiên** (thiếu chức năng sửa, chuyển hướng mở, m�
 tick đủ. **Không còn lỗi nào tồn từ lượt rà soát.** Còn lại là **P8 hoàn thiện** — xem tiến độ từng
 phase trong [`docs/roadmap.md`](docs/roadmap.md).
 
-Chạy lần đầu phải sao chép `.env.example` thành `.env` và đặt `SECRET_KEY` riêng — ứng dụng từ chối
-khởi động với khóa mặc định. Muốn gọi AI thật thì đặt thêm `GEMINI_API_KEY` và `AI_PROVIDER=gemini`;
+Chạy lần đầu: `python run.py` tự tạo `.env` với `SECRET_KEY` ngẫu nhiên (chạy tay thì phải sao chép
+`.env.example` thành `.env` và tự đặt `SECRET_KEY` — ứng dụng từ chối khởi động với khóa mặc định).
+Muốn gọi AI thật thì đặt thêm `GEMINI_API_KEY` và `AI_PROVIDER=gemini`;
 để `fake` thì hệ thống trả lời cố định, không cần mạng và không tốn lượt gọi.
 
 Xem lượt gọi AI còn lại trong ngày: `python -m app.ai.quota`.
@@ -49,6 +50,9 @@ Một lệnh làm hết: tạo `.venv`, cài thư viện, tạo `.env` (khóa `S
 | `python run.py status` | xem tình trạng môi trường |
 | `python run.py reset` | xóa CSDL SQLite (hỏi xác nhận); lần chạy sau seed lại |
 | `python run.py test` hoặc `python test.py` | chạy pytest, truyền nguyên tham số (`python test.py -k dang_nhap`) |
+| `python tools/kiem_tra_song.py` | dựng **CSDL mới** trong thư mục tạm, chạy server thật, đi qua mọi chức năng theo từng vai trò (150 kiểm tra) — xem mục "Kiểm tra trên CSDL mới" bên dưới |
+| `python run.py docker` | dựng image và chạy trong Docker (`docker logs`/`down`/`reset` để xem log, tắt giữ dữ liệu, xóa cả dữ liệu) |
+| `python run.py --public-url https://abc.ngrok.app` | chế độ công khai qua tunnel HTTPS: cookie `Secure`, mật khẩu seed ngẫu nhiên; xem [`docs/trien-khai.md`](docs/trien-khai.md) |
 
 <details><summary>Chạy tay từng bước (không dùng run.py)</summary>
 
@@ -96,13 +100,14 @@ prompt. Chi tiết: [`docs/ai-safety.md`](docs/ai-safety.md).
 ## Cách chạy test
 
 ```bash
-pytest tests/unit            # 582 ca, ~41–45s — chạy mỗi lần sửa code
-pytest tests/integration     # 322 ca, ~80–87s — chạy cuối mỗi phiên làm việc
-pytest tests/e2e             #   1 ca,  ~7s    — kịch bản xuyên suốt 11 bước, chạy cuối mỗi phase
-pytest                       # 906 ca, ~101–148s — chạy trước mỗi commit (hồi quy)
+pytest tests/unit            # 704 ca — chạy mỗi lần sửa code
+pytest tests/integration     # 348 ca — chạy cuối mỗi phiên làm việc
+pytest tests/e2e             #   1 ca — kịch bản xuyên suốt 11 bước, chạy cuối mỗi phase
+pytest                       # 1053 ca (1052 đạt + 1 bỏ qua trên Linux) — chạy trước mỗi commit
 ```
 
-Số đo ngày 25/09 qua bảy lượt chạy. **Dao động rất rộng theo tải máy — 101s tới 148s cho cùng một
+Số ca đếm lại ngày 02/10 bằng `pytest --co`; lượt chạy toàn bộ cùng ngày: **44s tới 116s** tùy tải máy
+(không đo riêng từng tầng). Số đo ngày 25/09 qua bảy lượt chạy. **Dao động rất rộng theo tải máy — 101s tới 148s cho cùng một
 bộ test, cùng một ngày**, nên đừng coi một lượt đo là kết luận. Chạy riêng từng tầng rồi cộng lại
 (~127s) cũng lớn hơn một lượt chạy chung; chưa truy nguyên nhân chỗ chênh đó.
 
@@ -113,17 +118,53 @@ test nào đáng cắt** — 20 ca chậm nhất cộng lại chỉ ~24s, phần
 Bốn tầng và lý do chia như vậy: [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md).
 Kết quả từng phase: [`docs/testing/reports/`](docs/testing/reports/).
 
+## Kiểm tra trên CSDL mới
+
+Muốn thử **toàn bộ chức năng trên một CSDL sạch** mà không đụng dữ liệu đang dùng (`petcare.db`):
+
+```bash
+python tools/kiem_tra_song.py              # dựng CSDL tạm + server thật, chạy 150 kiểm tra, tự dọn
+python tools/kiem_tra_song.py --giu-lai    # như trên nhưng giữ lại thư mục tạm để mở xem
+```
+
+Công cụ này (không phải pytest) dùng **một file SQLite thật trong thư mục tạm, một tiến trình
+uvicorn thật và các yêu cầu HTTP thật**; `AI_PROVIDER=fake` nên không tốn lượt Gemini. Nó đăng nhập
+bằng bốn tài khoản mẫu và đi qua: đăng nhập/phân quyền (ma trận 3 vai trò × 12 trang), chủ nuôi,
+thú cưng, dịch vụ và gói, đặt/đổi/hủy lịch (trùng giờ, ngoài giờ mở cửa, ngày quá khứ), hồ sơ chăm
+sóc, hóa đơn và thu tiền, tiêm phòng, quản lý tài khoản, đổi mật khẩu/đăng xuất, xóa có ràng buộc,
+thống kê, ba tính năng AI kèm câu xin thuốc bị chặn, và chống dò mật khẩu. Thoát `0` khi mọi kiểm
+tra đạt, `1` khi còn lỗi hoặc server trả 500.
+
+Nó **không thay** smoke bấm tay trên trình duyệt (layout, nút bấm, thông báo hiện đúng chỗ) — xem
+[`docs/testing/smoke-checklist.md`](docs/testing/smoke-checklist.md).
+
+Muốn tự bấm trên một CSDL mới, có hai cách:
+
+```bash
+# Cách 1: làm mới CSDL đang dùng (MẤT dữ liệu trong petcare.db — hỏi xác nhận)
+python run.py reset
+python run.py                       # seed lại dữ liệu mẫu, chạy, mở trình duyệt
+
+# Cách 2: một file CSDL riêng, giữ nguyên petcare.db  (bash; Windows PowerShell: $env:DATABASE_URL="...")
+DATABASE_URL=sqlite:///thu-nghiem.db python -m app.seed
+DATABASE_URL=sqlite:///thu-nghiem.db uvicorn app.main:app --port 8001
+```
+
+Ngày giờ của dữ liệu mẫu tính lùi/tiến từ **lúc chạy seed** (xem `app/seed.py`), nên dữ liệu "ngày
+mai", "hôm qua" luôn khớp với hôm nay — CSDL càng cũ thì các lịch mẫu càng lệch.
+
 ## Tài liệu
 
 | File | Nội dung |
 |---|---|
 | [`docs/user-stories/README.md`](docs/user-stories/README.md) | 28 user story tách thành 9 file theo nhóm A–I, mỗi story có Mục tiêu · Tiêu chí chấp nhận · Điều kiện biên; 118 tiêu chí Given/When/Then |
-| [`docs/erd.md`](docs/erd.md) | 14 bảng, sơ đồ quan hệ, mô tả cột và ràng buộc — tất cả đã dựng |
+| [`docs/erd.md`](docs/erd.md) | 15 bảng, sơ đồ quan hệ, mô tả cột và ràng buộc — tất cả đã dựng |
 | [`docs/architecture.md`](docs/architecture.md) | Ba lớp, ranh giới, luồng dữ liệu, cách xử lý lỗi |
+| [`docs/trien-khai.md`](docs/trien-khai.md) | Chạy bằng venv, Docker, công khai qua tunnel; đường chuyển PostgreSQL; giới hạn đã biết |
 | [`docs/ai-safety.md`](docs/ai-safety.md) | System prompt, ba lớp guardrail trong code, 20 ca kiểm thử an toàn AI |
 | [`docs/roadmap.md`](docs/roadmap.md) | Lộ trình P0–P8 gắn với mốc KT1/KT2/KT3/cuối kỳ |
 | [`docs/codebase-map.md`](docs/codebase-map.md) | Bản đồ file → trách nhiệm |
-| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 133 test case, checklist thủ công, báo cáo |
+| [`docs/testing/`](docs/testing/) | Chiến lược, ma trận 145 test case, checklist thủ công, báo cáo |
 | [`docs/plans/`](docs/plans/) | Kế hoạch đã duyệt của từng phase |
 | [`docs/sessions/`](docs/sessions/) | Nhật ký từng phiên làm việc |
 

@@ -31,6 +31,31 @@ MOC_THOI_GIAN = datetime(2026, 3, 12, 8, 0, 0)
 
 
 @pytest.fixture(autouse=True)
+def chan_gui_mail_that(monkeypatch):
+    """Không lượt gửi SMTP thật nào trong bộ test (P9 chặng 3, ô 3.1).
+
+    Chỉ cho `smtplib` nối tới chính máy này — test của `SmtpMailer` dựng máy chủ SMTP cục bộ. Nếu một
+    đường nào đó (cấu hình `.env` của người chạy test có `MAIL_PROVIDER=smtp`, một test quên override
+    `lay_mailer`) chạm tới host ngoài thì đỏ ngay, thay vì gửi thư thật bằng tài khoản của cửa hàng.
+    """
+    import smtplib
+
+    cho_phep = ("127.0.0.1", "localhost", "::1")
+
+    def _canh(lop):
+        class _Canh(lop):
+            def __init__(self, host="", *a, **kw):
+                assert host in cho_phep or host == "", f"Test không được gửi mail thật tới {host!r}"
+                super().__init__(host, *a, **kw)
+
+        return _Canh
+
+    monkeypatch.setattr(smtplib, "SMTP", _canh(smtplib.SMTP))
+    monkeypatch.setattr(smtplib, "SMTP_SSL", _canh(smtplib.SMTP_SSL))
+    yield
+
+
+@pytest.fixture(autouse=True)
 def xoa_bo_dem_dang_nhap():
     """Bộ đếm đăng nhập sai là trạng thái toàn cục của tiến trình; test nào cũng POST /login.
 

@@ -9,6 +9,8 @@
     python run.py status           xem tình trạng môi trường
     python run.py reset            xóa CSDL SQLite (hỏi xác nhận); lần `up` sau seed lại
     python run.py test [...]       chạy pytest, chuyển nguyên tham số: python run.py test -k dang_nhap
+    python run.py docker [up|down|logs|reset]   chạy trong Docker (up là mặc định; reset xóa cả volume dữ liệu)
+    python run.py --public-url https://abc.ngrok.app   chế độ công khai: cookie Secure, mật khẩu seed ngẫu nhiên
 
 Cam kết: `.env` đã có thì KHÔNG BAO GIỜ bị ghi đè. Chỉ khi thiếu hoặc còn SECRET_KEY mặc định
 thì dòng SECRET_KEY được thay bằng chuỗi ngẫu nhiên; mọi dòng khác giữ nguyên từng byte.
@@ -18,11 +20,13 @@ import argparse
 import hashlib
 import os
 import secrets
+import shutil
 import socket
 import subprocess
 import sys
 import threading
 import time
+import urllib.parse
 import urllib.request
 import webbrowser
 from pathlib import Path
@@ -32,7 +36,8 @@ MIN_PYTHON = (3, 11)
 DEFAULT_PORT = 8000
 SECRET_KEY_MAC_DINH = "doi-thanh-chuoi-ngau-nhien-truoc-khi-chay-that"
 DEFAULT_DATABASE_URL = "sqlite:///./petcare.db"
-COMMANDS = ("up", "reset", "status", "test")
+COMMANDS = ("up", "reset", "status", "test", "docker")
+DOCKER_ACTIONS = ("up", "down", "logs", "reset")
 
 
 class Fail(Exception):
@@ -143,10 +148,12 @@ def db_file(url, root):
     return p if p.is_absolute() else root / p
 
 
-def wait_healthy(port, path="/login", timeout=60.0, interval=0.5):
+def wait_healthy(port, path="/login", timeout=60.0, interval=0.5, alive=lambda: True):
+    """Đợi `path` trả 200. `alive` cho biết tiến trình còn sống không: chết rồi thì bỏ cuộc ngay,
+    đừng đợi hết `timeout` (ví dụ chế độ công khai từ chối khởi động vì còn mật khẩu mẫu)."""
     deadline = time.time() + timeout
     url = "http://127.0.0.1:%d%s" % (port, path)
-    while time.time() < deadline:
+    while time.time() < deadline and alive():
         try:
             with urllib.request.urlopen(url, timeout=2) as resp:
                 if resp.status == 200:
@@ -155,6 +162,57 @@ def wait_healthy(port, path="/login", timeout=60.0, interval=0.5):
             pass
         time.sleep(interval)
     return False
+
+
+# --- chế độ công khai và Docker ---------------------------------------------------------
+
+
+def public_env(url):
+    """Biến môi trường cho bản công khai qua tunnel HTTPS. Không ghi vào `.env`: địa chỉ tunnel đổi mỗi lần."""
+    p = urllib.parse.urlsplit(url or "")
+    if p.scheme != "https" or not p.netloc:
+        raise Fail("--public-url phải là địa chỉ https://… (cookie Secure không chạy qua HTTP), nhận được: %r" % url)
+    if p.path not in ("", "/") or p.query or p.fragment:
+        raise Fail("--public-url chỉ gồm https://tên-miền[:cổng], không có đường dẫn: %r" % url)
+    return {"SESSION_HTTPS_ONLY": "true", "APP_ORIGIN": "https://" + p.netloc}
+
+
+def new_seed_password():
+    return secrets.token_urlsafe(12)
+
+
+def compose_args(action):
+    return {
+        "up": ["up", "-d", "--build"],
+        "down": ["down"],
+        "reset": ["down", "-v"],
+        "logs": ["logs", "-f", "--tail", "100"],
+    }[action]
+
+
+def docker_env(port, public_url=None, seed_password=None):
+    env = {"PORT": str(port)}
+    if public_url:
+        env.update(public_env(public_url))
+        env["SEED_MAT_KHAU"] = seed_password
+    return env
+
+
+def _compose_v2_co_san():
+    try:
+        return subprocess.run(
+            ["docker", "compose", "version"], capture_output=True, timeout=30
+        ).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def compose_cmd(co_v2=_compose_v2_co_san, which=shutil.which):
+    if which("docker") and co_v2():
+        return ["docker", "compose"]
+    if which("docker-compose"):
+        return ["docker-compose"]
+    raise Fail("Không tìm thấy Docker (cần `docker compose` hoặc `docker-compose`). Cài Docker rồi chạy lại.")
 
 
 # --- dòng lệnh ------------------------------------------------------------------------
@@ -168,6 +226,8 @@ def parse_args(argv):
         prog="run.py", description="Chạy dự án quản lý thú cưng. Không ghi lệnh = `up`."
     )
     parser.add_argument("command", nargs="?", default="up", choices=COMMANDS)
+    parser.add_argument("action", nargs="?", default="up", choices=DOCKER_ACTIONS, help="chỉ dùng với `docker`")
+    parser.add_argument("--public-url", default=None, help="địa chỉ https công khai của tunnel")
     parser.add_argument("--port", type=int, default=None)
     parser.add_argument("--no-open", action="store_true")
     parser.add_argument("--reload", action="store_true")
@@ -217,6 +277,7 @@ def current_db_path():
 
 
 def cmd_up(args):
+    extra_env = public_env(args.public_url) if args.public_url else {}
     py = ensure_venv()
     hanh_dong = ensure_env(ROOT)
     if hanh_dong == "tao":
@@ -227,8 +288,15 @@ def cmd_up(args):
     db = current_db_path()
     if db is not None and not db.exists():
         log("CSDL chưa có — nạp dữ liệu mẫu (python -m app.seed) ...")
-        if run_cmd([py, "-m", "app.seed"]).returncode != 0:
+        seed_env = dict(os.environ)
+        if args.public_url:
+            mat_khau = new_seed_password()
+            seed_env["SEED_MAT_KHAU"] = mat_khau
+            log("Mật khẩu của mọi tài khoản mẫu là: %s  (chỉ hiện lần này — hãy đổi trước khi đưa ai dùng)" % mat_khau)
+        if run_cmd([py, "-m", "app.seed"], env=seed_env).returncode != 0:
             raise Fail("Seed thất bại — xem lỗi phía trên.")
+    elif args.public_url:
+        log("CSDL đã có: nếu còn tài khoản dùng mật khẩu mẫu, app sẽ từ chối chạy ở chế độ công khai.")
 
     if args.port is not None:
         if port_busy(args.port):
@@ -244,13 +312,15 @@ def cmd_up(args):
         cmd.append("--reload")
     url = "http://127.0.0.1:%d" % port
     log("Chạy %s  (Ctrl+C để dừng)" % url)
-    proc = subprocess.Popen([str(c) for c in cmd], cwd=str(ROOT))
+    if args.public_url:
+        log("Chế độ công khai: cookie Secure, địa chỉ %s. Trỏ tunnel HTTPS tới %s." % (extra_env["APP_ORIGIN"], url))
+    proc = subprocess.Popen([str(c) for c in cmd], cwd=str(ROOT), env={**os.environ, **extra_env})
     try:
         if args.check:
-            ok = wait_healthy(port)
+            ok = wait_healthy(port, alive=lambda: proc.poll() is None)
             log("/login trả 200." if ok else "Hết thời gian mà /login chưa trả 200.")
             return 0 if ok else 1
-        if not args.no_open:
+        if not args.no_open and not args.public_url:
             threading.Thread(
                 target=lambda: wait_healthy(port) and webbrowser.open(url + "/login"), daemon=True
             ).start()
@@ -265,6 +335,59 @@ def cmd_up(args):
                 proc.wait(timeout=10)
             except subprocess.TimeoutExpired:
                 proc.kill()
+
+
+def cmd_docker(args):
+    base = compose_cmd()
+    if ensure_env(ROOT) == "tao":
+        log("Đã tạo .env từ .env.example với SECRET_KEY ngẫu nhiên (docker-compose.yml đọc file này).")
+    env = dict(os.environ)
+    # --check dùng project riêng để `down -v` ở cuối không bao giờ xóa volume của bản đang chạy thật.
+    env["COMPOSE_PROJECT_NAME"] = "petcare-check" if args.check else "petcare"
+
+    if args.action != "up":
+        if args.action == "reset" and not args.yes:
+            print("Sắp xóa container VÀ volume dữ liệu của project petcare (toàn bộ CSDL trong Docker).")
+            if input("Gõ 'xoa' để xác nhận: ").strip().lower() != "xoa":
+                log("Đã hủy, không xóa gì.")
+                return 1
+        return run_cmd([*base, *compose_args(args.action)], env=env).returncode
+
+    if args.port is not None:
+        if port_busy(args.port):
+            raise Fail("Cổng %d đang bận. Chọn cổng khác bằng --port, hoặc bỏ --port để tự chọn." % args.port)
+        port = args.port
+    else:
+        port = pick_port(DEFAULT_PORT)
+    mat_khau = new_seed_password() if args.public_url else None
+    env.update(docker_env(port, args.public_url, mat_khau))
+
+    if base == ["docker-compose"]:
+        # docker-compose 1.x gặp KeyError 'ContainerConfig' khi tạo lại container trên Docker Engine mới.
+        # `down` (không -v) chỉ bỏ container, volume dữ liệu còn nguyên.
+        run_cmd([*base, *compose_args("down")], env=env, capture_output=True)
+    log("Dựng image và chạy container (lần đầu có thể mất vài phút) ...")
+    if run_cmd([*base, *compose_args("up")], env=env).returncode != 0:
+        raise Fail("docker compose up thất bại — xem lỗi phía trên.")
+    try:
+        if not wait_healthy(port, timeout=60):
+            run_cmd([*base, "logs", "--tail", "50"], env=env)
+            log("Hết thời gian mà /login chưa trả 200 (log container ở trên).")
+            return 1
+        log("/login trả 200 tại http://127.0.0.1:%d" % port)
+        if args.public_url:
+            log("Chế độ công khai: trỏ tunnel HTTPS %s tới 127.0.0.1:%d." % (env["APP_ORIGIN"], port))
+            log("Mật khẩu seed là %s — chỉ có tác dụng khi volume còn trống; nếu CSDL đã có từ trước, "
+                "dùng `python run.py docker reset` hoặc tự đổi mật khẩu." % mat_khau)
+        if args.check:
+            return 0
+        log("Xem log: python run.py docker logs · Tắt: python run.py docker down")
+        if not args.no_open and not args.public_url:
+            webbrowser.open("http://127.0.0.1:%d/login" % port)
+        return 0
+    finally:
+        if args.check:
+            run_cmd([*base, *compose_args("reset")], env=env)
 
 
 def cmd_reset(args):
@@ -317,7 +440,7 @@ def main(argv=None):
     try:
         if sys.version_info < MIN_PYTHON:
             raise Fail("Cần Python %d.%d trở lên, máy đang có %d.%d." % (MIN_PYTHON + sys.version_info[:2]))
-        return {"up": cmd_up, "reset": cmd_reset, "status": cmd_status, "test": cmd_test}[args.command](args)
+        return {"up": cmd_up, "reset": cmd_reset, "status": cmd_status, "test": cmd_test, "docker": cmd_docker}[args.command](args)
     except Fail as e:
         print("[run] LỖI: %s" % e, file=sys.stderr)
         return 1

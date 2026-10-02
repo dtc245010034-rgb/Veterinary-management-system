@@ -197,3 +197,121 @@ def test_wait_healthy_tra_false_khi_khong_co_server():
     bat_dau = time.time()
     assert run.wait_healthy(cong, timeout=1, interval=0.2) is False
     assert time.time() - bat_dau < 5
+
+
+# --- chế độ công khai: --public-url (P9 chặng 2) ---------------------------------------
+
+
+def test_public_env_bat_cookie_secure_va_ghi_nho_dia_chi_goc():
+    assert run.public_env("https://abc.ngrok.app") == {
+        "SESSION_HTTPS_ONLY": "true",
+        "APP_ORIGIN": "https://abc.ngrok.app",
+    }
+
+
+def test_public_env_bo_dau_gach_cuoi_vi_origin_cua_trinh_duyet_khong_co_no():
+    # `Origin: https://abc.ngrok.app` không có "/" cuối; gửi nguyên "/" sẽ khiến POST hợp lệ bị chặn nhầm.
+    assert run.public_env("https://abc.ngrok.app/")["APP_ORIGIN"] == "https://abc.ngrok.app"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://abc.ngrok.app",  # cookie Secure không chạy qua HTTP
+        "abc.ngrok.app",  # thiếu scheme
+        "https://",  # thiếu host
+        "https://abc.ngrok.app/trang/con",  # Origin chỉ gồm scheme + host + cổng
+        "https://abc.ngrok.app?x=1",
+        "",
+    ],
+)
+def test_public_env_tu_choi_dia_chi_khong_hop_le(url):
+    with pytest.raises(run.Fail):
+        run.public_env(url)
+
+
+def test_public_env_giu_cong_neu_co():
+    assert run.public_env("https://may-toi.example:8443")["APP_ORIGIN"] == "https://may-toi.example:8443"
+
+
+def test_mat_khau_seed_ngau_nhien_khong_trung_mat_khau_mac_dinh_va_khac_nhau_moi_lan():
+    a, b = run.new_seed_password(), run.new_seed_password()
+
+    assert a != b
+    assert "matkhau123" not in (a, b)
+    assert len(a) >= 12  # users.kiem_mat_khau đòi tối thiểu độ dài này
+
+
+# --- lệnh docker ----------------------------------------------------------------------
+
+
+def test_lenh_docker_mac_dinh_la_up():
+    args = run.parse_args(["docker"])
+
+    assert (args.command, args.action) == ("docker", "up")
+
+
+@pytest.mark.parametrize("hanh_dong", ["up", "down", "logs", "reset"])
+def test_lenh_docker_nhan_dung_bon_hanh_dong(hanh_dong):
+    assert run.parse_args(["docker", hanh_dong]).action == hanh_dong
+
+
+def test_lenh_docker_hanh_dong_la_bi_tu_choi():
+    with pytest.raises(SystemExit):
+        run.parse_args(["docker", "xoa-het"])
+
+
+def test_public_url_di_kem_up_va_docker():
+    assert run.parse_args(["--public-url", "https://a.b"]).public_url == "https://a.b"
+    assert run.parse_args(["docker", "up", "--public-url", "https://a.b"]).public_url == "https://a.b"
+    assert run.parse_args([]).public_url is None
+
+
+def test_compose_args_up_dung_lai_image_con_down_giu_du_lieu_va_reset_xoa_volume():
+    assert run.compose_args("up") == ["up", "-d", "--build"]
+    assert run.compose_args("down") == ["down"]
+    # "-v" là thứ phân biệt "tắt" với "xóa dữ liệu": đổi nhầm hai cái là mất CSDL.
+    assert "-v" not in run.compose_args("down")
+    assert run.compose_args("reset") == ["down", "-v"]
+    assert run.compose_args("logs")[0] == "logs"
+
+
+def test_lenh_compose_uu_tien_plugin_v2_roi_moi_toi_docker_compose_cu():
+    co_v2 = lambda: True  # noqa: E731
+    khong_v2 = lambda: False  # noqa: E731
+
+    assert run.compose_cmd(co_v2, lambda ten: "/usr/bin/" + ten) == ["docker", "compose"]
+    assert run.compose_cmd(khong_v2, lambda ten: "/usr/bin/" + ten) == ["docker-compose"]
+
+
+def test_lenh_compose_bao_loi_ro_khi_may_khong_co_docker():
+    with pytest.raises(run.Fail, match="Docker"):
+        run.compose_cmd(lambda: False, lambda ten: None)
+
+
+def test_docker_env_khong_cong_khai_thi_khong_ep_cookie_secure():
+    env = run.docker_env(8123)
+
+    assert env == {"PORT": "8123"}
+
+
+def test_docker_env_cong_khai_mang_theo_origin_cookie_secure_va_mat_khau_seed():
+    env = run.docker_env(8123, "https://abc.ngrok.app", "mk-ngau-nhien-12345")
+
+    assert env == {
+        "PORT": "8123",
+        "SESSION_HTTPS_ONLY": "true",
+        "APP_ORIGIN": "https://abc.ngrok.app",
+        "SEED_MAT_KHAU": "mk-ngau-nhien-12345",
+    }
+
+
+def test_wait_healthy_bo_cuoc_ngay_khi_tien_trinh_da_chet():
+    """Chế độ công khai từ chối chạy khi còn mật khẩu mẫu: không được đợi trọn 60 giây cho tiến trình đã thoát."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        cong = s.getsockname()[1]
+
+    bat_dau = time.time()
+    assert run.wait_healthy(cong, timeout=30, interval=0.2, alive=lambda: False) is False
+    assert time.time() - bat_dau < 5

@@ -1,0 +1,25 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Thú cưng của tôi{% endblock %}
+
+{% block noi_dung %}
+<h1>Thú cưng của tôi</h1>
+{% if khach.owner_id is none %}
+<p class="phu">Tài khoản của bạn chưa được liên kết với hồ sơ tại cửa hàng nên chưa có dữ liệu để xem.
+<a href="/khach/lien-ket">Gửi yêu cầu liên kết hồ sơ</a>.</p>
+{% elif not thu_cung %}
+<p class="phu">Hồ sơ của bạn chưa có thú cưng nào.</p>
+{% else %}
+<table>
+  <thead><tr><th>Tên</th><th>Loài</th><th>Giống</th></tr></thead>
+  <tbody>
+  {% for p in thu_cung %}
+    <tr>
+      <td><a href="/khach/thu-cung/{{ p.id }}">{{ p.name }}</a></td>
+      <td>{{ p.species }}</td>
+      <td>{{ p.breed or '—' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

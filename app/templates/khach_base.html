@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block tieu_de %}Cổng khách hàng{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+{# Không dùng base.html: file đó là menu của NHÂN VIÊN. Khách không bao giờ thấy link tới trang nhân viên. #}
+{% if khach %}
+<header class="thanh-dieu-huong">
+  <a class="thuong-hieu" href="/khach">🐾 Cổng khách hàng</a>
+  <div class="nguoi-dung">
+    {% if khach.owner_id is not none %}
+    <a href="/khach/thu-cung">Thú cưng</a>
+    <a href="/khach/lich-hen">Lịch hẹn</a>
+    <a href="/khach/hoa-don">Hóa đơn</a>
+    {% else %}
+    <a href="/khach/lien-ket">Liên kết hồ sơ</a>
+    {% endif %}
+    <span class="ten">{{ khach.full_name }}</span>
+    <a href="/khach/doi-mat-khau">Đổi mật khẩu</a>
+    <form method="post" action="/khach/dang-xuat"><button class="lien-ket">Đăng xuất</button></form>
+  </div>
+</header>
+{% endif %}
+
+<main class="{% block lop_main %}{% endblock %}">
+  {% block noi_dung %}{% endblock %}
+</main>
+</body>
+</html>

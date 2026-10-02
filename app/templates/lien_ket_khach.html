@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block tieu_de %}Liên kết khách hàng{% endblock %}
+
+{% block noi_dung %}
+<h1>Liên kết khách hàng</h1>
+<p class="phu">Khách tự đăng ký tài khoản trên cổng khách chỉ xem được dữ liệu sau khi bạn nối tài khoản đó với đúng hồ sơ chủ nuôi.
+Số điện thoại khách nhập chỉ là gợi ý: hãy đối chiếu ghi chú, hỏi lại khách nếu cần, rồi mới duyệt.</p>
+
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+<h2>Yêu cầu đang chờ ({{ cho_duyet|length }})</h2>
+{% for muc in cho_duyet %}
+<div class="the">
+  <p><strong>{{ muc.khach.full_name }}</strong> — {{ muc.khach.email }}</p>
+  <p>Số điện thoại khách nhập: <strong>{{ muc.yeu_cau.phone }}</strong></p>
+  {% if muc.yeu_cau.note %}<p>Ghi chú: {{ muc.yeu_cau.note }}</p>{% endif %}
+
+  <form method="post" action="/lien-ket-khach/{{ muc.yeu_cau.id }}/duyet">
+    {% if muc.ung_vien %}
+      <p class="phu">Hồ sơ cùng số điện thoại:</p>
+      {% for o in muc.ung_vien %}
+        <label><input type="radio" name="ung_vien" value="{{ o.id }}"> <a href="/owners/{{ o.id }}">{{ o.full_name }}</a> ({{ o.phone }}){% if o.pets %} — {% for p in o.pets %}{{ p.name }}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</label>
+      {% endfor %}
+    {% else %}
+      <p class="phu">Không có hồ sơ nào còn trống cùng số điện thoại này.</p>
+    {% endif %}
+    <label>Hoặc nhập mã hồ sơ chủ nuôi khác <input name="owner_id_khac" inputmode="numeric" size="6"></label>
+    <button type="submit" class="chinh">Duyệt và liên kết</button>
+  </form>
+
+  <form method="post" action="/lien-ket-khach/{{ muc.yeu_cau.id }}/tu-choi">
+    <label>Lý do từ chối (khách sẽ thấy) <input name="ly_do" maxlength="500"></label>
+    <button type="submit">Từ chối</button>
+  </form>
+</div>
+{% else %}
+<div class="the rong"><p>Không có yêu cầu nào đang chờ.</p></div>
+{% endfor %}
+
+<h2>Tài khoản đã liên kết ({{ da_lien_ket|length }})</h2>
+{% if da_lien_ket %}
+<table>
+  <thead><tr><th>Tài khoản khách</th><th>Hồ sơ chủ nuôi</th><th></th></tr></thead>
+  <tbody>
+  {% for khach, chu in da_lien_ket %}
+    <tr>
+      <td>{{ khach.full_name }} — {{ khach.email }}</td>
+      <td><a href="/owners/{{ chu.id }}">{{ chu.full_name }}</a> ({{ chu.phone }})</td>
+      <td>
+        <form method="post" action="/lien-ket-khach/tai-khoan/{{ khach.id }}/go">
+          <button type="submit">Gỡ liên kết</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="phu">Chưa có tài khoản nào được liên kết.</p>
+{% endif %}
+{% endblock %}

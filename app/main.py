@@ -11,9 +11,10 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as LoiHTTPStarlette
+from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.auth import ChuaDangNhap
+from app.auth import ChuaDangNhap, ChuaDangNhapKhach
 from app.config import SECRET_KEY_MAC_DINH, settings
 import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
 from app.db import Base, engine
@@ -22,6 +23,10 @@ from app.routers import appointments as appointments_router
 from app.routers import auth as auth_router
 from app.routers import care_records as care_records_router
 from app.routers import invoices as invoices_router
+from app.routers import khach_auth as khach_auth_router
+from app.routers import khach_du_lieu as khach_du_lieu_router
+from app.routers import khach_lien_ket as khach_lien_ket_router
+from app.routers import lien_ket_khach as lien_ket_khach_router
 from app.routers import owners as owners_router
 from app.routers import pets as pets_router
 from app.routers import services as services_router
@@ -29,6 +34,7 @@ from app.routers import stats as stats_router
 from app.routers import users as users_router
 from app.routers import vaccinations as vaccinations_router
 from app.security import la_post_cheo_nguon
+from app.services import users as users_service
 from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 from app.services.schema import nang_cap_schema
 from app.templates import templates
@@ -46,8 +52,31 @@ async def lifespan(app: FastAPI):
             "SECRET_KEY vẫn là chuỗi mặc định trong app/config.py. Sao chép .env.example "
             "thành .env và đặt SECRET_KEY là một chuỗi ngẫu nhiên riêng trước khi chạy."
         )
+    if settings.session_https_only:
+        if settings.mail_provider == "console":
+            raise RuntimeError(
+                "Chế độ công khai (SESSION_HTTPS_ONLY) từ chối chạy với MAIL_PROVIDER=console: thư xác minh chỉ "
+                "được in ra log máy chủ nên khách không nhận được gì. Đặt MAIL_PROVIDER=smtp và các biến SMTP_* "
+                "trong .env — xem docs/trien-khai.md."
+            )
+        if not settings.app_origin:
+            raise RuntimeError(
+                "Chế độ công khai (SESSION_HTTPS_ONLY) từ chối chạy khi thiếu APP_ORIGIN: liên kết trong thư sẽ "
+                "dựng từ header Host, mà kẻ gửi Host giả có thể dùng nó để lấy liên kết đặt lại mật khẩu của người "
+                "khác. Đặt APP_ORIGIN là địa chỉ công khai của cửa hàng, ví dụ https://petcare.example.com."
+            )
     Base.metadata.create_all(engine)
     nang_cap_schema(engine, Base.metadata)
+    if settings.session_https_only:
+        with Session(engine) as db:
+            con_mac_dinh = users_service.tai_khoan_con_mat_khau_mac_dinh(db)
+        if con_mac_dinh:
+            raise RuntimeError(
+                "Chế độ công khai (SESSION_HTTPS_ONLY) từ chối chạy khi còn tài khoản dùng mật khẩu mẫu: "
+                + ", ".join(con_mac_dinh)
+                + ". Đổi mật khẩu các tài khoản này, hoặc xóa CSDL (python run.py reset / python run.py docker reset) "
+                "rồi chạy lại để seed với mật khẩu ngẫu nhiên."
+            )
     yield
 
 
@@ -116,12 +145,21 @@ app.include_router(vaccinations_router.router)
 app.include_router(invoices_router.router)
 app.include_router(stats_router.router)
 app.include_router(ai_router.router)
+app.include_router(khach_auth_router.router)
+app.include_router(khach_lien_ket_router.router)
+app.include_router(khach_du_lieu_router.router)
+app.include_router(lien_ket_khach_router.router)
 
 
 @app.exception_handler(ChuaDangNhap)
 async def xu_ly_chua_dang_nhap(request: Request, exc: ChuaDangNhap):
     """TC-004: chưa đăng nhập thì đưa về trang đăng nhập, không trả lỗi thô."""
     return RedirectResponse("/login", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.exception_handler(ChuaDangNhapKhach)
+async def xu_ly_chua_dang_nhap_khach(request: Request, exc: ChuaDangNhapKhach):
+    return RedirectResponse("/khach/dang-nhap", status_code=status.HTTP_303_SEE_OTHER)
 
 
 # Starlette điền `detail` bằng cụm tiếng Anh mặc định của mã lỗi ("Not Found") khi URL

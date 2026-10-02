@@ -47,5 +47,8 @@ Chép vào đây thì kế hoạch trở thành một phần của lịch sử d
 | 2026-09-19 | [Chế độ AI giả lập: nhãn đúng, không đếm quota](2026-09-19-che-do-ai-gia-lap.md) | P7 | Hoàn thành |
 | 2026-09-20 | [Vá dữ liệu D-01 và sửa 4 lỗi ưu tiên](2026-09-20-va-du-lieu-va-sua-4-loi.md) | P7 | Hoàn thành — D-01 vá, M-02/M-01/M-04/M-08 sửa xong, 776 test xanh |
 | 2026-10-02 | [`run.py`/`test.py`, nâng cấp schema và bảo mật trước P9](2026-10-02-run-py-va-bao-mat-truoc-p9.md) | trước P9 | Đã duyệt — Phiên 1 đang làm |
+| 2026-10-02 | [P9 chặng 2: Docker, `run.py docker`, `--public-url`](2026-10-02-p9-chang2-docker.md) | P9 | Đã duyệt — đang làm |
+| 2026-10-02 | [P9 chặng 3: hạ tầng gửi email](2026-10-02-p9-chang3-email.md) | P9 | Xong về code, chưa thử SMTP thật |
+| 2026-10-02 | [P9 chặng 4: tài khoản khách và cách ly dữ liệu](2026-10-02-p9-chang4-tai-khoan-khach.md) | P9 | Đợt 4a, 4b, 4c đã xong |
 
 > Bảng này từng dừng ở P3 trong khi thư mục đã có thêm bảy kế hoạch — bổ sung ngày 18/09.

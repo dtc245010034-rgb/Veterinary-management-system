@@ -1,6 +1,6 @@
 # Kế hoạch P9 — Cổng khách hàng, đóng gói, và làm lại đặc tả
 
-**Trạng thái: ĐÃ DUYỆT 02/10/2026** (người dùng: "Commit và push và duyệt P9"). Chặng 0 và 1 xong; chặng 2 là việc kế tiếp. Viết sau buổi giảng viên kiểm tra tiến độ
+**Trạng thái: ĐÃ DUYỆT 02/10/2026** (người dùng: "Commit và push và duyệt P9"). Chặng 0 và 1 xong; chặng 2 xong về code (còn ô 2.2: job CI `docker` chờ chạy trên GitHub); chặng 3 xong về code (02/10, xem [kế hoạch chặng 3](2026-10-02-p9-chang3-email.md)); chặng 4 là việc kế tiếp. Viết sau buổi giảng viên kiểm tra tiến độ
 ngày 25/09. Mười quyết định bên dưới đã được người dùng trả lời qua hai vòng hỏi; kế hoạch này là
 bản chốt lại để người dùng duyệt trước khi gõ dòng code đầu tiên.
 
@@ -164,26 +164,26 @@ và có sẵn nhật ký để đối chiếu khi tranh cãi. `ai_quota` giữ n
 
 ### Chặng 2 — Đóng gói Docker
 
-- [ ] 2.1 `Dockerfile` + `docker-compose.yml`: volume cho `petcare.db`, `SECRET_KEY` truyền qua
+- [x] 2.1 `Dockerfile` + `docker-compose.yml`: volume cho `petcare.db`, `SECRET_KEY` truyền qua
       biến môi trường (app từ chối khởi động với khóa mặc định — S1).
 - [ ] 2.2 CI thêm job dựng image và chạy thử container.
       → verify: `docker compose up` trên máy sạch ra trang đăng nhập.
-- [ ] 2.3 `docs/trien-khai.md`: cách chạy, và **đường chuyển sang PostgreSQL** khi cần.
+- [x] 2.3 `docs/trien-khai.md`: cách chạy, và **đường chuyển sang PostgreSQL** khi cần.
 
 ### Chặng 3 — Hạ tầng gửi email
 
-- [ ] 3.1 `app/mail/`: Protocol `GuiMail` ← `SmtpMailer`, `FakeMailer`. Lặp đúng mẫu `AIProvider`.
+- [x] 3.1 `app/mail/`: Protocol `GuiMail` ← `SmtpMailer`, `FakeMailer`. Lặp đúng mẫu `AIProvider`.
       → verify: test dùng `FakeMailer`, **không lượt gửi thật nào** trong suite.
-- [ ] 3.2 Token xác minh: **hết hạn** và **dùng một lần**.
+- [x] 3.2 Token xác minh: **hết hạn** và **dùng một lần**.
       → verify: ca biên token hết hạn, token dùng lại, token của người khác.
-- [ ] 3.3 Biến SMTP vào `.env.example`.
+- [x] 3.3 Biến SMTP vào `.env.example`.
       → verify: phép canh `.env.example` đầy đủ (số 50) xanh.
 
 ### Chặng 4 — Vai trò khách hàng và cách ly dữ liệu
 
-- [ ] 4.1 Thêm vai trò `customer` vào `VAI_TRO`; thêm `owners.user_id` (FK, nullable, UNIQUE).
+- [x] 4.1 ~~Thêm vai trò `customer` vào `VAI_TRO`; thêm `owners.user_id`~~ — **đổi hướng 02/10:** bảng riêng `customers` (xem [kế hoạch chặng 4](2026-10-02-p9-chang4-tai-khoan-khach.md), phản biện #1–#3); khóa nối nằm ở `customers.owner_id`.
       → verify: soát mọi chỗ duyệt `VAI_TRO`; `erd.md` cập nhật tới từng cột.
-- [ ] 4.2 Đăng ký · xác minh email · đăng nhập · quên mật khẩu.
+- [x] 4.2 Đăng ký · xác minh email · đăng nhập · quên mật khẩu. *(Xong 02/10, đợt 4a.)*
       → verify: mật khẩu đi qua `kiem_mat_khau()` như ba đường hiện có (M-04).
 - [ ] 4.3 Yêu cầu nối hồ sơ + màn duyệt của lễ tân.
       → verify: khách chưa được nối **không** thấy dữ liệu của bất kỳ chủ nuôi nào.

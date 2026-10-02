@@ -1,0 +1,20 @@
+# Bí mật và dữ liệu: không bao giờ vào bối cảnh dựng image.
+.env
+*.db
+*.db-wal
+*.db-shm
+
+# Môi trường và rác cục bộ
+.venv
+venv
+.git
+.github
+.claude
+__pycache__
+*.pyc
+.pytest_cache
+
+# Image chạy app không cần tài liệu, test, báo cáo
+docs
+tests
+*.md

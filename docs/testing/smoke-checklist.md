@@ -23,6 +23,11 @@ lúc bấm. Phase sau phải chạy lại checklist của **mọi phase trước
 
 **Chuẩn bị:** `uvicorn app.main:app --reload`, mở `http://127.0.0.1:8000`, dùng CSDL có dữ liệu mẫu.
 
+> **Muốn bấm trên CSDL sạch** (không dính dữ liệu đã sửa tay trước đó): `python run.py reset` rồi
+> `python run.py`, hoặc dùng file riêng — xem mục "Kiểm tra trên CSDL mới" trong
+> [`../../README.md`](../../README.md). Trước khi bấm tay, nên chạy `python tools/kiem_tra_song.py`:
+> nếu lệnh đó đỏ thì không đáng mở trình duyệt.
+
 ---
 
 ## P1 — Đăng nhập và phân quyền

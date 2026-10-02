@@ -1,0 +1,25 @@
+# Chạy bằng `python run.py docker` (run.py tạo .env, chọn cổng trống, đưa biến công khai vào đây).
+# Chạy tay cũng được: `docker compose up -d --build` sau khi đã có .env.
+# `version` giữ lại để bản docker-compose cũ (1.x) vẫn đọc được; bản mới chỉ cảnh báo là thừa.
+version: "3.8"
+
+services:
+  web:
+    build: .
+    env_file: .env
+    environment:
+      # .env dùng ./petcare.db (đường dẫn trên máy bạn); trong container CSDL phải nằm ở volume.
+      DATABASE_URL: sqlite:////data/petcare.db
+      # Ba biến dưới do `run.py docker up --public-url ...` đặt; mặc định tắt hết.
+      SESSION_HTTPS_ONLY: ${SESSION_HTTPS_ONLY:-false}
+      APP_ORIGIN: ${APP_ORIGIN:-}
+      SEED_MAT_KHAU: ${SEED_MAT_KHAU:-}
+    ports:
+      # Chỉ máy này truy cập được. Công khai ra ngoài thì dùng tunnel HTTPS trỏ vào cổng này.
+      - "127.0.0.1:${PORT:-8000}:8000"
+    volumes:
+      - petcare-data:/data
+    restart: unless-stopped
+
+volumes:
+  petcare-data:

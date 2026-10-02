@@ -239,6 +239,25 @@ bỏ dấu `selected` ở ô chọn nhân viên làm **e2e đỏ trong khi cả 
 
 ---
 
+## 6b. Kiểm tra sống trên CSDL mới — `tools/kiem_tra_song.py`
+
+Không phải tầng thứ năm và **không nằm trong `pytest`**: một công cụ chạy riêng, bổ sung cho bốn
+tầng ở trên. Khác biệt cốt lõi là nó dùng thứ mà `TestClient` không có: **file SQLite thật, tiến
+trình uvicorn thật, cookie phiên thật qua HTTP**. Cách dùng và phạm vi: mục "Kiểm tra trên CSDL
+mới" trong [`../../README.md`](../../README.md).
+
+- Mỗi lần chạy dựng CSDL tạm mới từ `app.seed`, nên kết quả không phụ thuộc lần trước và không
+  đụng `petcare.db`. `AI_PROVIDER=fake`: không tốn lượt Gemini.
+- Mỗi kiểm tra có mã (`A1`…`M2`) để truy ngược khi đỏ. **Khi đỏ, nghi kịch bản trước khi nghi code**
+  (CLAUDE.md mục 9 dòng 1): lần dựng đầu 02/10 có 9 chỗ đỏ thì cả 9 là kỳ vọng sai của kịch bản
+  (thiếu hiểu quy tắc: ghi hồ sơ chỉ được cho buổi đã diễn ra; caretaker vào `/appointments` bị
+  chuyển hướng; giới tính chỉ nhận `Đực`/`Cái`; hai lịch cùng thú cưng trùng giờ dù khác nhân viên…).
+- Đã kiểm kịch bản **không xanh giả**: đặt `GIO_MO_CUA = 0` trong `app/services/scheduling.py` thì
+  đúng kiểm tra `E4` (đặt 07:00) đỏ, hoàn nguyên thì 150/150.
+- Chạy sau mỗi chặng lớn (đặc biệt P9) để bắt hồi quy ở tầng HTTP thật. Chưa nối vào CI.
+- **Giới hạn:** không thay smoke bấm tay trên trình duyệt; nhiều kiểm tra phủ định chỉ khẳng định
+  "bị từ chối" (không phải 303) chứ không so nguyên văn thông báo lỗi.
+
 ## 7. Ghi nhận kết quả
 
 - **Mỗi phiên làm việc**: kết quả unit + integration ghi vào mục "Kết quả test" của

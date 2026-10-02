@@ -12,6 +12,7 @@ Không import fastapi.
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import MAT_KHAU_MAC_DINH
 from app.models.user import VAI_TRO, User
 from app.security import hash_password, verify_password
 from app.services.errors import LoiKhongTimThay, LoiNghiepVu
@@ -117,6 +118,16 @@ def dat_lai_mat_khau(db: Session, ma_tai_khoan: int, mat_khau_moi: str) -> User:
     db.commit()
     db.refresh(tai_khoan)
     return tai_khoan
+
+
+def tai_khoan_con_mat_khau_mac_dinh(db: Session) -> list[str]:
+    """Tên đăng nhập của mọi tài khoản còn dùng mật khẩu mẫu của seed — kể cả tài khoản đang bị khóa,
+    vì mở khóa là đăng nhập lại được ngay."""
+    ket_qua = []
+    for tk in db.scalars(select(User).order_by(User.username)):
+        if verify_password(MAT_KHAU_MAC_DINH, tk.password_hash):
+            ket_qua.append(tk.username)
+    return ket_qua
 
 
 def doi_mat_khau(

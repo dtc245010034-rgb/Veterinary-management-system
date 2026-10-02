@@ -2,7 +2,7 @@
 
 Nguồn yêu cầu: [`user-stories/README.md`](user-stories/README.md) · Kiến trúc: [`architecture.md`](architecture.md)
 
-14 bảng. Tên bảng và tên cột dùng tiếng Anh không dấu theo quy ước trong [`../CLAUDE.md`](../CLAUDE.md).
+16 bảng. Tên bảng và tên cột dùng tiếng Anh không dấu theo quy ước trong [`../CLAUDE.md`](../CLAUDE.md).
 Mọi bảng đều có `id` khóa chính tự tăng.
 
 ## Sơ đồ
@@ -19,6 +19,10 @@ erDiagram
 
     owners ||--o{ pets : "so huu"
     owners ||--o{ invoices : "thanh toan"
+    owners |o--o| customers : "duoc noi (owner_id)"
+    customers ||--o{ link_requests : "gui yeu cau"
+    owners |o--o{ link_requests : "duoc chon (owner_id)"
+    users |o--o{ link_requests : "xu ly (decided_by)"
 
     pets ||--o{ appointments : "duoc dat lich"
     pets ||--o{ care_records : "co ho so"
@@ -171,7 +175,47 @@ erDiagram
         datetime cooldown_until
         text disabled_reason
     }
+
+    customers {
+        int id PK
+        string email UK
+        string full_name
+        string password_hash
+        bool is_active
+        int session_version
+        int owner_id FK
+        datetime created_at
+    }
+
+    link_requests {
+        int id PK
+        int customer_id FK
+        string phone
+        text note
+        string status
+        int owner_id FK
+        int decided_by FK
+        datetime decided_at
+        text reject_reason
+        datetime created_at
+    }
+
+    email_tokens {
+        int id PK
+        string email
+        string purpose
+        string token_hash UK
+        datetime expires_at
+        datetime used_at
+        datetime created_at
+    }
 ```
+
+`customers` là tài khoản của **khách** (P9 chặng 4), tách hẳn `users` (nhân viên); chỉ nối `owners` qua `owner_id`, và chỉ sau khi lễ tân duyệt (đợt 4b).
+
+`link_requests` là yêu cầu "cho tôi xem hồ sơ thú cưng" của một khách; lễ tân duyệt thì `customers.owner_id` mới được gán. Giữ lại cả yêu cầu đã duyệt/từ chối để biết ai đã duyệt, lúc nào, vì sao từ chối.
+
+`email_tokens` không nối với bảng nào: lúc đăng ký chưa có tài khoản để nối, nên token gắn với (email, mục đích).
 
 `ai_quota` không nối với bảng nào: nó đếm lượt gọi tới nhà cung cấp AI theo từng model và
 từng ngày quota, không thuộc nghiệp vụ cửa hàng.
@@ -400,6 +444,53 @@ phải tự xoay sang model khác khi hết lượt (xem `app/ai/quota.py`).
 
 UNIQUE `(model, quota_day)` — mỗi model một dòng mỗi ngày.
 
+### `customers` — tài khoản khách hàng
+Cổng khách (P9 chặng 4). Xem `app/services/customers.py`. **Bảng riêng, không phải vai trò thứ tư của `users`**: `users.role` có CHECK trong CSDL mà SQLite không sửa được, và hơn 20 route của nhân viên chỉ đòi "đã đăng nhập" — khách chung bảng thì mở được danh sách chủ nuôi kèm số điện thoại.
+
+| Cột | Kiểu | Ràng buộc | Ý nghĩa |
+|---|---|---|---|
+| `id` | int | PK | |
+| `email` | varchar(255) | NOT NULL, UNIQUE | Đã chuẩn hóa chữ thường. Một dòng chỉ có **sau khi** khách bấm link xác minh và đặt mật khẩu, nên không có cột "đã xác minh" và không có tài khoản chưa xác minh để kẻ khác đăng ký trước |
+| `full_name` | varchar(100) | NOT NULL | |
+| `password_hash` | varchar(255) | NOT NULL | bcrypt, cùng cơ chế với `users` |
+| `is_active` | bool | NOT NULL | Khóa tài khoản: phiên đang mở chết ngay |
+| `session_version` | int | NOT NULL, mặc định 0 | Tăng khi đăng xuất / đổi / đặt lại mật khẩu → mọi cookie cũ hết hiệu lực (cùng cơ chế R-3 của nhân viên) |
+| `owner_id` | int | FK → `owners.id`, NULL, **UNIQUE** | Hồ sơ chủ nuôi được lễ tân duyệt nối (đợt 4b). NULL = chưa nối, khách chưa thấy dữ liệu nào. UNIQUE: một hồ sơ chỉ thuộc một tài khoản |
+| `created_at` | datetime | NOT NULL | |
+
+### `link_requests` — yêu cầu nối tài khoản khách với hồ sơ chủ nuôi
+Đợt 4b của chặng 4. Xem `app/services/link_requests.py`. **Khách không tự nhận hồ sơ**: khách chỉ gửi số điện thoại làm gợi ý, lễ tân đối chiếu rồi chọn hồ sơ. Tự nối khi số khớp nghĩa là ai biết số của người khác là xem được hồ sơ và hóa đơn của họ.
+
+| Cột | Kiểu | Ràng buộc | Ý nghĩa |
+|---|---|---|---|
+| `id` | int | PK | |
+| `customer_id` | int | FK → `customers.id`, NOT NULL, INDEX | Khách gửi yêu cầu |
+| `phone` | varchar(20) | NOT NULL | Số khách nhập, đã chuẩn hóa. **Chỉ là gợi ý** cho lễ tân; gửi yêu cầu không tra bảng `owners` nên khách không dò được số nào là chủ nuôi |
+| `note` | text | NULL | Ghi chú của khách (tối đa 500 ký tự, kiểm ở service) |
+| `status` | varchar(20) | NOT NULL, mặc định `pending` | CHECK `ck_link_requests_status`: `pending` / `approved` / `rejected` |
+| `owner_id` | int | FK → `owners.id`, NULL, `ON DELETE SET NULL` | Hồ sơ lễ tân chọn khi duyệt. SET NULL: lịch sử yêu cầu không được chặn việc xóa một hồ sơ đã gỡ liên kết (còn liên kết thì `customers.owner_id` chặn) |
+| `decided_by` | int | FK → `users.id`, NULL | Nhân viên duyệt hoặc từ chối |
+| `decided_at` | datetime | NULL | |
+| `reject_reason` | text | NULL | Lý do từ chối, bắt buộc khi từ chối; khách đọc được để biết cần bổ sung gì |
+| `created_at` | datetime | NOT NULL | |
+
+UNIQUE từng phần `uq_link_requests_mot_cho_duyet` trên `customer_id` **where `status = 'pending'`**: mỗi khách tối đa một yêu cầu đang chờ. Kiểm ở service là chưa đủ vì hai lượt gửi đồng thời đều thấy "chưa có".
+
+### `email_tokens` — token xác minh email và đặt lại mật khẩu
+Hạ tầng của cổng khách (P9 chặng 3), dùng bởi `customers` từ chặng 4. Xem `app/services/email_tokens.py`.
+
+| Cột | Kiểu | Ràng buộc | Ý nghĩa |
+|---|---|---|---|
+| `id` | int | PK | |
+| `email` | varchar(255) | NOT NULL | Đã chuẩn hóa chữ thường. **Không nối `users`**: lúc đăng ký chưa có tài khoản |
+| `purpose` | varchar(20) | NOT NULL | `verify_email` (sống 24 giờ) hoặc `reset_password` (sống 1 giờ) |
+| `token_hash` | varchar(64) | NOT NULL, UNIQUE | SHA-256 dạng hex của token. **CSDL không giữ token thô** — lộ CSDL không lộ link còn hạn |
+| `expires_at` | datetime | NOT NULL | Hết hạn khi `now >= expires_at` |
+| `used_at` | datetime | NULL | Đánh dấu bằng một lệnh `UPDATE … WHERE used_at IS NULL` để hai request đồng thời không cùng dùng được |
+| `created_at` | datetime | NOT NULL | |
+
+Cấp token mới cho cùng (email, mục đích) thì token cũ chưa dùng bị vô hiệu.
+
 ---
 
 ## Đối chiếu bảng với user story
@@ -420,5 +511,8 @@ UNIQUE `(model, quota_day)` — mỗi model một dòng mỗi ngày.
 | `payments` | US-20, US-22 |
 | `ai_logs` | US-26, US-28 |
 | `ai_quota` | US-24, US-25, US-26 (vận hành: xoay ca model khi hết lượt) |
+| `customers` | Chưa có US — cổng khách (P9 chặng 4); US viết ở chặng 8 |
+| `email_tokens` | Chưa có US — hạ tầng của cổng khách (P9 chặng 3); US viết ở chặng 8 |
+| `link_requests` | Chưa có US — cổng khách (P9 chặng 4b); US viết ở chặng 8 |
 
-**Kết luận: 14/14 bảng đều được ít nhất một user story sử dụng. Không có bảng thừa.**
+**Kết luận: 17/17 bảng đều được ít nhất một user story sử dụng. Không có bảng thừa.**

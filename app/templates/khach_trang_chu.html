@@ -1,0 +1,17 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Cổng khách hàng{% endblock %}
+
+{% block noi_dung %}
+<h1>Xin chào, {{ khach.full_name }}</h1>
+{% if khach.owner_id is none %}
+<p class="phu">Tài khoản của bạn chưa được liên kết với hồ sơ thú cưng nào tại cửa hàng.
+<a href="/khach/lien-ket">Gửi yêu cầu liên kết hồ sơ</a> để xem thú cưng, lịch hẹn và hóa đơn của bạn.</p>
+{% else %}
+<p class="phu">Tài khoản của bạn đã được liên kết với hồ sơ tại cửa hàng.</p>
+<ul>
+  <li><a href="/khach/thu-cung">Thú cưng của tôi</a></li>
+  <li><a href="/khach/lich-hen">Lịch hẹn của tôi</a></li>
+  <li><a href="/khach/hoa-don">Hóa đơn của tôi</a></li>
+</ul>
+{% endif %}
+{% endblock %}

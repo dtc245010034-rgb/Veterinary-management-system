@@ -308,3 +308,30 @@ def test_doi_mat_khau_sai_mat_khau_cu_khong_tang_session_version(db, seed_basic)
         nv.doi_mat_khau(db, u.id, mat_khau_cu="sai-hoai", mat_khau_moi="matkhaumoi456")
 
     assert u.session_version == 0
+
+
+# --- Tài khoản còn mật khẩu mặc định (P9 chặng 2) -----------------------------------
+
+
+def test_tai_khoan_con_mat_khau_mac_dinh_chi_liet_ke_nguoi_chua_doi(db, seed_basic):
+    """`seed_basic` đặt cả bốn tài khoản về 'matkhau123'; đổi của một người thì người đó phải thoát danh sách."""
+    nv.dat_lai_mat_khau(db, seed_basic["caretaker1"].id, "mot-mat-khau-rieng-1")
+
+    con_lai = nv.tai_khoan_con_mat_khau_mac_dinh(db)
+
+    assert sorted(con_lai) == ["chamsoc2", "letan", "quanly"]
+
+
+def test_tai_khoan_bi_khoa_van_tinh_vi_mo_khoa_la_dang_nhap_duoc_lai(db, seed_basic):
+    nv.khoa_tai_khoan(db, seed_basic["caretaker2"].id, seed_basic["manager"].id)
+
+    assert "chamsoc2" in nv.tai_khoan_con_mat_khau_mac_dinh(db)
+
+
+def test_tai_khoan_con_mat_khau_mac_dinh_rong_khi_moi_nguoi_da_doi_hoac_khong_co_ai(db, seed_basic):
+    assert nv.tai_khoan_con_mat_khau_mac_dinh(db) != []
+    for i, u in enumerate(seed_basic.values()):
+        if hasattr(u, "id"):
+            nv.dat_lai_mat_khau(db, u.id, f"mat-khau-rieng-so-{i}")
+
+    assert nv.tai_khoan_con_mat_khau_mac_dinh(db) == []

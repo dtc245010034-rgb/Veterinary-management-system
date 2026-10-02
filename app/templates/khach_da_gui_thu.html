@@ -1,0 +1,13 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Kiểm tra hộp thư{% endblock %}
+{% block lop_main %}giua-man-hinh{% endblock %}
+
+{# Cùng một nội dung dù email có tài khoản hay không: câu chữ này là nơi dễ lộ nhất việc email có tồn tại. #}
+{% block noi_dung %}
+<div class="the the-dang-nhap">
+  <h1>Kiểm tra hộp thư của bạn</h1>
+  <p>Nếu địa chỉ email hợp lệ, chúng tôi vừa gửi một thư hướng dẫn {{ hanh_dong }}. Thư có thể mất vài phút để tới;
+  hãy xem cả mục thư rác.</p>
+  <p class="nhan-nho"><a href="/khach/dang-nhap">Quay lại đăng nhập</a></p>
+</div>
+{% endblock %}

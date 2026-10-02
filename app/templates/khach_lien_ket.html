@@ -1,0 +1,32 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Liên kết hồ sơ thú cưng{% endblock %}
+
+{% block noi_dung %}
+<h1>Liên kết hồ sơ thú cưng</h1>
+
+{% if khach.owner_id is not none %}
+<p class="thanh-cong" role="status">Tài khoản của bạn đã được liên kết với hồ sơ tại cửa hàng.</p>
+{% else %}
+  {% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+  {% if vua_gui %}<p class="thanh-cong" role="status">Đã gửi yêu cầu. Cửa hàng sẽ đối chiếu và liên kết hồ sơ cho bạn.</p>{% endif %}
+
+  {% if yeu_cau and yeu_cau.status == 'pending' %}
+  <div class="the">
+    <p>Yêu cầu của bạn (số điện thoại <strong>{{ yeu_cau.phone }}</strong>) đang chờ cửa hàng xử lý.</p>
+  </div>
+  {% else %}
+    {% if yeu_cau and yeu_cau.status == 'rejected' %}
+    <p class="canh-bao" role="alert">Yêu cầu trước của bạn đã bị từ chối: {{ yeu_cau.reject_reason }}</p>
+    {% endif %}
+    <p class="phu">Nhập số điện thoại bạn đã đăng ký với cửa hàng. Nhân viên sẽ đối chiếu rồi liên kết hồ sơ thú cưng
+    của bạn vào tài khoản này; bạn chưa xem được dữ liệu cho tới khi cửa hàng duyệt.</p>
+    <form class="the" method="post" action="/khach/lien-ket">
+      <label>Số điện thoại <input name="so_dien_thoai" value="{{ so_dien_thoai or '' }}" required></label>
+      <label>Ghi chú cho cửa hàng (không bắt buộc)
+        <textarea name="ghi_chu" rows="3" maxlength="500" placeholder="Ví dụ: tên thú cưng, tên chủ nuôi đã đăng ký">{{ ghi_chu or '' }}</textarea>
+      </label>
+      <button type="submit" class="chinh">Gửi yêu cầu</button>
+    </form>
+  {% endif %}
+{% endif %}
+{% endblock %}

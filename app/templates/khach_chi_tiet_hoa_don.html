@@ -1,0 +1,36 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Hóa đơn #{{ hd.id }}{% endblock %}
+
+{% block noi_dung %}
+<p><a href="/khach/hoa-don">← Hóa đơn của tôi</a></p>
+<h1>Hóa đơn #{{ hd.id }}</h1>
+<dl>
+  <dt>Ngày lập</dt><dd>{{ hd.issued_at.strftime("%d/%m/%Y %H:%M") }}</dd>
+  <dt>Trạng thái</dt><dd>{{ hd.ten_trang_thai }}</dd>
+  <dt>Tổng tiền</dt><dd>{{ hd.total_amount|tien }}</dd>
+  <dt>Đã trả</dt><dd>{{ hd.da_tra|tien }}</dd>
+  <dt>Còn nợ</dt><dd>{{ hd.con_no|tien }}</dd>
+</dl>
+
+<h2>Chi tiết</h2>
+<table>
+  <thead><tr><th>Nội dung</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+  <tbody>
+  {% for d in hd.dong %}
+    <tr><td>{{ d.description }}</td><td>{{ d.qty }}</td><td>{{ d.unit_price|tien }}</td><td>{{ d.amount|tien }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if hd.thanh_toan %}
+<h2>Đã thanh toán</h2>
+<table>
+  <thead><tr><th>Ngày</th><th>Số tiền</th></tr></thead>
+  <tbody>
+  {% for p in hd.thanh_toan %}
+    <tr><td>{{ p.paid_at.strftime("%d/%m/%Y %H:%M") }}</td><td>{{ p.amount|tien }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

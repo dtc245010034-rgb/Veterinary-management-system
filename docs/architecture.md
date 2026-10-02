@@ -27,7 +27,7 @@ hethongquanlythucung/
 │   ├── auth.py              session cookie, người dùng hiện tại, dependency kiểm tra vai trò
 │   ├── templates.py         cấu hình Jinja2 dùng chung
 │   ├── seed.py              dữ liệu mẫu: python -m app.seed
-│   ├── models/              SQLAlchemy — 14 bảng theo ERD, mỗi nhóm một file
+│   ├── models/              SQLAlchemy — 16 bảng theo ERD, mỗi nhóm một file
 │   ├── services/            LOGIC NGHIỆP VỤ — không import gì từ FastAPI
 │   │   ├── scheduling.py    đặt/đổi/hủy lịch, kiểm tra trùng lịch
 │   │   ├── billing.py       lập hóa đơn, ghi nhận thanh toán
@@ -41,8 +41,16 @@ hethongquanlythucung/
 │   │   ├── guardrail.py     chặn câu xin thuốc, soát liều lượng, xóa SĐT/email
 │   │   ├── quota.py         xoay ca model, đếm lượt theo ngày Pacific + CLI
 │   │   └── service.py       3 use case: reminder, summary, qa
+│   ├── mail/                GỬI EMAIL (P9 chặng 3) — router chỉ import service.py
+│   │   ├── provider.py      interface GuiMail + LoiGuiMail
+│   │   ├── smtp.py          SmtpMailer — smtplib thư viện chuẩn, STARTTLS
+│   │   ├── console.py       ConsoleMailer — in thư ra log, cho máy phát triển
+│   │   ├── fake.py          FakeMailer — dùng khi test, không thư nào ra khỏi tiến trình
+│   │   └── service.py       lay_mailer() chọn theo MAIL_PROVIDER
 │   ├── routers/             chỉ HTTP: auth, users, owners, pets, services, appointments,
-│   │                        care_records, vaccinations, invoices, stats, ai
+│   │                        care_records, vaccinations, invoices, stats, ai,
+│   │                        khach_auth, khach_lien_ket, khach_du_lieu (cổng khách, prefix /khach — phiên riêng, không dùng chung dependency nhân viên; `khach_du_lieu` chỉ gọi `services/khach_du_lieu.py`, có phép canh AST),
+│   │                        lien_ket_khach (màn hình lễ tân duyệt nối khách với hồ sơ chủ nuôi)
 │   ├── templates/           Jinja2 (JS ít, viết thẳng trong trang cần tới)
 │   └── static/              style.css — một file CSS, không có file JS riêng
 ├── tests/
@@ -268,3 +276,10 @@ bảo đảm để test khả thi:
 
 Điều 3 là ranh giới ngoài duy nhất, ngoài API Gemini, được phép mock theo luật trong
 [`../CLAUDE.md`](../CLAUDE.md) mục 7.
+
+## Triển khai
+
+Ngoài ranh giới ba lớp, ứng dụng có ba cách chạy (venv, Docker, công khai qua tunnel HTTPS) đều đi qua
+`run.py`; luật "chế độ công khai từ chối khởi động khi còn mật khẩu mẫu" nằm ở `lifespan` trong
+`app/main.py` chứ không ở `run.py`, để chạy `uvicorn` thẳng cũng không lách được. Chi tiết:
+[`trien-khai.md`](trien-khai.md).

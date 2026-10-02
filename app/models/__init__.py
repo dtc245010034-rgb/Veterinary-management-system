@@ -12,7 +12,10 @@ from app.models.ai_log import AiLog
 from app.models.ai_quota import AiQuota
 from app.models.appointment import Appointment
 from app.models.care_record import CareRecord
+from app.models.customer import Customer
+from app.models.email_token import EmailToken
 from app.models.invoice import Invoice, InvoiceItem
+from app.models.link_request import LinkRequest
 from app.models.owner import Owner
 from app.models.payment import Payment
 from app.models.pet import Pet
@@ -26,8 +29,11 @@ __all__ = [
     "AiQuota",
     "Appointment",
     "CareRecord",
+    "Customer",
+    "EmailToken",
     "Invoice",
     "InvoiceItem",
+    "LinkRequest",
     "Owner",
     "Payment",
     "PackageItem",

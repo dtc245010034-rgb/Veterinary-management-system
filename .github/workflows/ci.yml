@@ -62,3 +62,19 @@ jobs:
 
       - name: Khởi động bằng run.py và đợi /login
         run: python run.py --no-open --check
+
+  # Dựng image Docker thật rồi chạy container và đợi /login trả 200. Chỉ Ubuntu: runner Windows
+  # không chạy được container Linux. `docker up --check` dùng project riêng và tự `down -v` ở cuối.
+  docker:
+    name: Docker dựng và chạy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Dựng image, chạy container, đợi /login
+        run: python run.py docker up --check

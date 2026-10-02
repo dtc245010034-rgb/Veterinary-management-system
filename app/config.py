@@ -9,6 +9,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # ai đọc được mã nguồn cũng tự ký được cookie phiên của tài khoản quản lý.
 SECRET_KEY_MAC_DINH = "doi-thanh-chuoi-ngau-nhien-truoc-khi-chay-that"
 
+# Mật khẩu chung của tài khoản mẫu do `python -m app.seed` tạo. Ai đọc repo cũng biết chuỗi này,
+# nên khi cổng công khai bật (SESSION_HTTPS_ONLY) app từ chối chạy nếu còn tài khoản dùng nó.
+MAT_KHAU_MAC_DINH = "matkhau123"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -25,11 +29,28 @@ class Settings(BaseSettings):
     # POST từ trang khác (app/security.py). Để trống khi chạy cục bộ.
     app_origin: str = ""
 
+    # Mật khẩu seed đặt cho mọi tài khoản mẫu. Để trống thì dùng MAT_KHAU_MAC_DINH (chạy cục bộ).
+    # `python run.py up --public-url ...` sinh chuỗi ngẫu nhiên và đưa vào đây.
+    seed_mat_khau: str = ""
+
     # Số vòng băm bcrypt. 12 là mặc định của bcrypt và là giá trị dùng khi chạy thật.
     # Test hạ xuống 4 qua biến môi trường: bcrypt cố ý chậm (~1,5s mỗi lần băm), mà mỗi
     # test integration phải đăng nhập một lần. Đây là tham số cấu hình hợp lệ, không phải
     # làm yếu thuật toán — salt, cách băm và cách kiểm tra không đổi.
     bcrypt_rounds: int = 12
+
+    # Gửi thư (xác minh email, đặt lại mật khẩu — P9). "console" in thư ra log, đủ cho máy phát triển
+    # không có SMTP; "smtp" gửi thật qua máy chủ bên dưới. KHÔNG dùng "console" cho bản công khai:
+    # liên kết xác minh sẽ nằm trong log. Tên lạ bị từ chối chứ không rơi về "console" (app/mail/service.py).
+    mail_provider: str = "console"
+    mail_from: str = "Petcare <noreply@localhost>"
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    # Bí mật: chỉ ở .env, không vào repo. Gmail cần "mật khẩu ứng dụng" (bật xác minh hai bước).
+    smtp_password: str = ""
+    smtp_starttls: bool = True
+    mail_timeout_giay: float = 10
 
     # Nhà cung cấp AI: "gemini" gọi API thật, "fake" trả lời cố định (dùng từ P7)
     ai_provider: str = "fake"

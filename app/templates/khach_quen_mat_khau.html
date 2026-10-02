@@ -1,0 +1,20 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Quên mật khẩu{% endblock %}
+{% block lop_main %}giua-man-hinh{% endblock %}
+
+{% block noi_dung %}
+<form class="the the-dang-nhap" method="post" action="/khach/quen-mat-khau">
+  <h1>Quên mật khẩu</h1>
+  <p class="phu">Nhập email đã đăng ký, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.</p>
+
+  {% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+  <label>
+    Email
+    <input name="email" type="email" value="{{ email or "" }}" required autofocus autocomplete="email">
+  </label>
+
+  <button type="submit" class="chinh">Gửi liên kết</button>
+  <p class="nhan-nho"><a href="/khach/dang-nhap">Quay lại đăng nhập</a></p>
+</form>
+{% endblock %}

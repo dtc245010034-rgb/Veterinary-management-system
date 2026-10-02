@@ -20,12 +20,13 @@ def _chay_seed(tmp_path: Path) -> Path:
     return _chay_seed_lay_dau_ra(tmp_path)[0]
 
 
-def _chay_seed_lay_dau_ra(tmp_path: Path) -> tuple[Path, str]:
+def _chay_seed_lay_dau_ra(tmp_path: Path, them: dict | None = None) -> tuple[Path, str]:
     csdl = tmp_path / "seed.db"
     moi_truong = {
         **os.environ,
         "DATABASE_URL": f"sqlite:///{csdl.as_posix()}",
         "BCRYPT_ROUNDS": "4",
+        **(them or {}),
     }
     ket_qua = subprocess.run(
         [sys.executable, "-m", "app.seed"],
@@ -117,3 +118,27 @@ def test_dong_tong_ket_cua_seed_dem_dung_so_lich_hen_thuc_te(tmp_path):
     assert khop, f"không thấy mục đếm lịch hẹn trong: {dau_ra!r}"
     assert thuc_te > 0
     assert int(khop.group(1)) == thuc_te
+
+
+def _mat_khau_dang_dung(csdl: Path, username: str, thu: str) -> bool:
+    from app.security import verify_password
+
+    with closing(sqlite3.connect(csdl)) as c:
+        (bam,) = c.execute("SELECT password_hash FROM users WHERE username = ?", (username,)).fetchone()
+    return verify_password(thu, bam)
+
+
+def test_seed_dung_mat_khau_tu_seed_mat_khau_khi_duoc_dat(tmp_path):
+    """Chế độ công khai (P9 chặng 2): run.py sinh mật khẩu ngẫu nhiên và đưa qua biến môi trường."""
+    csdl, dau_ra = _chay_seed_lay_dau_ra(tmp_path, {"SEED_MAT_KHAU": "mat-khau-ngau-nhien-12345"})
+
+    assert _mat_khau_dang_dung(csdl, "quanly", "mat-khau-ngau-nhien-12345")
+    assert not _mat_khau_dang_dung(csdl, "quanly", "matkhau123")
+    # Người vận hành chỉ thấy mật khẩu qua dòng in của seed, nên dòng đó phải in mật khẩu thật.
+    assert "mat-khau-ngau-nhien-12345" in dau_ra
+
+
+def test_seed_giu_matkhau123_khi_khong_dat_seed_mat_khau(tmp_path):
+    csdl, _ = _chay_seed_lay_dau_ra(tmp_path, {"SEED_MAT_KHAU": ""})
+
+    assert _mat_khau_dang_dung(csdl, "quanly", "matkhau123")

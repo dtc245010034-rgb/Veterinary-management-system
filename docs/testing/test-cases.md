@@ -274,6 +274,67 @@ Sinh ra từ [báo cáo rà soát 02/10](../../bao-cao-ra-soat-2026-10-02.md) (R
 | TC-140 | nhiều | `nang_cap_schema` thêm cột thiếu bằng `ALTER TABLE`, chạy hai lần chỉ thêm một lần, từ chối cột không thêm được | U | `test_schema_upgrade.py`, `test_khoi_dong.py` | ✅ |
 
 
+## Q. Docker và chế độ công khai — P9 chặng 2, 02/10
+
+Theo [kế hoạch](../plans/2026-10-02-p9-chang2-docker.md). Mỗi mục đỏ trước khi viết code, có lượt đột biến sau khi xanh.
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-141 | US-01 | Mật khẩu seed lấy từ `SEED_MAT_KHAU` khi được đặt (và seed in đúng mật khẩu đó), trống thì `matkhau123` | I | `test_seed.py::test_seed_dung_mat_khau_tu_seed_mat_khau_khi_duoc_dat`, `…::test_seed_giu_matkhau123_khi_khong_dat_seed_mat_khau` | ✅ |
+| TC-142 | US-01, US-03 | `tai_khoan_con_mat_khau_mac_dinh` liệt kê đúng người chưa đổi, **tính cả tài khoản bị khóa**; `lifespan` từ chối khởi động khi bật `SESSION_HTTPS_ONLY` mà còn tài khoản như vậy, chế độ thường không kiểm, qua sau khi đổi mật khẩu | U | `test_users_service.py::test_tai_khoan_*`, `test_khoi_dong.py::test_che_do_*` | ✅ |
+| TC-143 | nhiều | `run.py`: `public_env` chỉ nhận `https://tên-miền[:cổng]`, bỏ `/` cuối; `docker reset` có `-v` còn `down` không; chọn `docker compose` v2 trước `docker-compose` v1; `wait_healthy` bỏ cuộc khi tiến trình đã chết | U | `test_run.py` (23 ca mới) | ✅ |
+| TC-144 | nhiều | File Docker: `.dockerignore` loại `.env`/`*.db`, Dockerfile không nướng bí mật và chạy user thường, compose chỉ mở cổng cho `127.0.0.1` và không ghi cứng `SECRET_KEY` | U | `test_docker_files.py` | ✅ |
+| TC-145 | nhiều | Dựng image thật, chạy container, `/login` 200; cookie `Secure` khi `--public-url`; mật khẩu `matkhau123` bị 401, `Origin` lạ bị 403; khởi động lại giữ dữ liệu; volume còn mật khẩu mẫu thì từ chối. **Đo thật trên máy phát triển** (Ubuntu 24.04, Docker 29.1.3, `docker-compose` 1.29.2); job CI `docker` chưa chạy trên GitHub | E | `python run.py docker up --check` (CI: job `docker`) | ✅ máy local · ⬜ CI |
+
+
+## R. Hạ tầng gửi email — P9 chặng 3, 02/10
+
+Gồm các bộ gửi thư và token xác minh/đặt lại mật khẩu; màn hình dùng chúng là mục S bên dưới. Chưa có user story.
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-146 | — | `FakeMailer` ghi đúng thư và nhả lỗi đã cài; `ConsoleMailer` in ra log; `lay_mailer()` chọn theo `MAIL_PROVIDER`, tên lạ hoặc thiếu `SMTP_HOST` là lỗi chứ không rơi về console | U | `test_mail.py` (8 test) | ✅ |
+| TC-147 | — | `SmtpMailer` nói SMTP thật với máy chủ cục bộ trong tiến trình: đúng người nhận/tiêu đề/nội dung tiếng Việt; chặn chèn `Bcc:` qua tiêu đề/người nhận; lỗi kết nối và 5xx thành `LoiGuiMail` không lộ mật khẩu hay nội dung; fixture `chan_gui_mail_that` ném lỗi khi host không phải cục bộ | U | `test_smtp_mailer.py` (5 test) | ✅ |
+| TC-148 | — | Token: hết hạn đúng ranh giới (24h xác minh, 1h đặt lại), dùng một lần kể cả khi đối tượng trong bộ nhớ lạc hậu, sai mục đích và chuỗi bịa cùng một thông báo, cấp mới vô hiệu cũ, CSDL không chứa token thô | U | `test_email_tokens_service.py` (20 test, gồm `con_hieu_luc` chỉ đọc không đốt token) | ✅ |
+
+## S. Cổng khách — P9 chặng 4 đợt 4a, 02/10
+
+Tài khoản khách ở **bảng riêng `customers`**, phiên riêng (`customer_id`/`csv`). Đăng ký bằng email → thư có link → đặt tên và mật khẩu → mới có dòng trong CSDL. Chưa có user story (viết ở chặng 8). Kế hoạch: [`../plans/2026-10-02-p9-chang4-tai-khoan-khach.md`](../plans/2026-10-02-p9-chang4-tai-khoan-khach.md).
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-149 | — | Service khách: đăng ký gửi đúng một thư, email đã có thì **không** tạo dòng thứ hai và gửi thư báo không kèm link; mật khẩu/tên sai bị từ chối **trước** khi đốt token; đăng nhập sai và email lạ cùng một thông báo, tài khoản khóa không vào được; đặt lại và đổi mật khẩu thu hồi phiên cũ; lỗi gửi thư bị nuốt | U | `test_customers_service.py` (21 test) | ✅ |
+| TC-150 | — | Luồng HTTP thật với `FakeMailer`: đăng ký → mail → link → đặt mật khẩu → vào `/khach`; đăng ký email đã có và email mới **cùng một phản hồi**; `GET` link không đốt token, chỉ `POST` mới đốt; link không hợp lệ/đã dùng → 400 | I | `test_khach_auth.py` | ✅ |
+| TC-151 | — | Link trong thư dựng từ `APP_ORIGIN`, bỏ qua `Host` giả | I | `test_khach_auth.py` | ✅ |
+| TC-152 | — | Giới hạn theo IP: lượt thứ N+1 của đăng ký, quên mật khẩu, đăng nhập khách bị 429 + `Retry-After`; ba bộ đếm tách nhau và tách khỏi đăng nhập nhân viên | I | `test_khach_auth.py` | ✅ |
+| TC-153 | — | Tách phiên: cookie khách không mở được route nhân viên (`/owners`, `/invoices`), cookie nhân viên không mở được `/khach`; đăng nhập bên này xóa phiên bên kia (hai chiều); đăng xuất/đổi/đặt lại mật khẩu giết cookie đang mở | I | `test_khach_auth.py` | ✅ |
+| TC-154 | — | `lifespan` công khai (`SESSION_HTTPS_ONLY`) từ chối khi `MAIL_PROVIDER=console` hoặc thiếu `APP_ORIGIN`; cấu hình đủ thì khởi động; chạy cục bộ với `console` không bị ảnh hưởng | U | `test_khoi_dong.py` (4 test mới) | ✅ |
+
+## T. Cổng khách — P9 chặng 4 đợt 4b, 02/10
+
+Khách xin nối tài khoản với hồ sơ chủ nuôi; **lễ tân duyệt**, khách không tự nhận. Kế hoạch: [`plans/2026-10-02-p9-chang4-tai-khoan-khach.md`](../plans/2026-10-02-p9-chang4-tai-khoan-khach.md).
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-155 | — | Ràng buộc `link_requests`: mặc định `pending`; hai yêu cầu chờ của một khách bị CSDL từ chối nhưng yêu cầu đã xử lý không chặn yêu cầu mới và khách khác không bị ảnh hưởng; `status` sai bị CHECK chặn; xóa chủ nuôi giữ yêu cầu và gán `owner_id` NULL | U | `test_models_link_request.py` | ✅ |
+| TC-156 | — | Gửi yêu cầu: số khớp một chủ nuôi thật vẫn **không** tự nối; kết quả giống nhau với số lạ và số của chủ nuôi (không tra `owners`); số sai định dạng, ghi chú quá 500 ký tự, khách đã nối, đã có yêu cầu chờ đều bị từ chối; bị từ chối rồi gửi lại được | U | `test_link_requests_service.py` | ✅ |
+| TC-157 | — | Duyệt / từ chối / gỡ: hồ sơ đã thuộc khách khác bị chặn và không đổi gì; duyệt hai lần, duyệt yêu cầu đã từ chối, hồ sơ hoặc yêu cầu không tồn tại bị chặn; từ chối bắt buộc lý do (trống, chỉ khoảng trắng, quá dài); gỡ liên kết đưa khách về chưa nối và hồ sơ nối lại được cho khách khác; danh sách chờ bỏ hồ sơ đã có chủ. **Xóa chủ nuôi đang nối tài khoản khách bị chặn kèm cách gỡ** (`test_owners_service.py`) | U | `test_link_requests_service.py`, `test_owners_service.py` | ✅ |
+| TC-158 | — | HTTP, hai client: khách gửi → lễ tân thấy kèm gợi ý → duyệt → trang chủ khách đổi sang "đã liên kết" → gỡ → trở lại "chưa liên kết"; từ chối hiện lý do cho khách và khách gửi lại được; duyệt bằng mã hồ sơ khác số khách nhập; không chọn hồ sơ hoặc mã không tồn tại báo 400 ngay trên màn hình | I | `test_lien_ket_khach.py` | ✅ |
+| TC-159 | — | Phản hồi gửi yêu cầu giống nhau từng chữ dù số có phải chủ nuôi hay không và không lộ tên chủ nuôi; số khớp vẫn không tự nối; gửi hai lần bị 400 | I | `test_lien_ket_khach.py` | ✅ |
+| TC-160 | — | Phân quyền: `caretaker` bị 403 ở cả bốn route duyệt; khách đã đăng nhập bị đưa về `/login` khi mở hoặc POST vào màn hình lễ tân và không tự duyệt cho mình; chưa đăng nhập khách bị đưa về `/khach/dang-nhap`; menu "Liên kết khách" chỉ hiện cho quản lý và lễ tân | I | `test_lien_ket_khach.py` | ✅ |
+
+## U. Cổng khách — P9 chặng 4 đợt 4c, 02/10
+
+Khách xem thú cưng, lịch hẹn, hóa đơn của chính mình. Điểm chặn chủ duy nhất `yeu_cau_so_huu`; id của người khác trả **404 giống hệt** id không tồn tại. Kế hoạch: [`plans/2026-10-02-p9-chang4-tai-khoan-khach.md`](../plans/2026-10-02-p9-chang4-tai-khoan-khach.md).
+
+| TC | US | Tình huống | Mức | File test | Trạng thái |
+|---|---|---|---|---|---|
+| TC-161 | — | `yeu_cau_so_huu` cho qua bản ghi của chính chủ và ném `LoiKhongTimThay` với bản ghi của chủ khác hoặc khi khách chưa nối, ở cả thú cưng, hóa đơn, lịch hẹn, tiêm phòng, hồ sơ chăm sóc; thông điệp giống nhau cho id người khác và id không tồn tại; danh sách chỉ có của mình, đúng thứ tự, rỗng khi chưa nối hoặc vừa gỡ liên kết | U | `test_khach_du_lieu_service.py` | ✅ |
+| TC-162 | — | HTTP: khách thấy đúng thú cưng, lịch hẹn, hóa đơn của mình và không thấy của người khác; chi tiết thú cưng kèm lịch sử tiêm, chi tiết hóa đơn có tổng / đã trả / còn nợ; menu chỉ có link dữ liệu khi đã nối | I | `test_khach_du_lieu.py` | ✅ |
+| TC-163 | — | **IDOR:** id của người khác và id không tồn tại cho cùng một phản hồi 404 (từng chữ), không bao giờ 200 hay 500; khách chưa nối nhận 404 kể cả id đúng; gỡ liên kết có hiệu lực ở yêu cầu kế tiếp; trang lỗi dẫn về `/khach`; mọi route khách có `{..._id}` đều nằm trong phép thử | I | `test_khach_du_lieu.py` | ✅ |
+| TC-164 | — | Quyền riêng tư và phiên: không trang nào lộ `note` thú cưng / lịch / tiêm / hóa đơn, `cancel_reason`, hồ sơ chăm sóc, tên nhân viên, địa chỉ hay thông tin chủ khác; chưa đăng nhập và nhân viên đăng nhập đều bị đưa về `/khach/dang-nhap` | I | `test_khach_du_lieu.py` | ✅ |
+| TC-165 | — | Phép canh AST: router dữ liệu khách không import model và không gọi `db.*`; mọi hàm public của `khach_du_lieu` nhận `khach` và đi qua cổng chặn (hàm nhận id bắt buộc qua `yeu_cau_so_huu`); mọi route `/khach/*` ngoài trang công khai dùng `khach_hien_tai`; có ca đối chứng cho từng kiểu lỗi | U | `test_architecture.py` | ✅ |
+
 ## J. Hệ thống hoàn chỉnh — chạy cuối mỗi phase từ P5
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
@@ -308,6 +369,10 @@ Bước 1→6 chạy được ngay sau P4 chặng 1; bước 7→9 nối ở P5,
 | M. Việc tồn đóng ở P8 | US-10 | TC-121 | 1 |
 | N. Lỗi sửa 24/09 | US-07, US-10, US-11 | TC-122 | 1 |
 | O. Mười một lỗi còn lại, 24/09 | US-01, US-02, US-04, US-05, US-07, US-08, US-12, US-18, US-19, US-26, US-27 | TC-123 → TC-133 | 11 |
+| R. Hạ tầng gửi email, 02/10 | — (chưa có US) | TC-146 → TC-148 | 3 |
+| S. Cổng khách đợt 4a, 02/10 | — (chưa có US) | TC-149 → TC-154 | 6 |
+| T. Cổng khách đợt 4b, 02/10 | — (chưa có US) | TC-155 → TC-160 | 6 |
+| U. Cổng khách đợt 4c, 02/10 | — (chưa có US) | TC-161 → TC-165 | 5 |
 | J. Xuyên suốt | — | TC-101, TC-102 | 2 |
 | | **28/28 US** | | **133** |
 

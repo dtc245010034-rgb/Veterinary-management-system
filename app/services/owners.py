@@ -12,6 +12,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.models.customer import Customer
 from app.models.owner import Owner
 from app.models.pet import GIOI_TINH, Pet
 from app.services import clock
@@ -210,6 +211,12 @@ def xoa_chu_nuoi(db: Session, chu_nuoi_id: int) -> None:
     if so_thu_cung is not None:
         raise LoiNghiepVu(
             "Chủ nuôi này vẫn còn thú cưng. Hãy chuyển hoặc xóa thú cưng trước khi xóa chủ nuôi."
+        )
+
+    if db.scalar(select(Customer.id).where(Customer.owner_id == o.id)) is not None:
+        raise LoiNghiepVu(
+            "Chủ nuôi này đang được liên kết với một tài khoản khách. "
+            "Hãy gỡ liên kết ở mục Liên kết khách hàng trước khi xóa."
         )
 
     db.delete(o)

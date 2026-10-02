@@ -95,8 +95,8 @@ Mỗi mục: **test đỏ-trước, rồi xanh, rồi một lượt đột biế
 
 ## 5. Việc thêm vào P9 chặng 2 (Docker)
 
-- [ ] 5.1 `run.py docker` (up/down/logs/reset trên compose), dùng chung hàm `.env` với lớp venv.
-- [ ] 5.2 Chế độ `--public-url https://...`: cookie Secure, `NODE_ENV`-tương-đương, **mật khẩu seed ngẫu
+- [x] 5.1 `run.py docker` (up/down/logs/reset trên compose), dùng chung hàm `.env` với lớp venv.
+- [x] 5.2 Chế độ `--public-url https://...`: cookie Secure, `NODE_ENV`-tương-đương, **mật khẩu seed ngẫu
       nhiên**, từ chối chạy nếu còn tài khoản mật khẩu mặc định (`matkhau123`).
       → verify: test đỏ-trước cho hàm chặn mật khẩu mặc định.
 

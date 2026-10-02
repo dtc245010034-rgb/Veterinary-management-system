@@ -10,6 +10,7 @@ và P3. Test thì đỏ, không cần ai nhớ.
 Xem thêm: CLAUDE.md mục 9.
 """
 
+import ast
 import re
 from pathlib import Path
 
@@ -741,3 +742,145 @@ def test_khong_ma_us_nao_bi_khai_bao_hai_lan():
 
     trung = sorted({m for m in ma_us if ma_us.count(m) > 1})
     assert not trung, f"Story khai báo nhiều lần: {trung}"
+
+
+# --- Cổng khách: dữ liệu chủ nuôi chỉ đi qua một cổng (P9 chặng 4, đợt 4c) -----------
+#
+# Rủi ro: một handler `/khach/...` tự truy vấn `db.get(Pet, id)` mà quên kiểm chủ — lỗ IDOR mà khách chỉ cần
+# đổi con số trên URL là thấy thú cưng, hóa đơn của người khác. Ba luật dưới đây làm cho kiểu quên đó đỏ ngay.
+
+ROUTER_KHACH_DU_LIEU = GOC / "app" / "routers" / "khach_du_lieu.py"
+SERVICE_KHACH_DU_LIEU = GOC / "app" / "services" / "khach_du_lieu.py"
+HAM_NGUYEN_THUY = {"ma_chu_nuoi", "yeu_cau_so_huu"}
+
+# Trang công khai của cổng khách (đăng ký, đăng nhập, quên mật khẩu): không có `khach_hien_tai` là đúng.
+# Thêm trang công khai mới thì phải thêm vào đây một cách có chủ đích.
+TRANG_KHACH_CONG_KHAI = {
+    ("GET", "/khach/dang-ky"), ("POST", "/khach/dang-ky"),
+    ("GET", "/khach/dang-ky/{token}"), ("POST", "/khach/dang-ky/{token}"),
+    ("GET", "/khach/dang-nhap"), ("POST", "/khach/dang-nhap"),
+    ("POST", "/khach/dang-xuat"),
+    ("GET", "/khach/quen-mat-khau"), ("POST", "/khach/quen-mat-khau"),
+    ("GET", "/khach/dat-lai/{token}"), ("POST", "/khach/dat-lai/{token}"),
+}
+
+
+def _vi_pham_router_du_lieu_khach(ma_nguon: str) -> list[str]:
+    """Router dữ liệu khách không được chạm model hay `db.*`: chỉ gọi `khach_du_lieu`."""
+    loi = []
+    for nut in ast.walk(ast.parse(ma_nguon)):
+        if isinstance(nut, ast.ImportFrom) and (nut.module or "").startswith("app.models"):
+            loi.append(f"dòng {nut.lineno}: import {nut.module}")
+        if isinstance(nut, ast.Import) and any(a.name.startswith("app.models") for a in nut.names):
+            loi.append(f"dòng {nut.lineno}: import app.models")
+        if isinstance(nut, ast.Attribute) and isinstance(nut.value, ast.Name) and nut.value.id == "db":
+            loi.append(f"dòng {nut.lineno}: db.{nut.attr}")
+    return loi
+
+
+def _vi_pham_service_du_lieu_khach(ma_nguon: str) -> list[str]:
+    """Mọi hàm public nhận `khach`; hàm không phải nguyên thủy phải đi qua cổng chặn, và hàm nhận id
+    (`*_id`) bắt buộc đi qua `yeu_cau_so_huu` — `ma_chu_nuoi` một mình không chặn được id của người khác."""
+    loi = []
+    for ham in ast.parse(ma_nguon).body:
+        if not isinstance(ham, ast.FunctionDef) or ham.name.startswith("_"):
+            continue
+        ten_tham_so = [a.arg for a in ham.args.args]
+        if "khach" not in ten_tham_so:
+            loi.append(f"{ham.name}: không nhận `khach`")
+            continue
+        if ham.name in HAM_NGUYEN_THUY:
+            continue
+        goi = {n.func.id for n in ast.walk(ham) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+        if not goi & HAM_NGUYEN_THUY:
+            loi.append(f"{ham.name}: không gọi ma_chu_nuoi/yeu_cau_so_huu")
+        if any(t.endswith("_id") for t in ten_tham_so) and "yeu_cau_so_huu" not in goi:
+            loi.append(f"{ham.name}: nhận id nhưng không gọi yeu_cau_so_huu")
+    return loi
+
+
+def _route_khach_thieu_dang_nhap(ma_nguon: str, ten_file: str) -> list[str]:
+    """Route dưới `/khach` (ngoài danh sách công khai) mà không phụ thuộc `khach_hien_tai`."""
+    cay = ast.parse(ma_nguon)
+    tien_to = None
+    for nut in ast.walk(cay):
+        if isinstance(nut, ast.Call) and getattr(nut.func, "id", "") == "APIRouter":
+            for kw in nut.keywords:
+                if kw.arg == "prefix" and isinstance(kw.value, ast.Constant):
+                    tien_to = kw.value.value
+    if tien_to is None or not tien_to.startswith("/khach"):
+        return []
+
+    loi = []
+    for ham in cay.body:
+        if not isinstance(ham, ast.FunctionDef):
+            continue
+        dung_khach_hien_tai = any(
+            isinstance(n, ast.Name) and n.id == "khach_hien_tai" for d in ham.args.defaults for n in ast.walk(d)
+        )
+        for dec in ham.decorator_list:
+            if not (isinstance(dec, ast.Call) and isinstance(dec.func, ast.Attribute)):
+                continue
+            if dec.func.attr not in {"get", "post", "put", "patch", "delete"} or not dec.args:
+                continue
+            duong_dan = tien_to + dec.args[0].value
+            if (dec.func.attr.upper(), duong_dan) not in TRANG_KHACH_CONG_KHAI and not dung_khach_hien_tai:
+                loi.append(f"{ten_file}: {dec.func.attr.upper()} {duong_dan} không dùng khach_hien_tai")
+    return loi
+
+
+def test_router_du_lieu_khach_chi_goi_service_khong_cham_model_hay_db():
+    """Handler `/khach/thu-cung`, `/lich-hen`, `/hoa-don` không tự truy vấn.
+
+    NẾU TEST NÀY ĐỎ: chuyển truy vấn vào `app/services/khach_du_lieu.py` (qua `yeu_cau_so_huu`), đừng xóa test.
+    """
+    loi = _vi_pham_router_du_lieu_khach(_doc(ROUTER_KHACH_DU_LIEU))
+
+    assert not loi, "Router dữ liệu khách tự chạm CSDL:\n  " + "\n  ".join(loi)
+
+
+def test_moi_ham_public_cua_khach_du_lieu_di_qua_cong_chan_chu():
+    loi = _vi_pham_service_du_lieu_khach(_doc(SERVICE_KHACH_DU_LIEU))
+
+    assert not loi, "khach_du_lieu có hàm hở:\n  " + "\n  ".join(loi)
+
+
+def test_moi_route_khach_ngoai_trang_cong_khai_deu_dung_khach_hien_tai():
+    """Thêm route `/khach/...` mà quên đăng nhập là mở dữ liệu cho người chưa đăng nhập."""
+    tong = []
+    for tep in FILE_ROUTER:
+        tong += _route_khach_thieu_dang_nhap(_doc(tep), tep.name)
+
+    assert not tong, "Route khách thiếu khach_hien_tai:\n  " + "\n  ".join(tong)
+
+
+def test_phep_canh_cong_khach_bat_duoc_ma_sai_kieu_thuc_te():
+    """Đối chứng: ba phép canh trên phải đỏ với đúng kiểu lỗi chúng sinh ra để bắt."""
+    router_sai = (
+        "from app.models.pet import Pet\n"
+        "def f(pet_id, db=Depends(get_db)):\n"
+        "    return db.get(Pet, pet_id)\n"
+    )
+    service_sai = (
+        "def ma_chu_nuoi(khach): return khach.owner_id\n"
+        "def yeu_cau_so_huu(khach, ban_ghi): pass\n"
+        "def chi_tiet(db, khach, thu_cung_id):\n"
+        "    ma_chu_nuoi(khach)\n"
+        "    return db.get(Pet, thu_cung_id)\n"
+        "def lich_su(db):\n"
+        "    return []\n"
+    )
+    route_sai = (
+        "router = APIRouter(prefix='/khach')\n"
+        "@router.get('/thu-cung')\n"
+        "def f(request, db=Depends(get_db)): pass\n"
+        "@router.get('/lich-hen')\n"
+        "def g(request, khach=Depends(khach_hien_tai)): pass\n"
+    )
+
+    assert len(_vi_pham_router_du_lieu_khach(router_sai)) == 2
+    assert _vi_pham_service_du_lieu_khach(service_sai) == [
+        "chi_tiet: nhận id nhưng không gọi yeu_cau_so_huu",
+        "lich_su: không nhận `khach`",
+    ]
+    assert _route_khach_thieu_dang_nhap(route_sai, "x.py") == ["x.py: GET /khach/thu-cung không dùng khach_hien_tai"]

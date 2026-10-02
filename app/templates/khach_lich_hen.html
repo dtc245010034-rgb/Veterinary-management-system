@@ -1,0 +1,26 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Lịch hẹn của tôi{% endblock %}
+
+{% block noi_dung %}
+<h1>Lịch hẹn của tôi</h1>
+{% if khach.owner_id is none %}
+<p class="phu">Tài khoản của bạn chưa được liên kết với hồ sơ tại cửa hàng nên chưa có dữ liệu để xem.
+<a href="/khach/lien-ket">Gửi yêu cầu liên kết hồ sơ</a>.</p>
+{% elif not lich_hen %}
+<p class="phu">Chưa có lịch hẹn nào.</p>
+{% else %}
+<table>
+  <thead><tr><th>Thời gian</th><th>Thú cưng</th><th>Dịch vụ</th><th>Trạng thái</th></tr></thead>
+  <tbody>
+  {% for l in lich_hen %}
+    <tr>
+      <td>{{ l.start_at.strftime("%d/%m/%Y %H:%M") }}</td>
+      <td>{{ l.pet.name }}</td>
+      <td>{{ l.service.name }}</td>
+      <td>{{ l.ten_trang_thai }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

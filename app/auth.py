@@ -11,17 +11,29 @@ from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
+from app.models.customer import Customer
 from app.models.user import User
 
 KHOA_SESSION = "user_id"
 KHOA_PHIEN_BAN = "sv"
+
+# Khóa phiên của KHÁCH khác hẳn khóa của nhân viên: mọi dependency nhân viên chỉ đọc `user_id`, nên không
+# có đường nào để cookie khách trở thành người dùng nhân viên (P9 chặng 4).
+KHOA_SESSION_KHACH = "customer_id"
+KHOA_PHIEN_BAN_KHACH = "csv"
 
 
 class ChuaDangNhap(Exception):
     """Chưa đăng nhập — trình xử lý sẽ chuyển hướng về trang đăng nhập."""
 
 
+class ChuaDangNhapKhach(Exception):
+    """Khách chưa đăng nhập — trình xử lý sẽ chuyển hướng về trang đăng nhập của khách."""
+
+
 def dang_nhap_session(request: Request, user: User) -> None:
+    # Máy dùng chung có thể đang giữ phiên của khách: một cookie không được mang hai danh tính.
+    dang_xuat_khach_session(request)
     request.session[KHOA_SESSION] = user.id
     request.session[KHOA_PHIEN_BAN] = user.session_version
 
@@ -29,6 +41,36 @@ def dang_nhap_session(request: Request, user: User) -> None:
 def dang_xuat_session(request: Request) -> None:
     request.session.pop(KHOA_SESSION, None)
     request.session.pop(KHOA_PHIEN_BAN, None)
+
+
+def dang_nhap_khach_session(request: Request, khach: Customer) -> None:
+    dang_xuat_session(request)
+    request.session[KHOA_SESSION_KHACH] = khach.id
+    request.session[KHOA_PHIEN_BAN_KHACH] = khach.session_version
+
+
+def dang_xuat_khach_session(request: Request) -> None:
+    request.session.pop(KHOA_SESSION_KHACH, None)
+    request.session.pop(KHOA_PHIEN_BAN_KHACH, None)
+
+
+def khach_hien_tai_hoac_none(request: Request, db: Session = Depends(get_db)) -> Customer | None:
+    ma = request.session.get(KHOA_SESSION_KHACH)
+    if ma is None:
+        return None
+    khach = db.get(Customer, ma)
+    if khach is None or not khach.is_active:
+        return None
+    if request.session.get(KHOA_PHIEN_BAN_KHACH, 0) != khach.session_version:
+        return None
+    return khach
+
+
+def khach_hien_tai(khach: Customer | None = Depends(khach_hien_tai_hoac_none)) -> Customer:
+    """Bắt buộc khách đã đăng nhập."""
+    if khach is None:
+        raise ChuaDangNhapKhach()
+    return khach
 
 
 def nguoi_dung_hien_tai_hoac_none(request: Request, db: Session = Depends(get_db)) -> User | None:

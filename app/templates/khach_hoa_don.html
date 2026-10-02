@@ -1,0 +1,27 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Hóa đơn của tôi{% endblock %}
+
+{% block noi_dung %}
+<h1>Hóa đơn của tôi</h1>
+{% if khach.owner_id is none %}
+<p class="phu">Tài khoản của bạn chưa được liên kết với hồ sơ tại cửa hàng nên chưa có dữ liệu để xem.
+<a href="/khach/lien-ket">Gửi yêu cầu liên kết hồ sơ</a>.</p>
+{% elif not hoa_don %}
+<p class="phu">Chưa có hóa đơn nào.</p>
+{% else %}
+<table>
+  <thead><tr><th>Số</th><th>Ngày lập</th><th>Tổng tiền</th><th>Còn nợ</th><th>Trạng thái</th></tr></thead>
+  <tbody>
+  {% for h in hoa_don %}
+    <tr>
+      <td><a href="/khach/hoa-don/{{ h.id }}">#{{ h.id }}</a></td>
+      <td>{{ h.issued_at.strftime("%d/%m/%Y") }}</td>
+      <td>{{ h.total_amount|tien }}</td>
+      <td>{{ h.con_no|tien }}</td>
+      <td>{{ h.ten_trang_thai }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

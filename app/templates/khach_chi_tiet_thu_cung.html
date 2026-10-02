@@ -1,0 +1,33 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}{{ ct.thu_cung.name }}{% endblock %}
+
+{% block noi_dung %}
+<p><a href="/khach/thu-cung">← Thú cưng của tôi</a></p>
+<h1>{{ ct.thu_cung.name }}</h1>
+<dl>
+  <dt>Loài</dt><dd>{{ ct.thu_cung.species }}</dd>
+  <dt>Giống</dt><dd>{{ ct.thu_cung.breed or '—' }}</dd>
+  <dt>Giới tính</dt><dd>{{ ct.thu_cung.sex or '—' }}</dd>
+  <dt>Ngày sinh</dt><dd>{{ ct.thu_cung.birth_date.strftime("%d/%m/%Y") if ct.thu_cung.birth_date else '—' }}</dd>
+  <dt>Cân nặng</dt><dd>{{ ct.thu_cung.weight_kg ~ ' kg' if ct.thu_cung.weight_kg else '—' }}</dd>
+</dl>
+
+<h2>Lịch sử tiêm phòng</h2>
+{% if not ct.tiem_phong %}
+<p class="phu">Chưa có mũi tiêm nào được ghi nhận.</p>
+{% else %}
+<table>
+  <thead><tr><th>Vắc-xin</th><th>Mũi</th><th>Ngày tiêm</th><th>Hẹn nhắc lại</th></tr></thead>
+  <tbody>
+  {% for t in ct.tiem_phong %}
+    <tr>
+      <td>{{ t.vaccine_name }}</td>
+      <td>{{ t.dose_no or '—' }}</td>
+      <td>{{ t.given_at.strftime("%d/%m/%Y") }}</td>
+      <td>{{ t.next_due_at.strftime("%d/%m/%Y") if t.next_due_at else '—' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}
