@@ -59,6 +59,10 @@ def ghi_ho_so(
         raise LoiNghiepVu("Lịch đã hủy nên không ghi hồ sơ được.")
     if lich.status == "done":
         raise LoiNghiepVu("Lịch này đã có hồ sơ chăm sóc. Mỗi lịch hẹn chỉ một hồ sơ.")
+    # Lịch chờ duyệt còn hạn có thể mang giờ hẹn đã qua; không chặn ở đây thì ghi hồ sơ sẽ đẩy nó thẳng sang `done`
+    # mà chưa ai duyệt.
+    if lich.status == "pending":
+        raise LoiNghiepVu("Lịch này đang chờ duyệt, chưa được xác nhận nên chưa ghi hồ sơ được.")
 
     # Nút "Ghi hồ sơ" hiện ngay trên lịch tuần sau trong danh sách của nhân viên, nên đây
     # là lỗ đi qua đúng luồng bình thường chứ không phải đường vòng.

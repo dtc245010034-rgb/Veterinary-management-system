@@ -608,6 +608,24 @@ def test_khung_gio_trong_rong_khi_thoi_luong_dai_hon_gio_lam_viec(db, nen):
     assert ket_qua == []
 
 
+def test_khung_gio_trong_toi_da_none_do_het_ngay_va_van_tinh_ca_khung_cuoi_khit_gio_dong_cua(db, nen):
+    """P9 chặng 6: khách xem cả ngày. 08:00 → 17:00 bước 30 phút = 19 khung cho dịch vụ 60 phút; 17:00–18:00 vừa khít."""
+    dat(db, nen, gio(9), pet="pet2")  # nv1 bận 09:00–10:00
+
+    ket_qua = nv.khung_gio_trong(db, nen["nv1"].id, nen["pet1"].id, NGAY.date(), 60, toi_da=None)
+
+    assert gio(8) in ket_qua and gio(10) in ket_qua and gio(17) in ket_qua
+    assert gio(8, 30) not in ket_qua and gio(9) not in ket_qua and gio(9, 30) not in ket_qua
+    assert gio(17, 30) not in ket_qua
+    assert len(ket_qua) == 19 - 3
+    assert len(ket_qua) > nv.SO_GOI_Y
+
+
+def test_khung_gio_trong_mac_dinh_van_cat_o_so_goi_y(db, nen):
+    """Chỗ gọi cũ (lễ tân bị từ chối rồi nhận gợi ý) không đổi hành vi."""
+    assert len(nv.khung_gio_trong(db, nen["nv1"].id, nen["pet1"].id, NGAY.date(), 60)) == nv.SO_GOI_Y
+
+
 # --- M-06 (= S6): buổi chăm sóc phải nằm trọn trong giờ mở cửa -------------------
 #
 # Lỗi tìm được khi rà soát 19/09: `dat_lich` không hề kiểm giờ làm việc. Đo trên giao
@@ -769,3 +787,303 @@ def test_doi_lich_giu_gio_nhung_doi_nhan_vien_van_ghi_da_doi(db, nen):
 
     assert sua.status == "rescheduled"
     assert sua.staff_id == nen["nv2"].id
+
+
+# --- P9 chặng 5: lịch chờ duyệt (`pending`) ------------------------------------------
+#
+# Khách tự xin lịch; lịch `pending` GIỮ CHỖ tới khi lễ tân duyệt/từ chối hoặc quá hạn
+# `HAN_CHO_DUYET_GIO` giờ. Giữ chỗ nằm trong phép chống trùng nên đúng cả khi chưa ai quét.
+
+
+@pytest.fixture
+def dong_ho(frozen_clock):
+    """Đồng hồ đã đóng băng, thêm `advance` để trôi thời gian trong một test."""
+
+    class _DongHo:
+        @staticmethod
+        def advance(**kwargs):
+            clock._moc_co_dinh = clock.now() + timedelta(**kwargs)
+
+    return _DongHo()
+
+
+@pytest.fixture
+def khach(db):
+    from app.models.customer import Customer
+
+    k = Customer(email="khach1@example.com", full_name="Khach Mot", password_hash="x")
+    db.add(k)
+    db.commit()
+    return k
+
+
+@pytest.fixture
+def khach2(db):
+    from app.models.customer import Customer
+
+    k = Customer(email="khach2@example.com", full_name="Khach Hai", password_hash="x")
+    db.add(k)
+    db.commit()
+    return k
+
+
+def mai(h: int) -> datetime:
+    return gio(h) + timedelta(days=1)
+
+
+def xin(db, nen, k, bat_dau, pet="pet1", nhan_vien="nv1", dich_vu="dv60"):
+    return nv.tao_yeu_cau_lich(
+        db,
+        khach_id=k.id,
+        thu_cung_id=nen[pet].id,
+        dich_vu_id=nen[dich_vu].id,
+        nhan_vien_id=nen[nhan_vien].id,
+        bat_dau=bat_dau,
+    )
+
+
+def test_tao_yeu_cau_lich_tao_lich_pending_gan_voi_khach(db, nen, khach):
+    lich = xin(db, nen, khach, gio(9))
+
+    assert lich.status == "pending"
+    assert lich.customer_id == khach.id
+    assert lich.created_by is None
+    assert lich.end_at == gio(10)
+    assert lich.ten_trang_thai == "Chờ duyệt"
+
+
+def test_lich_pending_giu_cho_chan_lich_trung_nhan_vien(db, nen, khach):
+    xin(db, nen, khach, gio(9))
+
+    with pytest.raises(LoiNghiepVu):
+        dat(db, nen, gio(9, 30), pet="pet2")
+
+
+def test_hai_khach_xin_cung_khung_gio_nguoi_den_sau_bi_chan(db, nen, khach, khach2):
+    xin(db, nen, khach, gio(9))
+
+    with pytest.raises(LoiNghiepVu):
+        xin(db, nen, khach2, gio(9), pet="pet2")
+
+
+def test_lich_pending_giu_cho_chan_trung_thu_cung(db, nen, khach):
+    xin(db, nen, khach, gio(9), nhan_vien="nv1")
+
+    with pytest.raises(LoiNghiepVu):
+        dat(db, nen, gio(9), pet="pet1", nhan_vien="nv2")
+
+
+def test_lich_pending_het_han_khong_con_giu_cho_du_chua_ai_quet(db, nen, khach, dong_ho):
+    """Giữ chỗ do truy vấn quyết định, không phải do hàm quét: quá hạn là khung giờ trống ngay."""
+    lich = xin(db, nen, khach, gio(9))
+    dong_ho.advance(hours=nv.HAN_CHO_DUYET_GIO + 1)
+
+    assert nv.tim_lich_trung(db, nen["pet2"].id, nen["nv1"].id, gio(9), gio(10)) is None
+    db.refresh(lich)
+    assert lich.status == "pending"  # chưa ai quét, trạng thái vẫn cũ mà chỗ đã nhả
+
+
+def test_lich_pending_dung_moc_han_thi_het_giu_cho(db, nen, khach, dong_ho):
+    """Ca biên: đúng HAN_CHO_DUYET_GIO giờ là hết giữ chỗ; thiếu một giây thì còn."""
+    xin(db, nen, khach, gio(9))
+
+    dong_ho.advance(hours=nv.HAN_CHO_DUYET_GIO, seconds=-1)
+    assert nv.tim_lich_trung(db, nen["pet2"].id, nen["nv1"].id, gio(9), gio(10)) is not None
+
+    dong_ho.advance(seconds=1)
+    assert nv.tim_lich_trung(db, nen["pet2"].id, nen["nv1"].id, gio(9), gio(10)) is None
+
+
+def test_huy_lich_cho_het_han_chi_huy_lich_qua_han(db, nen, khach, dong_ho):
+    cu = xin(db, nen, khach, gio(9))
+    dong_ho.advance(hours=nv.HAN_CHO_DUYET_GIO - 1)
+    moi = xin(db, nen, khach, mai(14))
+    dong_ho.advance(hours=2)
+
+    so = nv.huy_lich_cho_het_han(db)
+
+    db.refresh(cu)
+    db.refresh(moi)
+    assert so == 1
+    assert cu.status == "cancelled"
+    assert cu.cancel_reason == nv.LY_DO_HET_HAN
+    assert moi.status == "pending"
+    assert nv.huy_lich_cho_het_han(db) == 0  # chạy lại không làm gì
+
+
+def test_so_lich_cho_cua_khach_dem_dung_khach_va_bo_lich_het_han(db, nen, khach, khach2, dong_ho):
+    xin(db, nen, khach, gio(9))
+    xin(db, nen, khach, gio(11))
+    xin(db, nen, khach2, gio(13), pet="pet2")
+    assert nv.so_lich_cho_cua_khach(db, khach.id) == 2
+    assert nv.so_lich_cho_cua_khach(db, khach2.id) == 1
+
+    dong_ho.advance(hours=nv.HAN_CHO_DUYET_GIO + 1)
+
+    assert nv.so_lich_cho_cua_khach(db, khach.id) == 0
+
+
+def test_khach_xin_qua_tran_lich_cho_bi_chan(db, nen, khach):
+    for h in (8, 10, 12):
+        xin(db, nen, khach, gio(h))
+
+    with pytest.raises(LoiNghiepVu, match="tối đa"):
+        xin(db, nen, khach, gio(14))
+
+
+def test_tran_lich_cho_tinh_rieng_tung_khach(db, nen, khach, khach2):
+    for h in (8, 10, 12):
+        xin(db, nen, khach, gio(h))
+
+    xin(db, nen, khach2, gio(14), pet="pet2")  # không ném lỗi
+
+
+def test_lich_cho_het_han_khong_tinh_vao_tran(db, nen, khach, dong_ho):
+    for h in (8, 10, 12):
+        xin(db, nen, khach, gio(h))
+    dong_ho.advance(hours=nv.HAN_CHO_DUYET_GIO + 1)
+    ngay_sau = clock.now().replace(hour=9, minute=0, second=0, microsecond=0) + timedelta(days=1)
+
+    xin(db, nen, khach, ngay_sau)  # 3 lịch cũ đã hết hạn nên không còn chặn
+
+
+def test_tao_yeu_cau_lich_dung_chung_phep_kiem_voi_dat_lich(db, nen, khach):
+    """Khách xin ngoài giờ làm / vào quá khứ bị chặn y như lễ tân đặt."""
+    with pytest.raises(LoiNghiepVu):
+        xin(db, nen, khach, gio(3))
+    with pytest.raises(LoiNghiepVu):
+        xin(db, nen, khach, gio(7))
+
+
+def test_duyet_lich_cho_chuyen_sang_booked_va_ghi_nguoi_duyet(db, nen, khach):
+    lich = xin(db, nen, khach, gio(9))
+
+    duyet = nv.duyet_lich_cho(db, lich.id, nen["letan"].id)
+
+    assert duyet.status == "booked"
+    assert duyet.decided_by == nen["letan"].id
+    assert duyet.customer_id == khach.id
+
+
+def test_duyet_lich_cho_khong_tu_bao_trung_voi_chinh_no(db, nen, khach):
+    """Lịch pending đang giữ chỗ; duyệt không được coi chính nó là đối thủ trùng."""
+    lich = xin(db, nen, khach, gio(9))
+
+    assert nv.duyet_lich_cho(db, lich.id, nen["letan"].id).status == "booked"
+
+
+def test_duyet_lich_cho_da_het_han_bi_tu_choi_va_lich_thanh_cancelled(db, nen, khach, dong_ho):
+    lich = xin(db, nen, khach, gio(9))
+    dong_ho.advance(hours=nv.HAN_CHO_DUYET_GIO + 1)
+
+    with pytest.raises(LoiNghiepVu, match="không còn chờ duyệt"):
+        nv.duyet_lich_cho(db, lich.id, nen["letan"].id)
+
+    db.refresh(lich)
+    assert lich.status == "cancelled"
+
+
+def test_duyet_lich_cho_khi_gio_hen_da_qua_bi_chan(db, nen, khach, dong_ho):
+    lich = xin(db, nen, khach, gio(9))
+    dong_ho.advance(hours=2)  # 10:00, giờ hẹn 09:00 đã qua, vẫn trong hạn 24h
+
+    with pytest.raises(LoiNghiepVu, match="đã qua"):
+        nv.duyet_lich_cho(db, lich.id, nen["letan"].id)
+
+    db.refresh(lich)
+    assert lich.status == "pending"
+
+
+def test_duyet_lich_cho_khi_nhan_vien_bi_khoa_bi_chan(db, nen, khach):
+    lich = xin(db, nen, khach, gio(9))
+    nen["nv1"].is_active = False
+    db.commit()
+
+    with pytest.raises(LoiNghiepVu):
+        nv.duyet_lich_cho(db, lich.id, nen["letan"].id)
+
+
+def test_duyet_lich_khong_phai_pending_bi_chan(db, nen):
+    lich = dat(db, nen, gio(9))
+
+    with pytest.raises(LoiNghiepVu, match="không còn chờ duyệt"):
+        nv.duyet_lich_cho(db, lich.id, nen["letan"].id)
+
+
+def test_tu_choi_lich_cho_huy_lich_ghi_ly_do_va_tra_lai_khung_gio(db, nen, khach, khach2):
+    lich = xin(db, nen, khach, gio(9))
+
+    tu_choi = nv.tu_choi_lich_cho(db, lich.id, "Kín lịch hôm đó", nen["letan"].id)
+
+    assert tu_choi.status == "cancelled"
+    assert tu_choi.cancel_reason == "Kín lịch hôm đó"
+    assert tu_choi.decided_by == nen["letan"].id
+    xin(db, nen, khach2, gio(9), pet="pet2")  # khung giờ đã trống lại
+
+
+def test_tu_choi_lich_cho_bat_buoc_co_ly_do(db, nen, khach):
+    lich = xin(db, nen, khach, gio(9))
+
+    for ly_do in ("", "   ", None):
+        with pytest.raises(LoiNghiepVu, match="lý do"):
+            nv.tu_choi_lich_cho(db, lich.id, ly_do, nen["letan"].id)
+
+    db.refresh(lich)
+    assert lich.status == "pending"
+
+
+def test_tu_choi_lich_da_duyet_bi_chan(db, nen, khach):
+    lich = xin(db, nen, khach, gio(9))
+    nv.duyet_lich_cho(db, lich.id, nen["letan"].id)
+
+    with pytest.raises(LoiNghiepVu, match="không còn chờ duyệt"):
+        nv.tu_choi_lich_cho(db, lich.id, "muộn rồi", nen["letan"].id)
+
+
+def test_danh_sach_cho_duyet_chi_co_pending_con_han_sap_theo_gio(db, nen, khach, dong_ho):
+    cu = xin(db, nen, khach, gio(9))
+    dong_ho.advance(hours=nv.HAN_CHO_DUYET_GIO - 1)
+    muon = xin(db, nen, khach, mai(15))
+    som = xin(db, nen, khach, mai(11))
+    dat(db, nen, mai(13), pet="pet2", nhan_vien="nv2")  # lịch booked: không có trong danh sách
+    dong_ho.advance(hours=2)  # `cu` hết hạn
+
+    ds = nv.danh_sach_cho_duyet(db)
+
+    assert [x.id for x in ds] == [som.id, muon.id]
+    db.refresh(cu)
+    assert cu.status == "cancelled"
+
+
+def test_lich_theo_ngay_khong_hien_lich_cho_het_han_nhu_con_cho(db, nen, khach, dong_ho):
+    lich = xin(db, nen, khach, gio(9))
+    dong_ho.advance(hours=nv.HAN_CHO_DUYET_GIO + 1)
+
+    ds = nv.lich_theo_ngay(db, NGAY.date())
+
+    assert all(x.id != lich.id or x.status == "cancelled" for x in ds)
+
+
+# --- Trạng thái `pending` trong hóa đơn và hồ sơ chăm sóc ------------------------------
+
+
+def test_lap_hoa_don_cho_lich_pending_bao_dung_ly_do(db, nen, khach):
+    lich = xin(db, nen, khach, gio(9))
+
+    with pytest.raises(LoiNghiepVu) as e:
+        billing.lap_hoa_don(db, lich.id)
+
+    thong_diep = str(e.value).lower()
+    assert "chờ duyệt" in thong_diep
+    assert "ghi hồ sơ chăm sóc cho buổi này trước" not in thong_diep
+
+
+def test_ghi_ho_so_cho_lich_pending_da_qua_gio_hen_van_bi_chan(db, nen, khach, dong_ho):
+    """Lịch chờ còn hạn 24h có thể mang giờ hẹn đã qua — không chặn thì nó nhảy thẳng sang `done`."""
+    lich = xin(db, nen, khach, gio(9))
+    dong_ho.advance(hours=3)
+
+    with pytest.raises(LoiNghiepVu) as e:
+        care_records.ghi_ho_so(db, lich.id, nen["nv1"].id, "Khỏe")
+
+    assert "chờ duyệt" in str(e.value).lower()

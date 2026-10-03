@@ -2,7 +2,7 @@
 
 Nguồn: [`đề-bài.md`](../../đề-bài.md) · Mô hình dữ liệu: [`erd.md`](../erd.md) · Ma trận test: [`testing/test-cases.md`](../testing/test-cases.md)
 
-Đặc tả được tách thành **chín file theo chín nhóm A–I** (trước 02/10 nằm chung một file). Mỗi story
+Đặc tả được tách thành **mười file theo mười nhóm A–J** (trước 02/10 nằm chung một file; nhóm J — cổng khách hàng — thêm ngày 03/10). Mỗi story
 có mã `US-xx` và đúng ba mục:
 
 1. **Mục tiêu** — "Là <vai trò>, tôi muốn… để…".
@@ -31,9 +31,10 @@ Mỗi dòng Given/When/Then ở **cả hai mục tiêu chí** tương ứng mộ
 | G. Hóa đơn và thanh toán | [`g-hoa-don-thanh-toan.md`](g-hoa-don-thanh-toan.md) | US-19 → US-21 (3) | 6 | 6 |
 | H. Thống kê | [`h-thong-ke.md`](h-thong-ke.md) | US-22 → US-23 (2) | 3 | 3 |
 | I. Chức năng AI | [`i-chuc-nang-ai.md`](i-chuc-nang-ai.md) | US-24 → US-28 (5) | 15 | 4 |
-| **Tổng** | 9 file | **28** | **60** | **58** |
+| J. Cổng khách hàng (ngoài đề bài) | [`j-cong-khach-hang.md`](j-cong-khach-hang.md) | US-29 → US-36 (8) | 27 | 40 |
+| **Tổng** | 10 file | **36** | **87** | **98** |
 
-Tổng cộng **118** tiêu chí Given/When/Then — đếm bằng cách đếm dòng bắt đầu `- Given` trong chín file nhóm.
+Tổng cộng **185** tiêu chí Given/When/Then — đếm bằng cách đếm dòng bắt đầu `- Given` trong mười file nhóm.
 
 ---
 
@@ -69,3 +70,9 @@ Tổng cộng **118** tiêu chí Given/When/Then — đếm bằng cách đếm 
 | Review dữ liệu cá nhân (mục 6, cuối kỳ) | US-28 |
 
 **Kết luận: 8/8 chức năng quản lý và 3/3 chức năng AI của đề bài đều có ít nhất một user story.**
+
+### Nhóm J — ngoài đề bài
+
+Đề bài chỉ mô tả ba vai trò nhân viên. **Cổng khách hàng** (US-29 → US-36) là phần mở rộng của phase P9: chủ nuôi tự
+đăng ký, nối hồ sơ do lễ tân duyệt, xem dữ liệu của mình, xem giờ trống, xin đặt lịch và hỏi AI. Nhóm này **không** có dòng
+nào trong ba bảng đối chiếu trên, và không được tính vào kết luận "8/8 và 3/3". US-36 là phía khách của US-26 và US-28.

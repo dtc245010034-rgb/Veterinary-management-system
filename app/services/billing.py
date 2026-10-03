@@ -56,6 +56,11 @@ def lap_hoa_don(db: Session, lich_id: int, ghi_chu: str | None = None) -> Invoic
                 f"Buổi này đã hủy{f' ({lich.cancel_reason})' if lich.cancel_reason else ''} "
                 "nên không lập hóa đơn được. Muốn thu tiền thì phải đặt lại lịch mới."
             )
+        if lich.status == "pending":
+            raise LoiNghiepVu(
+                "Lịch này đang chờ duyệt, chưa diễn ra nên không lập hóa đơn được. "
+                "Hãy duyệt hoặc từ chối yêu cầu ở mục “Chờ duyệt” trước."
+            )
         raise LoiNghiepVu(
             "Chỉ lập hóa đơn được cho lịch đã hoàn thành. "
             "Ghi hồ sơ chăm sóc cho buổi này trước đã."

@@ -1,0 +1,25 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Kết quả trợ lý AI{% endblock %}
+
+{% block noi_dung %}
+<h1>Trợ lý AI</h1>
+
+<p class="canh-bao">
+  Nội dung do AI soạn, chỉ mang tính tham khảo.
+  <strong>AI không thay thế chẩn đoán của bác sĩ thú y.</strong>
+</p>
+
+<div class="the">
+  <h2>Câu hỏi</h2>
+  <p class="ai-cau-hoi">{{ log.prompt }}</p>
+</div>
+
+<div class="the">
+  <h2>Trả lời</h2>
+  <pre class="ai-noi-dung">{{ log.response }}</pre>
+</div>
+
+<p class="phu nhan-nho">lúc {{ log.created_at.strftime("%H:%M %d/%m/%Y") }}</p>
+
+<p><a href="/khach/hoi-dap">← Hỏi tiếp</a></p>
+{% endblock %}

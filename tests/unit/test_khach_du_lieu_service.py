@@ -20,7 +20,7 @@ from app.models.service import Service
 from app.models.user import User
 from app.models.vaccination import Vaccination
 from app.services import khach_du_lieu as kd
-from app.services.errors import LoiKhongTimThay
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 
 
 @pytest.fixture
@@ -195,3 +195,166 @@ def test_chi_tiet_hoa_don_cua_nguoi_khac_va_id_khong_ton_tai_cung_mot_ket_qua(db
 def test_chi_tiet_hoa_don_khach_chua_noi_bi_chan(db, the_gioi):
     with pytest.raises(LoiKhongTimThay):
         kd.chi_tiet_hoa_don(db, the_gioi["c"], the_gioi["a"]["hd"].id)
+
+
+# --- Xin đặt lịch (P9 chặng 5) ---------------------------------------------------------
+
+
+def _xin(db, khach, pet, nv, dv, gio=9):
+    return kd.gui_yeu_dat_lich(db, khach, pet.id, dv.id, nv.id, datetime(2026, 3, 13, gio), "ghi chu khach")
+
+
+def test_lua_chon_dat_lich_chi_gom_thu_cung_cua_khach_va_dem_lich_cho(db, frozen_clock, the_gioi):
+    a, b = the_gioi["a"], the_gioi["b"]
+    nv = db.query(User).filter_by(username="cs1").one()
+    dv = db.query(Service).one()
+    _xin(db, a["khach"], a["pet"], nv, dv)
+
+    lc = kd.lua_chon_dat_lich(db, a["khach"])
+
+    assert [p.id for p in lc.thu_cung] == [a["pet"].id]
+    assert [d.id for d in lc.dich_vu] == [dv.id]
+    assert [n.id for n in lc.nhan_vien] == [nv.id]
+    assert lc.so_lich_cho == 1
+    assert lc.tran_lich_cho >= 1
+    assert b["pet"].id not in [p.id for p in lc.thu_cung]
+
+
+def test_lua_chon_dat_lich_khach_chua_noi_khong_co_thu_cung_nao(db, the_gioi):
+    lc = kd.lua_chon_dat_lich(db, the_gioi["c"])
+
+    assert lc.thu_cung == []
+    assert lc.so_lich_cho == 0
+
+
+def test_gui_yeu_dat_lich_tao_lich_pending_gan_dung_khach(db, frozen_clock, the_gioi):
+    a = the_gioi["a"]
+    nv = db.query(User).filter_by(username="cs1").one()
+    dv = db.query(Service).one()
+
+    lich = _xin(db, a["khach"], a["pet"], nv, dv)
+
+    assert lich.status == "pending"
+    assert lich.customer_id == a["khach"].id
+    assert lich.pet_id == a["pet"].id
+    assert lich.note == "ghi chu khach"
+
+
+@pytest.mark.parametrize("ai_xin,pet_cua", [("a", "b"), ("c", "a")])
+def test_gui_yeu_dat_lich_cho_thu_cung_khong_phai_cua_minh_la_404_nhu_id_khong_co(db, frozen_clock, the_gioi, ai_xin, pet_cua):
+    """Khách C chưa nối hồ sơ cũng vào cùng nhánh: không có chủ nuôi nào để so."""
+    khach = the_gioi[ai_xin]["khach"] if ai_xin != "c" else the_gioi["c"]
+    nv = db.query(User).filter_by(username="cs1").one()
+    dv = db.query(Service).one()
+
+    with pytest.raises(LoiKhongTimThay) as that:
+        kd.gui_yeu_dat_lich(db, khach, the_gioi[pet_cua]["pet"].id, dv.id, nv.id, datetime(2026, 3, 13, 9))
+    with pytest.raises(LoiKhongTimThay) as khong_co:
+        kd.gui_yeu_dat_lich(db, khach, 99999, dv.id, nv.id, datetime(2026, 3, 13, 9))
+
+    assert str(that.value) == str(khong_co.value)
+    assert db.query(Appointment).filter(Appointment.status == "pending").count() == 0
+
+
+# --- Khung giờ trống theo nhân viên (P9 chặng 6) ---------------------------------------
+# frozen_clock = 2026-03-12 08:00. Fixture: cs1 và cả hai thú cưng cùng có lịch 09:00–10:00 ngày 12/03.
+
+NGAY_XEM = date(2026, 3, 12)
+
+
+def _them_nhan_vien(db, username, ten, role="caretaker", dang_hoat_dong=True):
+    nv = User(username=username, password_hash="b", full_name=ten, role=role, is_active=dang_hoat_dong)
+    db.add(nv)
+    db.commit()
+    return nv
+
+
+def _gio_cua(nhom, nhan_vien_id):
+    return next(g.gio for g in nhom if g.nhan_vien.id == nhan_vien_id)
+
+
+def test_khung_trong_nhom_theo_nhan_vien_va_tinh_theo_ca_nhan_vien_lan_thu_cung(db, frozen_clock, the_gioi):
+    a = the_gioi["a"]
+    cs1 = db.query(User).filter_by(username="cs1").one()
+    cs2 = _them_nhan_vien(db, "cs2", "Pham Thi Soc")
+    dv = db.query(Service).one()
+
+    nhom = kd.khung_trong_cua_khach(db, a["khach"], a["pet"].id, dv.id, NGAY_XEM)
+
+    assert [g.nhan_vien.id for g in nhom] == [cs1.id, cs2.id]
+    gio_cs1, gio_cs2 = _gio_cua(nhom, cs1.id), _gio_cua(nhom, cs2.id)
+    # cs1 bận 09:00–10:00: mọi khung chạm vào đó đều mất
+    assert datetime(2026, 3, 12, 8) in gio_cs1 and datetime(2026, 3, 12, 10) in gio_cs1
+    assert not {datetime(2026, 3, 12, 8, 30), datetime(2026, 3, 12, 9), datetime(2026, 3, 12, 9, 30)} & set(gio_cs1)
+    # cs2 rảnh cả ngày, nhưng thú cưng của khách đang có lịch 09:00–10:00 với cs1 nên cũng không thể ở hai nơi
+    assert datetime(2026, 3, 12, 9) not in gio_cs2 and datetime(2026, 3, 12, 8, 30) not in gio_cs2
+    assert datetime(2026, 3, 12, 10) in gio_cs2
+    assert len(gio_cs2) > 5
+
+
+def test_khung_trong_chi_co_nhan_vien_cham_soc_dang_hoat_dong(db, frozen_clock, the_gioi):
+    a = the_gioi["a"]
+    _them_nhan_vien(db, "cs_khoa", "Bi Khoa", dang_hoat_dong=False)
+    _them_nhan_vien(db, "lt", "Le Tan", role="receptionist")
+    dv = db.query(Service).one()
+
+    nhom = kd.khung_trong_cua_khach(db, a["khach"], a["pet"].id, dv.id, NGAY_XEM)
+
+    assert [g.nhan_vien.username for g in nhom] == ["cs1"]
+
+
+def test_khung_trong_ngay_da_qua_van_liet_ke_nhan_vien_voi_danh_sach_rong(db, frozen_clock, the_gioi):
+    a = the_gioi["a"]
+    dv = db.query(Service).one()
+
+    nhom = kd.khung_trong_cua_khach(db, a["khach"], a["pet"].id, dv.id, date(2026, 3, 11))
+
+    assert len(nhom) == 1 and nhom[0].gio == []
+
+
+def test_khung_trong_lich_pending_cua_khach_khac_dang_giu_cho(db, frozen_clock, the_gioi):
+    a, b = the_gioi["a"], the_gioi["b"]
+    cs1 = db.query(User).filter_by(username="cs1").one()
+    dv = db.query(Service).one()
+    kd.gui_yeu_dat_lich(db, b["khach"], b["pet"].id, dv.id, cs1.id, datetime(2026, 3, 12, 11))
+
+    gio = _gio_cua(kd.khung_trong_cua_khach(db, a["khach"], a["pet"].id, dv.id, NGAY_XEM), cs1.id)
+
+    assert not {datetime(2026, 3, 12, 10, 30), datetime(2026, 3, 12, 11), datetime(2026, 3, 12, 11, 30)} & set(gio)
+    assert datetime(2026, 3, 12, 10) in gio and datetime(2026, 3, 12, 12) in gio
+
+
+def test_khung_trong_ket_qua_chi_gom_nhan_vien_va_gio_khong_dau_vet_cua_khach_khac(db, frozen_clock, the_gioi):
+    a = the_gioi["a"]
+    dv = db.query(Service).one()
+
+    nhom = kd.khung_trong_cua_khach(db, a["khach"], a["pet"].id, dv.id, NGAY_XEM)
+
+    assert set(vars(nhom[0])) == {"nhan_vien", "gio"}
+
+
+def test_khung_trong_thu_cung_cua_nguoi_khac_va_id_khong_co_cung_mot_404(db, frozen_clock, the_gioi):
+    a, b, c = the_gioi["a"], the_gioi["b"], the_gioi["c"]
+    dv = db.query(Service).one()
+
+    with pytest.raises(LoiKhongTimThay) as cua_nguoi_khac:
+        kd.khung_trong_cua_khach(db, a["khach"], b["pet"].id, dv.id, NGAY_XEM)
+    with pytest.raises(LoiKhongTimThay) as khong_co:
+        kd.khung_trong_cua_khach(db, a["khach"], 99999, dv.id, NGAY_XEM)
+    with pytest.raises(LoiKhongTimThay) as chua_noi:
+        kd.khung_trong_cua_khach(db, c, a["pet"].id, dv.id, NGAY_XEM)
+
+    assert str(cua_nguoi_khac.value) == str(khong_co.value) == str(chua_noi.value)
+
+
+def test_khung_trong_dich_vu_khong_co_la_404_va_dich_vu_ngung_ban_bi_chan(db, frozen_clock, the_gioi):
+    a = the_gioi["a"]
+    dv = db.query(Service).one()
+
+    with pytest.raises(LoiKhongTimThay):
+        kd.khung_trong_cua_khach(db, a["khach"], a["pet"].id, 99999, NGAY_XEM)
+
+    dv.is_active = False
+    db.commit()
+    with pytest.raises(LoiNghiepVu, match="ngưng bán"):
+        kd.khung_trong_cua_khach(db, a["khach"], a["pet"].id, dv.id, NGAY_XEM)

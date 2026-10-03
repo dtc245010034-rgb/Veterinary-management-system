@@ -3,6 +3,7 @@
 
 {% block noi_dung %}
 <h1>Lịch hẹn của tôi</h1>
+<p><a href="/khach/dat-lich">Xin đặt lịch mới</a></p>
 {% if khach.owner_id is none %}
 <p class="phu">Tài khoản của bạn chưa được liên kết với hồ sơ tại cửa hàng nên chưa có dữ liệu để xem.
 <a href="/khach/lien-ket">Gửi yêu cầu liên kết hồ sơ</a>.</p>
@@ -10,7 +11,7 @@
 <p class="phu">Chưa có lịch hẹn nào.</p>
 {% else %}
 <table>
-  <thead><tr><th>Thời gian</th><th>Thú cưng</th><th>Dịch vụ</th><th>Trạng thái</th></tr></thead>
+  <thead><tr><th>Thời gian</th><th>Thú cưng</th><th>Dịch vụ</th><th>Trạng thái</th><th>Ghi chú của cửa hàng</th></tr></thead>
   <tbody>
   {% for l in lich_hen %}
     <tr>
@@ -18,6 +19,7 @@
       <td>{{ l.pet.name }}</td>
       <td>{{ l.service.name }}</td>
       <td>{{ l.ten_trang_thai }}</td>
+      <td>{% if l.customer_id and l.status == 'cancelled' %}{{ l.cancel_reason or '' }}{% endif %}</td>
     </tr>
   {% endfor %}
   </tbody>

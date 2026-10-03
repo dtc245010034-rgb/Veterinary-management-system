@@ -197,7 +197,8 @@ def test_trang_loi_cua_khach_dua_ve_cong_khach_khong_ve_trang_nhan_vien(khach_a,
 
 def test_quet_moi_route_khach_co_tham_so_id_deu_nam_trong_phep_thu_idor():
     """Thêm route `/khach/.../{..._id}` mà chưa có ca IDOR ở trên thì phép canh này đỏ."""
-    da_thu = {"/khach/thu-cung/{thu_cung_id}", "/khach/hoa-don/{hoa_don_id}"}
+    # `/khach/hoi-dap/{log_id}` được thử IDOR ở test_khach_ai.py (log của khách khác = id không tồn tại, cùng 404).
+    da_thu = {"/khach/thu-cung/{thu_cung_id}", "/khach/hoa-don/{hoa_don_id}", "/khach/hoi-dap/{log_id}"}
     co = {
         duong_dan
         for duong_dan, cac_phuong_thuc in app.openapi()["paths"].items()

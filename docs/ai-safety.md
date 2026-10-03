@@ -290,7 +290,7 @@ nhãn một model Gemini thật và mỗi câu hỏi cộng một lượt khốn
 
 Nói thẳng về giới hạn: không thể bảo đảm mô hình ngôn ngữ không bao giờ vượt rào. Vì vậy lớp phòng
 vệ thật nằm ở chỗ khác — `DISCLAIMER` hiển thị cố định trên giao diện, và hệ thống được định vị rõ
-ràng là công cụ tham khảo cho nhân viên cửa hàng, không phải công cụ tư vấn y tế cho khách.
+ràng là công cụ tham khảo, không phải công cụ tư vấn y tế — với nhân viên cũng như với khách (mục 10).
 
 ## 9. Kết quả chạy với Gemini thật (19/09)
 
@@ -307,3 +307,27 @@ Báo cáo đầy đủ, chép nguyên văn từng phản hồi:
 - Lượt mô phỏng mất mạng lộ ra một lỗi, đã sửa kèm test: lỗi kết nối bị **đếm khống vào quota**
   (4 lượt mỗi lần bấm) và thông báo lộ chuỗi tiếng Anh của `urllib`. Nay có lớp riêng `LoiKetNoi`:
   vẫn xoay ca như quá tải, nhưng không tính lượt.
+
+## 10. AI cho khách hàng (P9 chặng 7, 03/10)
+
+Cổng khách có **đúng một** tính năng AI: hỏi đáp chăm sóc (US-26) tại `/khach/hoi-dap`. Nhắc lịch và tóm tắt hồ sơ
+đọc dữ liệu chủ nuôi và thú cưng nên **không mở cho khách** — phép canh `HAM_AI_CHO_KHACH` trong `test_architecture.py`
+đỏ nếu router khách gọi bất kỳ hàm AI nào ngoài danh sách hỏi đáp.
+
+| Vấn đề | Cách xử lý | Chứng minh |
+|---|---|---|
+| Dữ liệu cá nhân | **Chỉ câu hỏi** (đã qua `xoa_lien_he`) đi sang AI. Không tên khách, email, thú cưng hay hồ sơ; khách không có "ngữ cảnh thú cưng" như nhân viên | TC-179, TC-182 (assert prompt gửi đi và trang không có tên khách / chủ / thú cưng) |
+| Guardrail | Dùng chung `_hoi_dap` với nhân viên: chặn xin thuốc trước khi gọi, thay cả phản hồi nếu lộ liều, nối `DISCLAIMER` | TC-179, TC-181 |
+| Khuyến cáo | Câu cố định nằm **trong template**, hiện cả khi AI lỗi hay hết lượt | TC-181 |
+| Lạm dụng / cạn quota | Hạn mức `AI_KHACH_TOI_DA_MOI_NGAY` (mặc định 10) lượt mỗi tài khoản mỗi ngày, đếm từ `ai_logs.customer_id`. Hết lượt: HTTP 429, **không gọi API, không ghi log**. Câu xin thuốc có tính lượt (chặn bơm log); lỗi AI không tính | TC-180, TC-181 |
+| Đọc kết quả | `/khach/hoi-dap/{id}` chỉ cho chủ dòng log; id của người khác, của nhân viên hay không tồn tại cùng một 404 | TC-180, TC-182 |
+
+Giới hạn đã biết, chấp nhận: kiểm hạn mức rồi mới gọi API không khoá giao dịch, nên hai yêu cầu đồng thời của cùng một
+khách có thể vượt hạn mức 1 lượt. Hạn mức theo tài khoản **không** thay cho quota Gemini toàn cửa hàng (mục 8): khi các
+model hết lượt, khách nhận thông báo lỗi AI như nhân viên và lượt hỏi của họ không bị trừ.
+
+Chiều ngược lại **không bị chặn — chấp nhận có chủ ý (người dùng quyết ngày 03/10/2026)**: nhân viên (mọi vai trò)
+đọc được câu hỏi và câu trả lời của khách qua `/ai/ket-qua/{id}`, vì `lay_log` không lọc chủ dòng log (phát hiện khi
+kiểm thử Chrome 03/10). Câu hỏi của khách là văn bản tự do, khách có thể tự gõ thông tin cá nhân vào đó; nhân viên
+cửa hàng vốn đã xem được hồ sơ chủ nuôi nên mức rủi ro thêm là nhỏ. **Không sửa** — đừng coi đây là lỗi tồn đọng khi rà
+lại; nếu sau này cần giới hạn, đổi `lay_log` để lọc theo `customer_id` và thêm test cho từng vai trò.

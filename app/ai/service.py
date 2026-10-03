@@ -15,6 +15,7 @@ Thứ tự bên trong mỗi tính năng luôn là:
 
 from dataclasses import dataclass
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.ai import guardrail, prompts, quota
@@ -32,6 +33,10 @@ from app.services.scheduling import TRANG_THAI_SUA_DUOC
 # Số hồ sơ đưa vào một prompt tóm tắt. Con vật nuôi mười năm có thể có hàng trăm buổi; gửi
 # hết vừa tốn token vừa làm loãng phần mới nhất, mà nhân viên tra cứu cần đúng phần đó.
 SO_HO_SO_TOM_TAT = 20
+
+
+class LoiHetHanMuc(LoiNghiepVu):
+    """Khách đã dùng hết lượt hỏi đáp AI trong ngày. Lớp con để router trả 429 thay vì 400."""
 
 
 @dataclass(frozen=True)
@@ -150,7 +155,58 @@ def hoi_dap(
     cau_hoi: str,
     ghim_model: str | None = None,
 ) -> KetQuaAI:
-    """US-26, US-27: trả lời câu hỏi chăm sóc thường ngày.
+    """US-26, US-27: nhân viên hỏi đáp chăm sóc thường ngày."""
+    return _hoi_dap(db, provider, nguoi_dung_id, None, cau_hoi, ghim_model)
+
+
+def hoi_dap_khach(
+    db: Session,
+    provider: AIProvider,
+    khach_id: int,
+    cau_hoi: str,
+    ghim_model: str | None = None,
+) -> KetQuaAI:
+    """US-26 cho khách (P9 chặng 7): cùng guardrail với nhân viên, thêm hạn mức ngày theo tài khoản.
+
+    Hạn mức kiểm TRƯỚC mọi thứ: hết lượt thì không gọi API và không ghi dòng log nào. Khách chỉ có hỏi đáp —
+    chỉ câu hỏi (đã lọc liên hệ) đi sang AI, không có tên, email hay hồ sơ thú cưng.
+    """
+    if so_luot_con_lai_khach(db, khach_id) <= 0:
+        raise LoiHetHanMuc(
+            f"Bạn đã hết lượt hỏi AI hôm nay (tối đa {settings.ai_khach_toi_da_moi_ngay} lượt mỗi ngày). "
+            "Hãy thử lại vào ngày mai, hoặc hỏi trực tiếp nhân viên cửa hàng."
+        )
+    return _hoi_dap(db, provider, None, khach_id, cau_hoi, ghim_model)
+
+
+def so_luot_toi_da_khach() -> int:
+    return settings.ai_khach_toi_da_moi_ngay
+
+
+def so_luot_con_lai_khach(db: Session, khach_id: int) -> int:
+    """Số lượt hỏi còn lại trong ngày. Đếm dòng log của khách từ 00:00 hôm nay, bỏ dòng lỗi AI."""
+    dau_ngay = clock.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    da_dung = db.scalar(
+        select(func.count())
+        .select_from(AiLog)
+        .where(
+            AiLog.customer_id == khach_id,
+            AiLog.is_error.is_(False),
+            AiLog.created_at >= dau_ngay,
+        )
+    )
+    return max(0, settings.ai_khach_toi_da_moi_ngay - da_dung)
+
+
+def _hoi_dap(
+    db: Session,
+    provider: AIProvider,
+    nguoi_dung_id: int | None,
+    khach_id: int | None,
+    cau_hoi: str,
+    ghim_model: str | None,
+) -> KetQuaAI:
+    """Thân chung của hai đường hỏi đáp.
 
     Câu xin thuốc hoặc liều bị từ chối **trước khi gọi API**: không gửi đi thì không phụ
     thuộc việc mô hình có nghe lời hay không (ca G-08 → G-10, G-13).
@@ -173,12 +229,13 @@ def hoi_dap(
         log = _ghi_log(
             db, nguoi_dung_id, "qa", cau_hoi,
             phan_hoi=prompts.them_disclaimer(prompts.TU_CHOI_THUOC),
+            khach_id=khach_id,
         )
         return KetQuaAI(noi_dung=log.response, model=None, log_id=log.id)
 
     return _goi(
         db, provider, nguoi_dung_id,
-        tinh_nang="qa", prompt=cau_hoi, khuyen_cao=True, ghim_model=ghim_model,
+        tinh_nang="qa", prompt=cau_hoi, khuyen_cao=True, ghim_model=ghim_model, khach_id=khach_id,
     )
 
 
@@ -188,11 +245,12 @@ def hoi_dap(
 def _goi(
     db: Session,
     provider: AIProvider,
-    nguoi_dung_id: int,
+    nguoi_dung_id: int | None,
     tinh_nang: str,
     prompt: str,
     khuyen_cao: bool = False,
     ghim_model: str | None = None,
+    khach_id: int | None = None,
 ) -> KetQuaAI:
     """Gọi AI, hậu kiểm, ghi log. Lỗi AI vẫn để lại một dòng log rồi mới ném lên.
 
@@ -207,7 +265,7 @@ def _goi(
             ghim_model=ghim_model,
         )
     except LoiAI:
-        _ghi_log(db, nguoi_dung_id, tinh_nang, prompt, phan_hoi=None, loi=True)
+        _ghi_log(db, nguoi_dung_id, tinh_nang, prompt, phan_hoi=None, loi=True, khach_id=khach_id)
         raise
 
     if guardrail.chua_lieu_luong(noi_dung):
@@ -219,7 +277,7 @@ def _goi(
     if khuyen_cao:
         noi_dung = prompts.them_disclaimer(noi_dung)
 
-    log = _ghi_log(db, nguoi_dung_id, tinh_nang, prompt, phan_hoi=noi_dung, model=model)
+    log = _ghi_log(db, nguoi_dung_id, tinh_nang, prompt, phan_hoi=noi_dung, model=model, khach_id=khach_id)
     return KetQuaAI(noi_dung=noi_dung, model=model, log_id=log.id)
 
 
@@ -236,15 +294,17 @@ def _them_cau_nhac_tiem(db: Session, ket_qua: KetQuaAI) -> KetQuaAI:
 
 def _ghi_log(
     db: Session,
-    nguoi_dung_id: int,
+    nguoi_dung_id: int | None,
     tinh_nang: str,
     prompt: str,
     phan_hoi: str | None,
     model: str | None = None,
     loi: bool = False,
+    khach_id: int | None = None,
 ) -> AiLog:
     log = AiLog(
         user_id=nguoi_dung_id,
+        customer_id=khach_id,
         feature=tinh_nang,
         prompt=prompt,
         response=phan_hoi,
@@ -275,5 +335,13 @@ def dat_lai_quota(db: Session) -> int:
 def lay_log(db: Session, log_id: int) -> AiLog:
     log = db.get(AiLog, log_id)
     if log is None:
+        raise LoiKhongTimThay("Không tìm thấy kết quả AI này.")
+    return log
+
+
+def lay_log_khach(db: Session, khach_id: int, log_id: int) -> AiLog:
+    """Dòng log của chính khách này. Của người khác (hay của nhân viên) báo y hệt id không tồn tại."""
+    log = db.get(AiLog, log_id)
+    if log is None or log.customer_id != khach_id:
         raise LoiKhongTimThay("Không tìm thấy kết quả AI này.")
     return log

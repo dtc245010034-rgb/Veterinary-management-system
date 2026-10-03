@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     smtp_starttls: bool = True
     mail_timeout_giay: float = 10
 
+    # Số lượt hỏi đáp AI tối đa của MỘT tài khoản khách trong một ngày (P9 chặng 7). Gói Gemini miễn phí chỉ có vài chục
+    # lượt mỗi model mỗi ngày; không chặn theo tài khoản thì một khách đốt hết phần của cả cửa hàng. Câu bị guardrail
+    # chặn (xin thuốc) cũng tính, câu gặp lỗi AI thì không. Nhân viên không bị giới hạn này.
+    ai_khach_toi_da_moi_ngay: int = 10
+
     # Nhà cung cấp AI: "gemini" gọi API thật, "fake" trả lời cố định (dùng từ P7)
     ai_provider: str = "fake"
     gemini_api_key: str = ""

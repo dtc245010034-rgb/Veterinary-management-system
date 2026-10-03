@@ -75,6 +75,10 @@
                       and (user.role == 'manager' or a.staff_id == user.id) %}
                 <a class="chinh-nhe" href="/appointments/{{ a.id }}/ho-so">Ghi hồ sơ</a>
               {% endif %}
+              {% if a.status == 'pending' and user.role in ('manager', 'receptionist') %}
+                {# Lịch khách tự xin: duyệt/từ chối ở màn riêng, không đổi hay hủy tại lưới. #}
+                <a class="chinh-nhe" href="/lich-cho-duyet">Duyệt / từ chối</a>
+              {% endif %}
               {% if user.role in ('manager', 'receptionist') %}
                 {# Soạn tin nhắc chỉ có nghĩa với buổi chưa diễn ra (US-24). #}
                 {% if a.status in ('booked', 'rescheduled') and a.start_at > bay_gio %}
@@ -103,7 +107,7 @@
                 </form>
                 <form method="post" action="/appointments/{{ a.id }}/huy">
                   <input type="hidden" name="ngay" value="{{ ngay.isoformat() }}">
-                  <input name="ly_do" placeholder="Lý do hủy" required>
+                  <input name="ly_do" placeholder="{{ 'Lý do hủy (khách thấy được)' if a.customer_id else 'Lý do hủy' }}" required>
                   <button type="submit" class="nguy-hiem">Hủy</button>
                 </form>
                 {% elif a.cancel_reason %}

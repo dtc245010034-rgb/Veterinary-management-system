@@ -75,6 +75,60 @@ def test_khoi_dong_them_cot_con_thieu_vao_csdl_cu(engine_tam, monkeypatch):
     assert "email" in {c["name"] for c in inspect(engine_tam).get_columns("owners")}
 
 
+def test_khoi_dong_dung_lai_bang_lich_hen_cu_de_nhan_trang_thai_pending(engine_tam, monkeypatch):
+    """P9 chặng 5: `petcare.db` dựng trước đó có CHECK không cho `pending` — khởi động phải sửa, không để 500."""
+    import app.main as main
+    from app.db import Base
+    from sqlalchemy import inspect, text
+
+    monkeypatch.setattr(main.settings, "secret_key", "mot-chuoi-rieng-cua-cua-hang")
+    Base.metadata.create_all(engine_tam, tables=[t for t in Base.metadata.sorted_tables if t.name != "appointments"])
+    with engine_tam.begin() as c:
+        c.execute(
+            text(
+                "CREATE TABLE appointments (id INTEGER NOT NULL PRIMARY KEY, pet_id INTEGER NOT NULL, "
+                "service_id INTEGER NOT NULL, staff_id INTEGER NOT NULL, start_at DATETIME NOT NULL, "
+                "end_at DATETIME NOT NULL, status VARCHAR(20) NOT NULL, note TEXT, cancel_reason TEXT, "
+                "created_by INTEGER NOT NULL, created_at DATETIME NOT NULL, "
+                "CONSTRAINT ck_appointments_status CHECK (status IN ('booked', 'rescheduled', 'cancelled', 'done')))"
+            )
+        )
+
+    _chay_lifespan()
+
+    with engine_tam.connect() as c:
+        ddl = c.execute(text("SELECT sql FROM sqlite_master WHERE name = 'appointments'")).scalar_one()
+    assert "'pending'" in ddl
+    cot = {c["name"]: c for c in inspect(engine_tam).get_columns("appointments")}
+    assert cot["created_by"]["nullable"] is True
+    assert {"customer_id", "decided_by"} <= set(cot)
+
+
+def test_khoi_dong_dung_lai_bang_nhat_ky_ai_cu_de_nhan_dong_cua_khach(engine_tam, monkeypatch):
+    """P9 chặng 7: `ai_logs.user_id` cũ là NOT NULL — khách hỏi AI lần đầu sẽ 500 nếu khởi động không sửa."""
+    import app.main as main
+    from app.db import Base
+    from sqlalchemy import inspect, text
+
+    monkeypatch.setattr(main.settings, "secret_key", "mot-chuoi-rieng-cua-cua-hang")
+    Base.metadata.create_all(engine_tam, tables=[t for t in Base.metadata.sorted_tables if t.name != "ai_logs"])
+    with engine_tam.begin() as c:
+        c.execute(
+            text(
+                "CREATE TABLE ai_logs (id INTEGER NOT NULL PRIMARY KEY, user_id INTEGER NOT NULL, "
+                "feature VARCHAR(20) NOT NULL, prompt TEXT NOT NULL, response TEXT, is_error BOOLEAN NOT NULL, "
+                "model VARCHAR(60), created_at DATETIME NOT NULL, "
+                "CONSTRAINT ck_ai_logs_feature CHECK (feature IN ('reminder', 'summary', 'qa')))"
+            )
+        )
+
+    _chay_lifespan()
+
+    cot = {c["name"]: c for c in inspect(engine_tam).get_columns("ai_logs")}
+    assert cot["user_id"]["nullable"] is True
+    assert "customer_id" in cot
+
+
 # --- Chế độ công khai từ chối mật khẩu mặc định (P9 chặng 2) -----------------------
 
 

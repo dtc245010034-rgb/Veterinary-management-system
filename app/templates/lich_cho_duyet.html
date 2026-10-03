@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block tieu_de %}Lịch chờ duyệt{% endblock %}
+
+{% block noi_dung %}
+<h1>Lịch chờ duyệt</h1>
+<p class="phu">Khách tự xin các lịch này trên cổng khách. Mỗi yêu cầu giữ khung giờ tối đa 24 giờ kể từ lúc gửi, quá hạn thì tự hủy.
+Duyệt sẽ biến yêu cầu thành lịch hẹn chính thức; từ chối phải ghi lý do và khách sẽ đọc được lý do đó.</p>
+
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+<h2>Đang chờ ({{ cho_duyet|length }})</h2>
+{% for a in cho_duyet %}
+<div class="the">
+  <p><strong>{{ a.start_at.strftime("%d/%m/%Y %H:%M") }}–{{ a.end_at.strftime("%H:%M") }}</strong> — {{ a.service.name }}</p>
+  <p>Thú cưng: <a href="/pets/{{ a.pet_id }}">{{ a.pet.name }}</a> · Chủ nuôi: <a href="/owners/{{ a.pet.owner_id }}">{{ a.pet.owner.full_name }}</a> · Nhân viên: {{ a.staff.full_name }}</p>
+  {% if a.note %}<p>Ghi chú của khách: {{ a.note }}</p>{% endif %}
+  <p class="phu nhan-nho">Gửi lúc {{ a.created_at.strftime("%d/%m/%Y %H:%M") }}</p>
+
+  <form method="post" action="/lich-cho-duyet/{{ a.id }}/duyet">
+    <button type="submit" class="chinh">Duyệt</button>
+  </form>
+  <form method="post" action="/lich-cho-duyet/{{ a.id }}/tu-choi">
+    <label>Lý do từ chối (khách sẽ thấy) <input name="ly_do" maxlength="500" required></label>
+    <button type="submit" class="nguy-hiem">Từ chối</button>
+  </form>
+</div>
+{% else %}
+<div class="the rong"><p>Không có yêu cầu nào đang chờ.</p></div>
+{% endfor %}
+{% endblock %}

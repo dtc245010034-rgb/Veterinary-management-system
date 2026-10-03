@@ -14,16 +14,19 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 from app.services import clock
 
-TRANG_THAI = ("booked", "rescheduled", "cancelled", "done")
+# `pending`: khách tự xin đặt lịch, lễ tân chưa duyệt (P9 chặng 5). Giữ chỗ nhưng chỉ trong HAN_CHO_DUYET_GIO.
+TRANG_THAI = ("pending", "booked", "rescheduled", "cancelled", "done")
 
 TEN_TRANG_THAI = {
+    "pending": "Chờ duyệt",
     "booked": "Đã đặt",
     "rescheduled": "Đã đổi lịch",
     "cancelled": "Đã hủy",
     "done": "Hoàn thành",
 }
 
-# Trạng thái còn chiếm chỗ trong lịch. Lịch đã hủy không tham gia kiểm tra trùng.
+# Trạng thái còn chiếm chỗ trong lịch. Lịch đã hủy không tham gia kiểm tra trùng. KHÔNG có `pending`: lịch chờ
+# duyệt chưa phải lịch thật (không vào thống kê, không lập hóa đơn); nó giữ chỗ bằng điều kiện riêng ở scheduling.py.
 TRANG_THAI_CON_HIEU_LUC = ("booked", "rescheduled", "done")
 
 
@@ -33,7 +36,7 @@ class Appointment(Base):
         # Khoảng rỗng hoặc âm sẽ lọt qua mọi phép kiểm tra trùng lịch vì không giao với gì cả.
         CheckConstraint("end_at > start_at", name="ck_appointments_thoi_gian"),
         CheckConstraint(
-            "status IN ('booked', 'rescheduled', 'cancelled', 'done')",
+            "status IN ('pending', 'booked', 'rescheduled', 'cancelled', 'done')",
             name="ck_appointments_status",
         ),
         # Hai index này phục vụ truy vấn kiểm tra trùng lịch trong scheduling.py.
@@ -57,7 +60,11 @@ class Appointment(Base):
     note: Mapped[str | None] = mapped_column(Text)
     cancel_reason: Mapped[str | None] = mapped_column(Text)
 
-    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    # NULL khi lịch do khách tự xin (khách không phải `users`); khi đó `customer_id` có giá trị.
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"))
+    # Lễ tân duyệt hoặc từ chối lịch `pending`.
+    decided_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=clock.now)
 
     pet: Mapped["Pet"] = relationship(lazy="selectin")  # noqa: F821
@@ -66,7 +73,7 @@ class Appointment(Base):
     # Hai quan hệ cùng trỏ tới users nên phải nói rõ dùng khóa ngoại nào,
     # nếu không SQLAlchemy không biết chọn cột nào.
     staff: Mapped["User"] = relationship(foreign_keys=[staff_id], lazy="selectin")  # noqa: F821
-    nguoi_tao: Mapped["User"] = relationship(foreign_keys=[created_by])  # noqa: F821
+    nguoi_tao: Mapped["User | None"] = relationship(foreign_keys=[created_by])  # noqa: F821
 
     @property
     def ten_trang_thai(self) -> str:

@@ -367,7 +367,7 @@ def _in_bang(db: Session) -> None:
 
 
 def _nguoi_dung_cli(db: Session) -> int:
-    """`ai_logs.user_id` là NOT NULL, nên lệnh phải ghi sổ dưới tên một tài khoản có thật."""
+    """`ai_logs` bắt buộc có đúng một chủ (CHECK), nên lệnh phải ghi sổ dưới tên một tài khoản có thật."""
     from app.models.user import User
 
     nguoi = db.scalar(select(User).where(User.role == "manager", User.is_active)) or db.scalar(
