@@ -10,10 +10,14 @@ phép canh trong `tests/unit/test_architecture.py`:
 Chỉ mở: thú cưng (kèm lịch sử tiêm), lịch hẹn, hóa đơn. KHÔNG mở hồ sơ chăm sóc: đó là ghi chú nội bộ của nhân
 viên. Template chỉ đọc đúng các trường nêu trong từng trang; `note`, `cancel_reason`, tên nhân viên không hiện.
 
+Ngoại lệ có chủ đích: `note` và tên nhân viên hiện ở form xin lịch (khách chọn người chăm), và `cancel_reason`
+hiện cho lịch KHÁCH TỰ XIN bị từ chối/hết hạn (P9 chặng 5) — lý do đó lễ tân viết để khách đọc.
+
 Không import fastapi.
 """
 
 from dataclasses import dataclass
+from datetime import date, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -22,8 +26,12 @@ from app.models.appointment import Appointment
 from app.models.customer import Customer
 from app.models.invoice import Invoice
 from app.models.pet import Pet
+from app.models.service import Service
+from app.models.user import User
 from app.models.vaccination import Vaccination
-from app.services.errors import LoiKhongTimThay
+from app.services import catalog
+from app.services import scheduling
+from app.services.errors import LoiKhongTimThay, LoiNghiepVu
 
 LOI_KHONG_THAY = "Không tìm thấy mục này trong hồ sơ của bạn."
 
@@ -32,6 +40,23 @@ LOI_KHONG_THAY = "Không tìm thấy mục này trong hồ sơ của bạn."
 class ChiTietThuCung:
     thu_cung: Pet
     tiem_phong: list[Vaccination]
+
+
+@dataclass
+class LuaChonDatLich:
+    thu_cung: list[Pet]
+    dich_vu: list[Service]
+    nhan_vien: list[User]
+    so_lich_cho: int
+    tran_lich_cho: int
+
+
+@dataclass
+class KhungTrongNhanVien:
+    """Một nhân viên và các giờ bắt đầu còn trống. Cố ý chỉ hai trường này: không thứ gì của khách khác lọt vào."""
+
+    nhan_vien: User
+    gio: list[datetime]
 
 
 def ma_chu_nuoi(khach: Customer) -> int | None:
@@ -97,3 +122,60 @@ def chi_tiet_hoa_don(db: Session, khach: Customer, hoa_don_id: int) -> Invoice:
         raise LoiKhongTimThay(LOI_KHONG_THAY)
     yeu_cau_so_huu(khach, hoa_don)
     return hoa_don
+
+
+def lua_chon_dat_lich(db: Session, khach: Customer) -> LuaChonDatLich:
+    """Dữ liệu cho form xin lịch: thú cưng CỦA KHÁCH, dịch vụ đang bán, nhân viên còn hoạt động."""
+    chu = ma_chu_nuoi(khach)
+    thu_cung = [] if chu is None else list(db.scalars(select(Pet).where(Pet.owner_id == chu).order_by(Pet.name, Pet.id)))
+    nhan_vien = list(db.scalars(select(User).where(User.role == "caretaker", User.is_active).order_by(User.full_name)))
+    return LuaChonDatLich(
+        thu_cung=thu_cung,
+        dich_vu=catalog.danh_sach_dang_ban(db),
+        nhan_vien=nhan_vien,
+        so_lich_cho=scheduling.so_lich_cho_cua_khach(db, khach.id),
+        tran_lich_cho=scheduling.TRAN_LICH_CHO_MOI_KHACH,
+    )
+
+
+def khung_trong_cua_khach(
+    db: Session, khach: Customer, thu_cung_id: int, dich_vu_id: int, ngay: date
+) -> list[KhungTrongNhanVien]:
+    """Giờ còn trống trong `ngay`, nhóm theo từng nhân viên chăm sóc còn hoạt động (P9 chặng 6).
+
+    Tính theo cả nhân viên lẫn thú cưng của khách, và lịch `pending` còn hạn đang giữ chỗ. Nhân viên hết giờ vẫn có mặt
+    với danh sách rỗng để khách thấy họ kín lịch. Chỉ là gợi ý: lúc gửi yêu cầu mọi phép kiểm chạy lại.
+    """
+    thu_cung = db.get(Pet, thu_cung_id)
+    if thu_cung is None:
+        raise LoiKhongTimThay(LOI_KHONG_THAY)
+    yeu_cau_so_huu(khach, thu_cung)
+    dich_vu = db.get(Service, dich_vu_id)
+    if dich_vu is None:
+        raise LoiKhongTimThay("Không tìm thấy dịch vụ.")
+    if not dich_vu.is_active:
+        raise LoiNghiepVu(f"Dịch vụ “{dich_vu.name}” đã ngưng bán.")
+    nhan_vien = list(db.scalars(select(User).where(User.role == "caretaker", User.is_active).order_by(User.full_name, User.id)))
+    return [
+        KhungTrongNhanVien(
+            n, scheduling.khung_gio_trong(db, n.id, thu_cung.id, ngay, dich_vu.duration_min, toi_da=None)
+        )
+        for n in nhan_vien
+    ]
+
+
+def gui_yeu_dat_lich(
+    db: Session,
+    khach: Customer,
+    thu_cung_id: int,
+    dich_vu_id: int,
+    nhan_vien_id: int,
+    bat_dau: datetime,
+    ghi_chu: str | None = None,
+) -> Appointment:
+    """Khách xin lịch cho thú cưng của mình. Thú cưng của người khác và id không tồn tại cùng cho 404."""
+    thu_cung = db.get(Pet, thu_cung_id)
+    if thu_cung is None:
+        raise LoiKhongTimThay(LOI_KHONG_THAY)
+    yeu_cau_so_huu(khach, thu_cung)
+    return scheduling.tao_yeu_cau_lich(db, khach.id, thu_cung.id, dich_vu_id, nhan_vien_id, bat_dau, ghi_chu)

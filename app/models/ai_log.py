@@ -5,6 +5,9 @@ thống đã gửi gì sang AI và nhận về gì.
 
 `prompt` lưu ĐÚNG chuỗi đã gửi đi, sau khi lọc dữ liệu cá nhân. Nhờ vậy kiểm US-28 chỉ cần
 đọc bảng này, không phải tin vào lời hứa trong tài liệu.
+
+Chủ của một dòng là nhân viên (`user_id`) HOẶC khách (`customer_id`, P9 chặng 7), đúng một trong hai:
+hạn mức hỏi đáp theo tài khoản của khách được đếm thẳng từ bảng này.
 """
 
 from datetime import datetime
@@ -30,10 +33,14 @@ class AiLog(Base):
         CheckConstraint(
             "feature IN ('reminder', 'summary', 'qa')", name="ck_ai_logs_feature"
         ),
+        CheckConstraint(
+            "(user_id IS NULL) <> (customer_id IS NULL)", name="ck_ai_logs_mot_chu_so_huu"
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"), index=True)
     feature: Mapped[str] = mapped_column(String(20), nullable=False)
 
     prompt: Mapped[str] = mapped_column(Text, nullable=False)
@@ -49,7 +56,7 @@ class AiLog(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=clock.now)
 
-    user: Mapped["User"] = relationship(lazy="selectin")  # noqa: F821
+    user: Mapped["User | None"] = relationship(lazy="selectin")  # noqa: F821
 
     @property
     def ten_tinh_nang(self) -> str:

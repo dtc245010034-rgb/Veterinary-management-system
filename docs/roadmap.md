@@ -2,7 +2,7 @@
 
 Đề bài: [`../đề-bài.md`](../đề-bài.md) · Yêu cầu: [`user-stories/README.md`](user-stories/README.md) · Kiểm thử: [`testing/test-strategy.md`](testing/test-strategy.md)
 
-Chín phase, gắn với bốn mốc nộp của môn học. Mỗi phase sinh ra một kế hoạch riêng trong
+Mười phase, gắn với bốn mốc nộp của môn học. Mỗi phase sinh ra một kế hoạch riêng trong
 [`plans/`](plans/) và kết thúc bằng một báo cáo kiểm thử trong [`testing/reports/`](testing/reports/).
 
 **Nguyên tắc chia phase:** mỗi phase phải chạy được và test được ngay khi xong, không phải "làm hết
@@ -23,6 +23,7 @@ model rồi mới làm router". Phase nào cũng để lại một hệ thống 
 | **P6** | Thống kê | KT3 | US-22, US-23 | TC-076→081 | Regression xanh |
 | **P7** | 3 tính năng AI + guardrail | KT3 | US-24→28 | TC-082→100 | 20 ca guardrail xanh; chạy tay với Gemini thật |
 | **P8** | README, báo cáo, slide, rà dữ liệu cá nhân | Cuối kỳ | — | TC-102 | Ma trận test không còn ô ⬜ |
+| **P9** | Cổng khách hàng, Docker, email, tách đặc tả | Sau nhận xét giảng viên | US-29→36 (kèm tách đặc tả US-01→28) | TC-134→182 | Khách tự đăng ký, chỉ thấy dữ liệu của mình, xin được lịch và hỏi AI; suite xanh; smoke P9 người dùng tick |
 
 ## Tiến độ
 
@@ -40,6 +41,7 @@ mới nhất và có phép canh trong `test_architecture.py` giữ hai chỗ kh�
 | P6 | ✅ xong | 11–13/09 | [`2026-09-11-P6.md`](testing/reports/2026-09-11-P6.md), [`rà luồng`](testing/reports/2026-09-11-ra-luong-P6.md) |
 | **P7** | ✅ **xong** — người dùng tick đủ smoke chặng 2, chặng 3 và guardrail ngày 20/09 | 18–20/09 | [`chặng 0`](testing/reports/2026-09-18-P7-chang0.md), [`chặng 1`](testing/reports/2026-09-18-P7-chang1.md), [`chặng 2`](testing/reports/2026-09-18-P7-chang2.md), [`Gemini thật`](testing/reports/2026-09-19-P7-gemini-gemini-3.6-flash.md) |
 | P8 | 🟡 đang làm — việc P6 để lại đã đóng, **mọi lỗi tồn đã sửa hết**, ba ô smoke đã có bằng chứng chờ tick | 24/09 | — |
+| **P9** | 🟡 **chặng 0→8 xong về code và tài liệu (03/10)** — còn ô 2.2 (job CI `docker` chờ chạy trên GitHub) và khối smoke P9 chờ người dùng tick | 02–03/10 | [`2026-10-03-P9.md`](testing/reports/2026-10-03-P9.md) |
 
 Tính tới hết P5: **475 test xanh**, ma trận truy vết **73 ✅ · 2 🟡 · 27 ⬜** trên 102 ca, smoke
 **97 ô đã tick / 29 ô còn lại đều thuộc P6–P8**, ERD **12/13 bảng** đã dựng (còn `ai_logs` của P7).
@@ -105,6 +107,8 @@ Sửa thêm một **phép canh tự báo động giả** (đếm cả khung log 
 **54 phép canh**. Đo lại thời gian test và tìm nguyên nhân theo đúng luật của `test-strategy.md`:
 **không test nào đáng cắt**, 20 ca chậm nhất cộng lại chỉ ~24s trong ~115s, phần còn lại là chi phí
 fixture rải đều — riêng `create_all` từng test tốn **25,6 ms × 904 ≈ 23s**.
+
+Ngày 02–03/10 — **P9 cổng khách hàng** ([kế hoạch tổng](plans/2026-09-25-p9-cong-khach-hang.md), [log phiên](sessions/2026-10-02-01.md)): đóng gói Docker, hạ tầng gửi email, bảng `customers` riêng cho khách, liên kết hồ sơ do lễ tân duyệt, trạng thái lịch `pending` giữ chỗ, trang giờ trống theo nhân viên, hỏi đáp AI có hạn mức theo tài khoản. Đặc tả tách thành **mười file nhóm A–J, 36 user story, 185 tiêu chí**; ma trận **182 ca: 180 ✅ · 1 ⬜ · 1 ➖** (đếm lại 03/10). Chạy Chrome trên bản sao CSDL đã nâng cấp: luồng khách → lễ tân → khách chạy liền mạch, quét bốn vai trò nhân viên **0 lỗi 5xx**.
 
 ---
 
@@ -291,6 +295,16 @@ Dự án chưa từng chạy trên Linux, nên **lượt chạy đầu tiên c�
 
 **DoD:** ma trận [`testing/test-cases.md`](testing/test-cases.md) không còn ô ⬜; toàn bộ suite xanh;
 smoke P8 tick đủ; báo cáo dựng được từ chính `docs/` và `docs/sessions/`.
+
+### P9 — Cổng khách hàng · Sau nhận xét của giảng viên
+
+Sinh ra từ bốn nhận xét của giảng viên (đặc tả gộp một file, OOP, đóng gói/Docker, khách cần biết giờ trống) và yêu cầu khách tự đăng ký — phản biện đầy đủ ở [kế hoạch P9](plans/2026-09-25-p9-cong-khach-hang.md). Tám chặng: 0 fixture test · 1 tách đặc tả · 2 Docker · 3 email · 4 tài khoản khách và cách ly dữ liệu · 5 lịch chờ duyệt · 6 giờ trống · 7 AI cho khách · 8 đóng phase.
+
+Quyết định lớn nhất: khách ở bảng **`customers` riêng**, không phải vai trò thứ tư của `users` — cách ly bằng cấu trúc thay vì bằng nhớ kiểm quyền (xem [kế hoạch chặng 4](plans/2026-10-02-p9-chang4-tai-khoan-khach.md)).
+
+**DoD:** khách đăng ký bằng email, xác minh, đăng nhập; chỉ đọc được dữ liệu của chủ nuôi đã được lễ tân nối; mọi đường dẫn theo id của người khác trả 404 y hệt id không tồn tại; xin lịch `pending` và lễ tân duyệt/từ chối; giờ trống không lộ dữ liệu khách khác; hỏi đáp AI có hạn mức và guardrail; toàn bộ suite xanh; đặc tả đủ ba mục mỗi US; [báo cáo P9](testing/reports/2026-10-03-P9.md); smoke P9 người dùng tick.
+
+Còn mở: ô 2.2 (job CI `docker` chưa chạy trên GitHub) và một khoảng hở đã biết — nhân viên đọc được câu hỏi AI của khách ([`ai-safety.md`](ai-safety.md) mục 10), chờ người dùng quyết.
 
 ---
 

@@ -1,0 +1,45 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Xin đặt lịch{% endblock %}
+
+{% block noi_dung %}
+<h1>Xin đặt lịch</h1>
+{% if khach.owner_id is none %}
+<p class="phu">Tài khoản của bạn chưa được liên kết với hồ sơ tại cửa hàng nên chưa xin lịch được.
+<a href="/khach/lien-ket">Gửi yêu cầu liên kết hồ sơ</a>.</p>
+{% else %}
+<p class="phu">Yêu cầu của bạn chỉ thành lịch hẹn sau khi cửa hàng xác nhận. Trong lúc chờ, khung giờ được giữ cho bạn
+tối đa 24 giờ; quá hạn mà chưa được xác nhận thì yêu cầu tự hủy. Mỗi lần bạn có thể chờ tối đa {{ lc.tran_lich_cho }} yêu cầu
+(hiện có {{ lc.so_lich_cho }}).</p>
+
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+{% if not lc.thu_cung %}
+<p class="phu">Hồ sơ của bạn chưa có thú cưng nào, nên chưa xin lịch được. Hãy nhờ cửa hàng thêm thú cưng.</p>
+{% elif not lc.dich_vu or not lc.nhan_vien %}
+<p class="phu">Cửa hàng chưa mở đặt lịch trực tuyến (thiếu dịch vụ hoặc nhân viên). Vui lòng liên hệ trực tiếp.</p>
+{% else %}
+<form class="the" method="post" action="/khach/dat-lich">
+  <label>Thú cưng
+    <select name="thu_cung_id" required>
+      {% for p in lc.thu_cung %}<option value="{{ p.id }}" {{ 'selected' if cu.thu_cung_id == p.id }}>{{ p.name }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Dịch vụ
+    <select name="dich_vu_id" required>
+      {% for s in lc.dich_vu %}<option value="{{ s.id }}" {{ 'selected' if cu.dich_vu_id == s.id }}>{{ s.name }} ({{ s.duration_min }} phút)</option>{% endfor %}
+    </select>
+  </label>
+  <label>Nhân viên chăm sóc
+    <select name="nhan_vien_id" required>
+      {% for n in lc.nhan_vien %}<option value="{{ n.id }}" {{ 'selected' if cu.nhan_vien_id == n.id }}>{{ n.full_name }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Ngày <input name="ngay" type="date" value="{{ cu.ngay or '' }}" required></label>
+  <label>Giờ bắt đầu <input name="gio" type="time" step="900" value="{{ cu.gio or '' }}" required></label>
+  <label>Ghi chú <input name="ghi_chu" maxlength="500" value="{{ cu.ghi_chu or '' }}"></label>
+  <button type="submit" class="chinh">Gửi yêu cầu</button>
+</form>
+{% endif %}
+{% endif %}
+<p><a href="/khach/lich-hen">Xem lịch hẹn của tôi</a></p>
+{% endblock %}

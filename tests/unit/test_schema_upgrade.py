@@ -138,3 +138,259 @@ def test_csdl_cu_khong_co_session_version_duoc_nang_cap_voi_gia_tri_0():
     with e.connect() as c:
         assert c.execute(text("SELECT session_version FROM users")).scalar_one() == 0
     e.dispose()
+
+
+# --- Dựng lại bảng appointments cho CSDL cũ (P9 chặng 5) ----------------------------------------------
+
+
+def _csdl_lich_hen_cu():
+    """CSDL dựng từ trước chặng 5: CHECK chưa có `pending`, `created_by` NOT NULL, chưa có customer_id/decided_by.
+
+    Có bảng con `invoices` tham chiếu `appointments(id)` — chính thứ làm việc dựng lại bảng dễ hỏng nhất
+    (DROP bảng cha khi bảng con còn dòng, hoặc đổi tên làm bảng con trỏ nhầm sang bảng tạm).
+    """
+    e = create_engine("sqlite://")
+    with e.begin() as c:
+        for bang in ("users", "pets", "services", "customers"):
+            c.execute(text(f"CREATE TABLE {bang} (id INTEGER PRIMARY KEY)"))
+            c.execute(text(f"INSERT INTO {bang} (id) VALUES (1)"))
+        c.execute(
+            text(
+                "CREATE TABLE appointments (id INTEGER NOT NULL PRIMARY KEY, pet_id INTEGER NOT NULL, "
+                "service_id INTEGER NOT NULL, staff_id INTEGER NOT NULL, start_at DATETIME NOT NULL, "
+                "end_at DATETIME NOT NULL, status VARCHAR(20) NOT NULL, note TEXT, cancel_reason TEXT, "
+                "created_by INTEGER NOT NULL, created_at DATETIME NOT NULL, "
+                "CONSTRAINT ck_appointments_thoi_gian CHECK (end_at > start_at), "
+                "CONSTRAINT ck_appointments_status CHECK (status IN ('booked', 'rescheduled', 'cancelled', 'done')), "
+                "FOREIGN KEY(pet_id) REFERENCES pets (id), FOREIGN KEY(service_id) REFERENCES services (id), "
+                "FOREIGN KEY(staff_id) REFERENCES users (id), FOREIGN KEY(created_by) REFERENCES users (id))"
+            )
+        )
+        c.execute(text("CREATE INDEX ix_appointments_staff_start ON appointments (staff_id, start_at)"))
+        c.execute(text("CREATE INDEX ix_appointments_pet_start ON appointments (pet_id, start_at)"))
+        c.execute(
+            text(
+                "CREATE TABLE invoices (id INTEGER PRIMARY KEY, appointment_id INTEGER UNIQUE "
+                "REFERENCES appointments (id))"
+            )
+        )
+        c.execute(
+            text(
+                "INSERT INTO appointments VALUES (7, 1, 1, 1, '2026-03-12 09:00:00', '2026-03-12 10:00:00', "
+                "'done', 'ghi chu', NULL, 1, '2026-03-01 08:00:00')"
+            )
+        )
+        c.execute(text("INSERT INTO invoices VALUES (1, 7)"))
+    return e
+
+
+def _them_lich_cho(c, ma=8):
+    c.execute(
+        text(
+            "INSERT INTO appointments (id, pet_id, service_id, staff_id, start_at, end_at, status, created_by, "
+            "customer_id, created_at) VALUES (:ma, 1, 1, 1, '2026-03-13 09:00:00', '2026-03-13 10:00:00', "
+            "'pending', NULL, 1, '2026-03-12 08:00:00')"
+        ),
+        {"ma": ma},
+    )
+
+
+def test_bang_lich_hen_cu_khong_chen_duoc_pending_truoc_khi_dung_lai():
+    # Chứng minh vấn đề có thật: không dựng lại thì `pending` bị CSDL cũ từ chối.
+    e = _csdl_lich_hen_cu()
+    with pytest.raises(Exception, match="CHECK"):
+        with e.begin() as c:
+            c.execute(
+                text(
+                    "INSERT INTO appointments (id, pet_id, service_id, staff_id, start_at, end_at, status, "
+                    "created_by, created_at) VALUES (8, 1, 1, 1, '2026-03-13 09:00:00', '2026-03-13 10:00:00', "
+                    "'pending', 1, '2026-03-12 08:00:00')"
+                )
+            )
+    e.dispose()
+
+
+def test_dung_lai_bang_lich_hen_giu_du_lieu_va_nhan_pending():
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_lich_hen
+
+    e = _csdl_lich_hen_cu()
+    assert dung_lai_bang_lich_hen(e, Base.metadata) is True
+
+    with e.begin() as c:
+        _them_lich_cho(c)  # pending + created_by NULL + customer_id: trước đó bị từ chối
+    with e.connect() as c:
+        cu = c.execute(
+            text("SELECT status, note, created_by, customer_id, decided_by FROM appointments WHERE id = 7")
+        ).one()
+        so_hd = c.execute(text("SELECT COUNT(*) FROM invoices")).scalar_one()
+    assert cu == ("done", "ghi chu", 1, None, None)
+    assert so_hd == 1
+    e.dispose()
+
+
+def test_dung_lai_bang_lich_hen_giu_khoa_ngoai_cua_bang_con_va_index():
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_lich_hen
+
+    e = _csdl_lich_hen_cu()
+    dung_lai_bang_lich_hen(e, Base.metadata)
+
+    with e.connect() as c:
+        # Bảng con vẫn trỏ về `appointments` (không phải bảng tạm), và khóa ngoại vẫn có hiệu lực.
+        tham_chieu = [r[2] for r in c.execute(text("PRAGMA foreign_key_list(invoices)"))]
+        assert tham_chieu == ["appointments"]
+        assert c.execute(text("PRAGMA foreign_keys")).scalar_one() == 1
+    with pytest.raises(Exception, match="FOREIGN KEY"):
+        with e.begin() as c:
+            c.execute(text("INSERT INTO invoices VALUES (2, 999)"))
+    ten_index = {i["name"] for i in inspect(e).get_indexes("appointments")}
+    assert {"ix_appointments_staff_start", "ix_appointments_pet_start"} <= ten_index
+    assert "appointments_cu" not in inspect(e).get_table_names()
+    e.dispose()
+
+
+def test_dung_lai_bang_lich_hen_chay_lan_hai_khong_lam_gi():
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_lich_hen
+
+    e = _csdl_lich_hen_cu()
+    assert dung_lai_bang_lich_hen(e, Base.metadata) is True
+
+    assert dung_lai_bang_lich_hen(e, Base.metadata) is False
+    e.dispose()
+
+
+def test_dung_lai_bang_lich_hen_bo_qua_csdl_moi_va_csdl_chua_co_bang(db):
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_lich_hen
+
+    assert dung_lai_bang_lich_hen(db.get_bind(), Base.metadata) is False  # dựng từ model hiện tại: đã đủ
+    trong = create_engine("sqlite://")
+    assert dung_lai_bang_lich_hen(trong, Base.metadata) is False  # chưa có bảng: việc của create_all
+    trong.dispose()
+
+
+# --- Dựng lại bảng ai_logs cho CSDL cũ (P9 chặng 7) -----------------------------------------------------
+
+
+def _csdl_nhat_ky_ai_cu():
+    """CSDL dựng từ trước chặng 7: `ai_logs.user_id` NOT NULL và chưa có `customer_id`."""
+    e = create_engine("sqlite://")
+    with e.begin() as c:
+        for bang in ("users", "customers"):
+            c.execute(text(f"CREATE TABLE {bang} (id INTEGER PRIMARY KEY)"))
+            c.execute(text(f"INSERT INTO {bang} (id) VALUES (1)"))
+        c.execute(
+            text(
+                "CREATE TABLE ai_logs (id INTEGER NOT NULL PRIMARY KEY, user_id INTEGER NOT NULL, "
+                "feature VARCHAR(20) NOT NULL, prompt TEXT NOT NULL, response TEXT, is_error BOOLEAN NOT NULL, "
+                "model VARCHAR(60), created_at DATETIME NOT NULL, "
+                "CONSTRAINT ck_ai_logs_feature CHECK (feature IN ('reminder', 'summary', 'qa')), "
+                "FOREIGN KEY(user_id) REFERENCES users (id))"
+            )
+        )
+        c.execute(
+            text(
+                "INSERT INTO ai_logs VALUES (5, 1, 'qa', 'cau hoi cu', 'tra loi cu', 0, 'gemini-x', "
+                "'2026-03-01 08:00:00')"
+            )
+        )
+    return e
+
+
+def _them_log_khach(c, ma=6):
+    c.execute(
+        text(
+            "INSERT INTO ai_logs (id, user_id, customer_id, feature, prompt, is_error, created_at) "
+            "VALUES (:ma, NULL, 1, 'qa', 'hoi', 0, '2026-03-12 08:00:00')"
+        ),
+        {"ma": ma},
+    )
+
+
+def test_bang_ai_logs_cu_khong_nhan_duoc_dong_cua_khach_truoc_khi_dung_lai():
+    # Chứng minh vấn đề có thật: user_id NOT NULL và chưa có customer_id.
+    e = _csdl_nhat_ky_ai_cu()
+    with pytest.raises(Exception, match="customer_id|NOT NULL"):
+        with e.begin() as c:
+            _them_log_khach(c)
+    e.dispose()
+
+
+def test_dung_lai_bang_nhat_ky_ai_giu_dong_cu_va_nhan_dong_cua_khach():
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_nhat_ky_ai
+
+    e = _csdl_nhat_ky_ai_cu()
+    assert dung_lai_bang_nhat_ky_ai(e, Base.metadata) is True
+
+    with e.begin() as c:
+        _them_log_khach(c)
+    with e.connect() as c:
+        cu = c.execute(
+            text("SELECT user_id, customer_id, feature, prompt, response, model FROM ai_logs WHERE id = 5")
+        ).one()
+        khach = c.execute(text("SELECT user_id, customer_id FROM ai_logs WHERE id = 6")).one()
+    assert cu == (1, None, "qa", "cau hoi cu", "tra loi cu", "gemini-x")
+    assert khach == (None, 1)
+    assert "ai_logs_cu" not in inspect(e).get_table_names()
+    e.dispose()
+
+
+def test_nhat_ky_ai_sau_khi_dung_lai_van_buoc_dung_mot_trong_hai_chu_so_huu():
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_nhat_ky_ai
+
+    e = _csdl_nhat_ky_ai_cu()
+    dung_lai_bang_nhat_ky_ai(e, Base.metadata)
+
+    for user_id, customer_id in ((None, None), (1, 1)):
+        with pytest.raises(Exception, match="CHECK"):
+            with e.begin() as c:
+                c.execute(
+                    text(
+                        "INSERT INTO ai_logs (user_id, customer_id, feature, prompt, is_error, created_at) "
+                        "VALUES (:u, :k, 'qa', 'hoi', 0, '2026-03-12 08:00:00')"
+                    ),
+                    {"u": user_id, "k": customer_id},
+                )
+    e.dispose()
+
+
+def test_dung_lai_bang_nhat_ky_ai_chay_lan_hai_khong_lam_gi():
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_nhat_ky_ai
+
+    e = _csdl_nhat_ky_ai_cu()
+    assert dung_lai_bang_nhat_ky_ai(e, Base.metadata) is True
+
+    assert dung_lai_bang_nhat_ky_ai(e, Base.metadata) is False
+    e.dispose()
+
+
+def test_dung_lai_bang_nhat_ky_ai_di_sau_nang_cap_cot_van_nhan_dong_cua_khach():
+    # Đúng thứ tự thật lúc khởi động (app/main.py): nang_cap_schema đã thêm cột + index trước, rồi mới dựng lại.
+    # Dựng lại tay hai bước đó vì CSDL cũ giả ở đây chỉ có bảng `ai_logs` thật, các bảng khác chỉ có cột `id`.
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_nhat_ky_ai
+
+    e = _csdl_nhat_ky_ai_cu()
+    with e.begin() as c:
+        c.execute(text("ALTER TABLE ai_logs ADD COLUMN customer_id INTEGER"))
+        c.execute(text("CREATE INDEX ix_ai_logs_customer_id ON ai_logs (customer_id)"))
+    assert dung_lai_bang_nhat_ky_ai(e, Base.metadata) is True
+
+    with e.begin() as c:
+        _them_log_khach(c)
+    e.dispose()
+
+
+def test_dung_lai_bang_nhat_ky_ai_bo_qua_csdl_moi_va_csdl_chua_co_bang(db):
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_nhat_ky_ai
+
+    assert dung_lai_bang_nhat_ky_ai(db.get_bind(), Base.metadata) is False
+    trong = create_engine("sqlite://")
+    assert dung_lai_bang_nhat_ky_ai(trong, Base.metadata) is False
+    trong.dispose()

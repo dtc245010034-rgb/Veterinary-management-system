@@ -218,6 +218,7 @@ tr.dong-mo td { opacity: .55; }
 td.gio { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 500; }
 
 .nhan { font-size: 12px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.nhan-pending { background: #fff9db; color: #7a5b00; }
 .nhan-booked { background: #e8f3ee; color: var(--chinh-dam); }
 .nhan-rescheduled { background: #fff4e5; color: #93370d; }
 .nhan-cancelled { background: #f1f3f5; color: var(--chu-phu); }
@@ -363,3 +364,14 @@ a.nguy-hiem {
   overflow: hidden;
   clip-path: inset(50%);
 }
+
+/* Giờ trống của nhân viên (cổng khách): mỗi giờ là một nút bấm sang form xin lịch. */
+.khung-gio { display: flex; flex-wrap: wrap; gap: 8px; }
+.khung-gio a {
+  padding: 4px 12px;
+  border: 1px solid var(--chinh);
+  border-radius: 6px;
+  color: var(--chinh-dam);
+  text-decoration: none;
+}
+.khung-gio a:hover { background: var(--chinh); color: var(--the); }

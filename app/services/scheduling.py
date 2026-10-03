@@ -57,6 +57,15 @@ SO_GOI_Y = 5
 # thực hiện rồi — sửa nó là sửa lịch sử.
 TRANG_THAI_SUA_DUOC = ("booked", "rescheduled")
 
+# Lịch `pending` (khách tự xin, P9 chặng 5) giữ chỗ tối đa chừng này giờ kể từ lúc tạo. Không có hạn thì một
+# khách xin liền mấy khung đẹp rồi để đó là chặn được cả ngày làm việc của một nhân viên.
+HAN_CHO_DUYET_GIO = 24
+
+# Số lịch chờ duyệt còn hạn tối đa của MỖI khách, cùng lý do với hạn ở trên.
+TRAN_LICH_CHO_MOI_KHACH = 3
+
+LY_DO_HET_HAN = "Quá hạn chờ duyệt, hệ thống tự hủy."
+
 
 class TrungLich(LoiNghiepVu):
     """Lịch bị trùng. Mang theo danh sách khung giờ trống để gợi ý cho lễ tân.
@@ -78,6 +87,20 @@ def _giao_nhau(bat_dau: datetime, ket_thuc: datetime):
     return and_(Appointment.start_at < ket_thuc, bat_dau < Appointment.end_at)
 
 
+def _giu_cho():
+    """Điều kiện SQL: lịch còn chiếm chỗ.
+
+    Lịch đã đặt/đã đổi/đã xong luôn giữ chỗ. Lịch `pending` giữ chỗ chỉ khi chưa quá hạn: điều kiện này nằm TRONG
+    truy vấn chứ không chờ hàm quét đổi trạng thái, nên đúng đắn không phụ thuộc việc có ai chạy quét hay chưa.
+    Lịch quá hạn đúng `HAN_CHO_DUYET_GIO` giờ là hết giữ chỗ (`>` chứ không phải `>=`).
+    """
+    han = clock.now() - timedelta(hours=HAN_CHO_DUYET_GIO)
+    return or_(
+        Appointment.status.in_(TRANG_THAI_CON_HIEU_LUC),
+        and_(Appointment.status == "pending", Appointment.created_at > han),
+    )
+
+
 def tim_lich_trung(
     db: Session,
     thu_cung_id: int,
@@ -95,7 +118,7 @@ def tim_lich_trung(
     số bản ghi. Hai index (staff_id, start_at) và (pet_id, start_at) phục vụ truy vấn này.
     """
     dieu_kien = [
-        Appointment.status.in_(TRANG_THAI_CON_HIEU_LUC),
+        _giu_cho(),
         _giao_nhau(bat_dau, ket_thuc),
         or_(Appointment.staff_id == nhan_vien_id, Appointment.pet_id == thu_cung_id),
     ]
@@ -112,8 +135,11 @@ def khung_gio_trong(
     ngay: date,
     thoi_luong_phut: int,
     bo_qua_id: int | None = None,
+    toi_da: int | None = SO_GOI_Y,
 ) -> list[datetime]:
     """Dò các khung giờ còn trống trong ngày, trong giờ làm việc.
+
+    `toi_da` mặc định là `SO_GOI_Y` (gợi ý sau khi lễ tân bị từ chối); `None` dò hết ngày (khách xem bảng khung trống).
 
     Chỉ lấy khung bắt đầu từ thời điểm hiện tại trở đi — gợi ý một khung đã trôi qua thì
     lễ tân chọn vào sẽ bị từ chối lần nữa vì lý do "đặt lịch trong quá khứ".
@@ -129,7 +155,7 @@ def khung_gio_trong(
             db, thu_cung_id, nhan_vien_id, moc, moc + timedelta(minutes=thoi_luong_phut), bo_qua_id
         ) is None:
             ket_qua.append(moc)
-            if len(ket_qua) >= SO_GOI_Y:
+            if toi_da is not None and len(ket_qua) >= toi_da:
                 break
 
         moc += timedelta(minutes=BUOC_GOI_Y)
@@ -162,16 +188,14 @@ def _kiem_gio_lam_viec(bat_dau: datetime, ket_thuc: datetime) -> None:
         )
 
 
-def dat_lich(
-    db: Session,
-    thu_cung_id: int,
-    dich_vu_id: int,
-    nhan_vien_id: int,
-    bat_dau: datetime,
-    nguoi_tao_id: int,
-    ghi_chu: str | None = None,
-) -> Appointment:
-    """TC-032 → TC-042."""
+def _kiem_dieu_kien_dat(
+    db: Session, thu_cung_id: int, dich_vu_id: int, nhan_vien_id: int, bat_dau: datetime
+) -> tuple[Service, datetime]:
+    """Mọi phép kiểm trước khi tạo một lịch mới; trả (dịch vụ, giờ kết thúc).
+
+    Dùng chung cho lịch lễ tân đặt (`booked`) và lịch khách xin (`pending`): hai đường mà phép kiểm khác nhau
+    thì lịch khách xin lọt được thứ lễ tân bị chặn.
+    """
     thu_cung = db.get(Pet, thu_cung_id)
     if thu_cung is None:
         raise LoiKhongTimThay("Không tìm thấy thú cưng.")
@@ -193,6 +217,20 @@ def dat_lich(
 
     _kiem_gio_lam_viec(bat_dau, ket_thuc)
     _chan_neu_trung(db, thu_cung_id, nhan_vien_id, bat_dau, ket_thuc, dich_vu.duration_min)
+    return dich_vu, ket_thuc
+
+
+def dat_lich(
+    db: Session,
+    thu_cung_id: int,
+    dich_vu_id: int,
+    nhan_vien_id: int,
+    bat_dau: datetime,
+    nguoi_tao_id: int,
+    ghi_chu: str | None = None,
+) -> Appointment:
+    """TC-032 → TC-042."""
+    _, ket_thuc = _kiem_dieu_kien_dat(db, thu_cung_id, dich_vu_id, nhan_vien_id, bat_dau)
 
     lich = Appointment(
         pet_id=thu_cung_id,
@@ -205,6 +243,129 @@ def dat_lich(
         created_by=nguoi_tao_id,
     )
     db.add(lich)
+    db.commit()
+    db.refresh(lich)
+    return lich
+
+
+# --- Lịch chờ duyệt (P9 chặng 5) ------------------------------------------------------
+
+
+def huy_lich_cho_het_han(db: Session) -> int:
+    """Đổi lịch `pending` quá hạn sang `cancelled`; trả số lịch đã hủy.
+
+    Chỉ để trạng thái hiển thị đúng — việc nhả chỗ đã do `_giu_cho` làm từ trước. Idempotent.
+    """
+    han = clock.now() - timedelta(hours=HAN_CHO_DUYET_GIO)
+    het_han = list(
+        db.scalars(select(Appointment).where(Appointment.status == "pending", Appointment.created_at <= han))
+    )
+    for lich in het_han:
+        lich.status = "cancelled"
+        lich.cancel_reason = LY_DO_HET_HAN
+    if het_han:
+        db.commit()
+    return len(het_han)
+
+
+def so_lich_cho_cua_khach(db: Session, khach_id: int) -> int:
+    """Số lịch chờ duyệt CÒN HẠN của một khách."""
+    han = clock.now() - timedelta(hours=HAN_CHO_DUYET_GIO)
+    return db.scalar(
+        select(func.count()).where(
+            Appointment.customer_id == khach_id,
+            Appointment.status == "pending",
+            Appointment.created_at > han,
+        )
+    )
+
+
+def tao_yeu_cau_lich(
+    db: Session,
+    khach_id: int,
+    thu_cung_id: int,
+    dich_vu_id: int,
+    nhan_vien_id: int,
+    bat_dau: datetime,
+    ghi_chu: str | None = None,
+) -> Appointment:
+    """Khách xin một lịch: tạo lịch `pending`, giữ chỗ tới khi lễ tân duyệt hoặc quá hạn.
+
+    Hàm này KHÔNG kiểm thú cưng có thuộc khách hay không — đó là việc của cổng chặn chủ trong
+    `khach_du_lieu`, nơi duy nhất cổng khách được gọi tới đây.
+    """
+    huy_lich_cho_het_han(db)
+    if so_lich_cho_cua_khach(db, khach_id) >= TRAN_LICH_CHO_MOI_KHACH:
+        raise LoiNghiepVu(
+            f"Bạn đang có {TRAN_LICH_CHO_MOI_KHACH} lịch chờ duyệt, là mức tối đa. "
+            "Hãy chờ cửa hàng xác nhận hoặc từ chối trước khi xin thêm."
+        )
+
+    _, ket_thuc = _kiem_dieu_kien_dat(db, thu_cung_id, dich_vu_id, nhan_vien_id, bat_dau)
+
+    lich = Appointment(
+        pet_id=thu_cung_id,
+        service_id=dich_vu_id,
+        staff_id=nhan_vien_id,
+        start_at=bat_dau,
+        end_at=ket_thuc,
+        status="pending",
+        note=(ghi_chu or "").strip() or None,
+        customer_id=khach_id,
+    )
+    db.add(lich)
+    db.commit()
+    db.refresh(lich)
+    return lich
+
+
+def danh_sach_cho_duyet(db: Session) -> list[Appointment]:
+    """Lịch chờ duyệt còn hạn, sớm nhất trước — màn duyệt của lễ tân."""
+    huy_lich_cho_het_han(db)
+    return list(
+        db.scalars(select(Appointment).where(Appointment.status == "pending").order_by(Appointment.start_at, Appointment.id))
+    )
+
+
+def _lay_lich_cho(db: Session, lich_id: int) -> Appointment:
+    huy_lich_cho_het_han(db)
+    lich = lay_lich(db, lich_id)
+    if lich.status != "pending":
+        raise LoiNghiepVu(f"Lịch này đang ở trạng thái “{lich.ten_trang_thai}”, không còn chờ duyệt.")
+    return lich
+
+
+def duyet_lich_cho(db: Session, lich_id: int, nguoi_duyet_id: int) -> Appointment:
+    """Lễ tân duyệt: `pending` → `booked`.
+
+    Kiểm lại những gì có thể đã đổi từ lúc khách xin: giờ hẹn đã qua, nhân viên bị khóa, và phép trùng lịch (loại
+    chính lịch này ra). Quá hạn thì `_lay_lich_cho` đã hủy nó nên duyệt sẽ báo "đã hủy".
+    """
+    lich = _lay_lich_cho(db, lich_id)
+    if lich.start_at < clock.now():
+        raise LoiNghiepVu("Giờ hẹn đã qua nên không duyệt được. Hãy từ chối kèm lý do để khách xin lại.")
+    _kiem_nhan_vien(db, lich.staff_id)
+    _chan_neu_trung(
+        db, lich.pet_id, lich.staff_id, lich.start_at, lich.end_at, lich.service.duration_min, bo_qua_id=lich.id
+    )
+
+    lich.status = "booked"
+    lich.decided_by = nguoi_duyet_id
+    db.commit()
+    db.refresh(lich)
+    return lich
+
+
+def tu_choi_lich_cho(db: Session, lich_id: int, ly_do: str, nguoi_duyet_id: int) -> Appointment:
+    """Lễ tân từ chối: `pending` → `cancelled`, lý do bắt buộc (khách đọc được). Khung giờ được trả lại ngay."""
+    lich = _lay_lich_cho(db, lich_id)
+    ly_do = (ly_do or "").strip()
+    if not ly_do:
+        raise LoiNghiepVu("Phải ghi lý do từ chối để khách biết vì sao.")
+
+    lich.status = "cancelled"
+    lich.cancel_reason = ly_do
+    lich.decided_by = nguoi_duyet_id
     db.commit()
     db.refresh(lich)
     return lich
@@ -393,6 +554,7 @@ def lich_theo_ngay(
 
     Lễ tân cần thấy lịch đã hủy để biết khách nào đã báo bận.
     """
+    huy_lich_cho_het_han(db)  # lịch chờ quá hạn không được hiện như còn chờ
     dau_ngay = datetime.combine(ngay, time.min)
     cuoi_ngay = dau_ngay + timedelta(days=1)
 

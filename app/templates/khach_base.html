@@ -15,10 +15,13 @@
     {% if khach.owner_id is not none %}
     <a href="/khach/thu-cung">Thú cưng</a>
     <a href="/khach/lich-hen">Lịch hẹn</a>
+    <a href="/khach/khung-trong">Giờ trống</a>
+    <a href="/khach/dat-lich">Xin đặt lịch</a>
     <a href="/khach/hoa-don">Hóa đơn</a>
     {% else %}
     <a href="/khach/lien-ket">Liên kết hồ sơ</a>
     {% endif %}
+    <a href="/khach/hoi-dap">Hỏi AI</a>
     <span class="ten">{{ khach.full_name }}</span>
     <a href="/khach/doi-mat-khau">Đổi mật khẩu</a>
     <form method="post" action="/khach/dang-xuat"><button class="lien-ket">Đăng xuất</button></form>

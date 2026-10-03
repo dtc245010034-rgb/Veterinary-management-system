@@ -32,6 +32,7 @@
   <a class="the the-lien-ket" href="/ai/hoi-dap"><h2>Trợ lý AI</h2><p>Hỏi đáp chăm sóc, soạn tin nhắc, tóm tắt hồ sơ</p></a>
   {% if user.role in ('manager', 'receptionist') %}
     <a class="the the-lien-ket" href="/invoices"><h2>Hóa đơn</h2><p>Lập hóa đơn, ghi nhận thanh toán</p></a>
+    <a class="the the-lien-ket" href="/lich-cho-duyet"><h2>Lịch chờ duyệt</h2><p>Duyệt hoặc từ chối lịch khách tự xin</p></a>
     <a class="the the-lien-ket" href="/lien-ket-khach"><h2>Liên kết khách</h2><p>Duyệt tài khoản khách xin xem hồ sơ thú cưng</p></a>
   {% endif %}
   {% if user.role == 'manager' %}

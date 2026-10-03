@@ -884,3 +884,80 @@ def test_phep_canh_cong_khach_bat_duoc_ma_sai_kieu_thuc_te():
         "lich_su: không nhận `khach`",
     ]
     assert _route_khach_thieu_dang_nhap(route_sai, "x.py") == ["x.py: GET /khach/thu-cung không dùng khach_hien_tai"]
+
+# P9 chặng 6 (ô 6.2): template của cổng khách không được lần tới hồ sơ chủ nuôi hay trang của nhân viên. Phép canh
+# bắt dấu vết *kiểu truy cập* (`x.owner.full_name`, link `/owners/…`), vì khung trống và danh sách của khách được dựng từ
+# dữ liệu chung với màn nhân viên — một cột "chủ nuôi" thêm nhầm vào là rò dữ liệu người khác.
+TEMPLATE_KHACH = sorted((GOC / "app" / "templates").glob("khach_*.html"))
+_BIEU_THUC_JINJA = re.compile(r"\{\{.*?\}\}|\{%.*?%\}", re.S)
+_TRUY_CAP_CHU_NUOI = re.compile(r"\bowner\.|\.owner\b")
+_LINK_NHAN_VIEN = ("/owners", "/pets/")
+
+
+def _vi_pham_template_khach(ma_nguon: str) -> list[str]:
+    loi = []
+    for bieu_thuc in _BIEU_THUC_JINJA.findall(ma_nguon):
+        if _TRUY_CAP_CHU_NUOI.search(bieu_thuc):
+            loi.append(f"biểu thức truy cập hồ sơ chủ nuôi: {bieu_thuc.strip()}")
+    for duong_dan in _LINK_NHAN_VIEN:
+        if duong_dan in ma_nguon:
+            loi.append(f"link tới trang nhân viên: {duong_dan}")
+    return loi
+
+
+def test_template_cong_khach_khong_truy_cap_ho_so_chu_nuoi_hay_link_trang_nhan_vien():
+    """NẾU TEST NÀY ĐỎ: đưa dữ liệu cần hiện vào kết quả của `khach_du_lieu` (đã qua cổng chặn chủ), đừng nới regex."""
+    assert TEMPLATE_KHACH, "không tìm thấy template khach_*.html — đường dẫn glob sai?"
+    tong = []
+    for tep in TEMPLATE_KHACH:
+        tong += [f"{tep.name}: {v}" for v in _vi_pham_template_khach(_doc(tep))]
+
+    assert not tong, "Template cổng khách rò hồ sơ chủ nuôi:\n  " + "\n  ".join(tong)
+
+
+def test_phep_canh_template_khach_bat_duoc_dung_kieu_loi_va_bo_qua_owner_id():
+    sai = '{{ lich.pet.owner.full_name }} <a href="/owners/{{ x }}">chu</a> {% if a.owner %}{% endif %}'
+    dung = "{% if khach.owner_id is none %}{{ khach.full_name }}{% endif %}<a href=\"/khach/thu-cung/1\">"
+
+    assert len(_vi_pham_template_khach(sai)) == 3
+    assert _vi_pham_template_khach(dung) == []
+
+
+# P9 chặng 7: khách chỉ có hỏi đáp (US-26). Nhắc lịch và tóm tắt hồ sơ đọc dữ liệu chủ nuôi, thú cưng nên không mở cho
+# khách; router khách AI chỉ được gọi đúng các hàm dưới đây của `app.ai.service` và không tự chạm CSDL.
+ROUTER_KHACH_AI = GOC / "app" / "routers" / "khach_ai.py"
+HAM_AI_CHO_KHACH = {
+    "hoi_dap_khach", "so_luot_con_lai_khach", "so_luot_toi_da_khach", "lay_log_khach",
+    "lay_provider", "AIProvider", "LoiAI", "LoiHetHanMuc",
+}
+
+
+def _vi_pham_router_ai_khach(ma_nguon: str) -> list[str]:
+    loi = _vi_pham_router_du_lieu_khach(ma_nguon)
+    for nut in ast.walk(ast.parse(ma_nguon)):
+        if isinstance(nut, ast.Attribute) and isinstance(nut.value, ast.Name) and nut.value.id == "nv":
+            if nut.attr not in HAM_AI_CHO_KHACH:
+                loi.append(f"dòng {nut.lineno}: nv.{nut.attr} không mở cho khách")
+    return loi
+
+
+def test_router_ai_khach_chi_goi_ham_hoi_dap_va_khong_cham_model_hay_db():
+    """NẾU TEST NÀY ĐỎ: khách chỉ được hỏi đáp; muốn mở thêm tính năng AI cho khách phải sửa `HAM_AI_CHO_KHACH`
+    một cách có chủ đích sau khi xem lại `docs/ai-safety.md` — đừng xóa test."""
+    loi = _vi_pham_router_ai_khach(_doc(ROUTER_KHACH_AI))
+
+    assert not loi, "Router AI của khách vượt ranh giới:\n  " + "\n  ".join(loi)
+
+
+def test_phep_canh_router_ai_khach_bat_duoc_tinh_nang_nhan_vien_va_truy_van_tu_do():
+    sai = (
+        "from app.models.pet import Pet\n"
+        "def f(db, khach):\n"
+        "    nv.tom_tat_ho_so(db, p, khach.id, 1)\n"
+        "    nv.nhac_lich_hen(db, p, khach.id, 1)\n"
+        "    return db.get(Pet, 1)\n"
+    )
+    dung = "def f(db, khach):\n    return nv.hoi_dap_khach(db, p, khach.id, 'x')\n"
+
+    assert len(_vi_pham_router_ai_khach(sai)) == 4
+    assert _vi_pham_router_ai_khach(dung) == []

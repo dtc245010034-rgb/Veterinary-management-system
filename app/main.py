@@ -23,9 +23,11 @@ from app.routers import appointments as appointments_router
 from app.routers import auth as auth_router
 from app.routers import care_records as care_records_router
 from app.routers import invoices as invoices_router
+from app.routers import khach_ai as khach_ai_router
 from app.routers import khach_auth as khach_auth_router
 from app.routers import khach_du_lieu as khach_du_lieu_router
 from app.routers import khach_lien_ket as khach_lien_ket_router
+from app.routers import lich_cho_duyet as lich_cho_duyet_router
 from app.routers import lien_ket_khach as lien_ket_khach_router
 from app.routers import owners as owners_router
 from app.routers import pets as pets_router
@@ -36,7 +38,7 @@ from app.routers import vaccinations as vaccinations_router
 from app.security import la_post_cheo_nguon
 from app.services import users as users_service
 from app.services.errors import LoiKhongTimThay, LoiNghiepVu
-from app.services.schema import nang_cap_schema
+from app.services.schema import dung_lai_bang_lich_hen, dung_lai_bang_nhat_ky_ai, nang_cap_schema
 from app.templates import templates
 
 
@@ -67,6 +69,8 @@ async def lifespan(app: FastAPI):
             )
     Base.metadata.create_all(engine)
     nang_cap_schema(engine, Base.metadata)
+    dung_lai_bang_lich_hen(engine, Base.metadata)
+    dung_lai_bang_nhat_ky_ai(engine, Base.metadata)
     if settings.session_https_only:
         with Session(engine) as db:
             con_mac_dinh = users_service.tai_khoan_con_mat_khau_mac_dinh(db)
@@ -148,7 +152,9 @@ app.include_router(ai_router.router)
 app.include_router(khach_auth_router.router)
 app.include_router(khach_lien_ket_router.router)
 app.include_router(khach_du_lieu_router.router)
+app.include_router(khach_ai_router.router)
 app.include_router(lien_ket_khach_router.router)
+app.include_router(lich_cho_duyet_router.router)
 
 
 @app.exception_handler(ChuaDangNhap)

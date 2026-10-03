@@ -27,7 +27,7 @@ hethongquanlythucung/
 │   ├── auth.py              session cookie, người dùng hiện tại, dependency kiểm tra vai trò
 │   ├── templates.py         cấu hình Jinja2 dùng chung
 │   ├── seed.py              dữ liệu mẫu: python -m app.seed
-│   ├── models/              SQLAlchemy — 16 bảng theo ERD, mỗi nhóm một file
+│   ├── models/              SQLAlchemy — 17 bảng theo ERD, mỗi nhóm một file
 │   ├── services/            LOGIC NGHIỆP VỤ — không import gì từ FastAPI
 │   │   ├── scheduling.py    đặt/đổi/hủy lịch, kiểm tra trùng lịch
 │   │   ├── billing.py       lập hóa đơn, ghi nhận thanh toán
@@ -40,7 +40,7 @@ hethongquanlythucung/
 │   │   ├── prompts.py       system prompt + câu khuyến cáo chuẩn
 │   │   ├── guardrail.py     chặn câu xin thuốc, soát liều lượng, xóa SĐT/email
 │   │   ├── quota.py         xoay ca model, đếm lượt theo ngày Pacific + CLI
-│   │   └── service.py       3 use case: reminder, summary, qa
+│   │   └── service.py       3 use case: reminder, summary, qa; thêm `hoi_dap_khach` cho cổng khách (hạn mức ngày theo tài khoản)
 │   ├── mail/                GỬI EMAIL (P9 chặng 3) — router chỉ import service.py
 │   │   ├── provider.py      interface GuiMail + LoiGuiMail
 │   │   ├── smtp.py          SmtpMailer — smtplib thư viện chuẩn, STARTTLS
@@ -50,7 +50,9 @@ hethongquanlythucung/
 │   ├── routers/             chỉ HTTP: auth, users, owners, pets, services, appointments,
 │   │                        care_records, vaccinations, invoices, stats, ai,
 │   │                        khach_auth, khach_lien_ket, khach_du_lieu (cổng khách, prefix /khach — phiên riêng, không dùng chung dependency nhân viên; `khach_du_lieu` chỉ gọi `services/khach_du_lieu.py`, có phép canh AST),
-│   │                        lien_ket_khach (màn hình lễ tân duyệt nối khách với hồ sơ chủ nuôi)
+│   │                        khach_ai (khách hỏi đáp AI `/khach/hoi-dap`, P9 chặng 7 — chỉ gọi `ai/service.py`, không chạm model/`db.*`, chỉ được gọi các hàm hỏi đáp; có phép canh AST),
+│   │                        lien_ket_khach (màn hình lễ tân duyệt nối khách với hồ sơ chủ nuôi),
+│   │                        lich_cho_duyet (màn hình lễ tân duyệt / từ chối lịch `pending` khách xin; chỉ gọi `scheduling`)
 │   ├── templates/           Jinja2 (JS ít, viết thẳng trong trang cần tới)
 │   └── static/              style.css — một file CSS, không có file JS riêng
 ├── tests/

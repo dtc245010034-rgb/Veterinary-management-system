@@ -1,0 +1,50 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Giờ trống{% endblock %}
+
+{% block noi_dung %}
+<h1>Giờ trống của nhân viên</h1>
+{% if khach.owner_id is none %}
+<p class="phu">Tài khoản của bạn chưa được liên kết với hồ sơ tại cửa hàng nên chưa xem được giờ trống.
+<a href="/khach/lien-ket">Gửi yêu cầu liên kết hồ sơ</a>.</p>
+{% elif not lc.thu_cung %}
+<p class="phu">Hồ sơ của bạn chưa có thú cưng nào, nên chưa xem được giờ trống. Hãy nhờ cửa hàng thêm thú cưng.</p>
+{% else %}
+<p class="phu">Chọn thú cưng, dịch vụ và ngày để xem nhân viên nào còn trống giờ nào, rồi bấm vào một giờ để xin lịch.
+Đây chỉ là gợi ý: yêu cầu của bạn vẫn cần cửa hàng xác nhận, và người khác có thể xin trước bạn.</p>
+
+{% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
+
+<form class="the" method="get" action="/khach/khung-trong">
+  <label>Thú cưng
+    <select name="thu_cung_id" required>
+      {% for p in lc.thu_cung %}<option value="{{ p.id }}" {{ 'selected' if cu.thu_cung_id == p.id }}>{{ p.name }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Dịch vụ
+    <select name="dich_vu_id" required>
+      {% for s in lc.dich_vu %}<option value="{{ s.id }}" {{ 'selected' if cu.dich_vu_id == s.id }}>{{ s.name }} ({{ s.duration_min }} phút)</option>{% endfor %}
+    </select>
+  </label>
+  <label>Ngày <input name="ngay" type="date" value="{{ cu.ngay or '' }}" required></label>
+  <button type="submit" class="chinh">Xem giờ trống</button>
+</form>
+
+{% if nhom is not none %}
+{% for g in nhom %}
+<section class="the">
+  <h2>{{ g.nhan_vien.full_name }}</h2>
+  {% if g.gio %}
+  <p class="khung-gio">
+    {% for t in g.gio %}<a href="/khach/dat-lich?thu_cung_id={{ cu.thu_cung_id }}&amp;dich_vu_id={{ cu.dich_vu_id }}&amp;nhan_vien_id={{ g.nhan_vien.id }}&amp;ngay={{ cu.ngay|trim }}&amp;gio={{ t.strftime('%H:%M') }}">{{ t.strftime('%H:%M') }}</a>{% endfor %}
+  </p>
+  {% else %}
+  <p class="phu">Không còn giờ trống trong ngày này.</p>
+  {% endif %}
+</section>
+{% else %}
+<p class="phu">Cửa hàng chưa có nhân viên chăm sóc nào nhận lịch trực tuyến.</p>
+{% endfor %}
+{% endif %}
+{% endif %}
+<p><a href="/khach/dat-lich">Xin đặt lịch</a> · <a href="/khach/lich-hen">Xem lịch hẹn của tôi</a></p>
+{% endblock %}

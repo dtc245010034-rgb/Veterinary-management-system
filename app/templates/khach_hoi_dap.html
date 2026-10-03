@@ -1,0 +1,36 @@
+{% extends "khach_base.html" %}
+{% block tieu_de %}Hỏi đáp chăm sóc{% endblock %}
+
+{% block noi_dung %}
+<h1>Hỏi trợ lý AI về chăm sóc thú cưng</h1>
+
+{# Khuyến cáo cố định trong template: hiện cả khi AI lỗi hay hết lượt (docs/ai-safety.md mục 2). #}
+<p class="canh-bao">
+  Chỉ hỏi những việc chăm sóc thường ngày: tắm, chải lông, cắt móng, dinh dưỡng cơ bản.
+  <strong>AI không chẩn đoán bệnh, không tư vấn thuốc và không thay thế bác sĩ thú y.</strong>
+  Thú cưng có dấu hiệu bất thường, hãy liên hệ bác sĩ thú y.
+</p>
+
+{% if loi %}<div class="loi" role="alert"><p>{{ loi }}</p></div>{% endif %}
+
+<form class="the" method="post" action="/khach/hoi-dap" data-mot-lan>
+  <label>Câu hỏi <span class="bat-buoc">*</span>
+    <textarea name="cau_hoi" rows="3" required maxlength="1000"
+              placeholder="Ví dụ: Bao lâu nên tắm cho chó một lần?">{{ cau_hoi }}</textarea>
+  </label>
+  <button type="submit" class="chinh" {% if con_lai <= 0 %}disabled{% endif %}>Hỏi AI</button>
+  <p class="phu nhan-nho" id="luot-con-lai">
+    Hôm nay bạn còn <strong>{{ con_lai }}</strong>/{{ toi_da }} lượt hỏi.
+    Chỉ nội dung câu hỏi được gửi cho AI — không kèm tên, liên hệ hay hồ sơ thú cưng của bạn.
+  </p>
+</form>
+
+<script>
+  document.querySelectorAll('form[data-mot-lan]').forEach(function (form) {
+    form.addEventListener('submit', function () {
+      var nut = form.querySelector('button[type=submit]');
+      if (nut) { nut.disabled = true; nut.textContent = 'Đang hỏi AI…'; }
+    });
+  });
+</script>
+{% endblock %}

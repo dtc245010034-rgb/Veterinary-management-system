@@ -2,7 +2,7 @@
 
 Nguồn yêu cầu: [`user-stories/README.md`](user-stories/README.md) · Kiến trúc: [`architecture.md`](architecture.md)
 
-16 bảng. Tên bảng và tên cột dùng tiếng Anh không dấu theo quy ước trong [`../CLAUDE.md`](../CLAUDE.md).
+17 bảng. Tên bảng và tên cột dùng tiếng Anh không dấu theo quy ước trong [`../CLAUDE.md`](../CLAUDE.md).
 Mọi bảng đều có `id` khóa chính tự tăng.
 
 ## Sơ đồ
@@ -14,8 +14,11 @@ Cột khóa ngoài cho phép NULL thì phía thực thể cha là `|o`, không p
 erDiagram
     users ||--o{ appointments : "phu trach (staff_id)"
     users ||--o{ appointments : "tao lich (created_by)"
+    users ||--o{ appointments : "duyet lich cho (decided_by)"
+    customers ||--o{ appointments : "xin dat lich (customer_id)"
     users ||--o{ care_records : "thuc hien"
     users ||--o{ ai_logs : "goi AI"
+    customers ||--o{ ai_logs : "khach hoi AI (customer_id)"
 
     owners ||--o{ pets : "so huu"
     owners ||--o{ invoices : "thanh toan"
@@ -106,6 +109,8 @@ erDiagram
         text note
         text cancel_reason
         int created_by FK
+        int customer_id FK
+        int decided_by FK
         datetime created_at
     }
     care_records {
@@ -157,6 +162,7 @@ erDiagram
     ai_logs {
         int id PK
         int user_id FK
+        int customer_id FK
         string feature
         text prompt
         text response
@@ -318,16 +324,19 @@ Phục vụ US-10 → US-14, US-21. **Bảng trung tâm của nghiệp vụ.**
 | `staff_id` | int | FK → `users.id`, NOT NULL | Bắt buộc vai trò `caretaker` (US-10) |
 | `start_at` | datetime | NOT NULL | Không có index riêng — nằm trong hai index ghép bên dưới |
 | `end_at` | datetime | NOT NULL, CHECK > `start_at` | Tính từ `start_at` + `services.duration_min` |
-| `status` | varchar(20) | NOT NULL, CHECK | `booked` \| `rescheduled` \| `cancelled` \| `done` |
+| `status` | varchar(20) | NOT NULL, CHECK | `pending` \| `booked` \| `rescheduled` \| `cancelled` \| `done`. `pending` = khách tự xin, lễ tân chưa duyệt (P9 chặng 5) |
 | `note` | text | NULL | |
 | `cancel_reason` | text | NULL | Bắt buộc khi `status = cancelled` (US-13) |
-| `created_by` | int | FK → `users.id`, NOT NULL | |
+| `created_by` | int | FK → `users.id`, NULL | NULL khi lịch do khách tự xin (khách không phải `users`) |
+| `customer_id` | int | FK → `customers.id`, NULL | Khách xin lịch `pending`; NULL với lịch nhân viên tạo |
+| `decided_by` | int | FK → `users.id`, NULL | Lễ tân duyệt hoặc từ chối lịch `pending` |
 | `created_at` | datetime | NOT NULL | |
 
 **Quy tắc trùng lịch** — không diễn đạt được bằng ràng buộc CSDL, phải kiểm tra ở
 `app/services/scheduling.py`. Khoảng thời gian là nửa mở `[start_at, end_at)`; hai lịch giao nhau khi
 `A.start < B.end AND B.start < A.end`. Từ chối khi giao nhau và trùng `staff_id`, hoặc giao nhau và
-trùng `pet_id`. Lịch `cancelled` bị loại khỏi phép kiểm tra. Khi đổi lịch phải loại chính bản ghi
+trùng `pet_id`. Lịch `cancelled` bị loại khỏi phép kiểm tra; lịch `pending` **giữ chỗ** nhưng chỉ trong
+24 giờ kể từ `created_at` (quá hạn thì không giữ nữa, dù chưa ai quét đổi sang `cancelled`). Khi đổi lịch phải loại chính bản ghi
 đang sửa ra khỏi tập so sánh (US-12).
 
 Index đã dựng: `(staff_id, start_at)` và `(pet_id, start_at)` để truy vấn trùng lịch nhanh.
@@ -416,13 +425,17 @@ Phục vụ US-26, US-28, và phần báo cáo cuối kỳ.
 | Cột | Kiểu | Ràng buộc | Ý nghĩa |
 |---|---|---|---|
 | `id` | int | PK | |
-| `user_id` | int | FK → `users.id`, NOT NULL | Ai đã gọi |
+| `user_id` | int | FK → `users.id`, NULL | Nhân viên đã gọi; NULL khi dòng của khách (P9 chặng 7) |
+| `customer_id` | int | FK → `customers.id`, NULL, INDEX | Khách đã hỏi; NULL với dòng của nhân viên. Hạn mức hỏi đáp ngày của khách đếm thẳng từ cột này |
 | `feature` | varchar(20) | NOT NULL, CHECK | `reminder` \| `summary` \| `qa` |
 | `prompt` | text | NOT NULL | Prompt đã gửi. **Đã lọc dữ liệu cá nhân** (US-28) |
 | `response` | text | NULL | NULL khi lời gọi lỗi |
 | `is_error` | bool | NOT NULL, mặc định `false` | |
 | `model` | varchar(60) | NULL | Model đã trả lời. NULL = **không có lời gọi nào đi ra** (guardrail chặn trước, hoặc thiếu dữ liệu) |
 | `created_at` | datetime | NOT NULL | |
+
+CHECK `ck_ai_logs_mot_chu_so_huu`: đúng một trong `user_id` / `customer_id` khác NULL. CSDL dựng trước chặng 7 có `user_id` NOT NULL nên
+`dung_lai_bang_nhat_ky_ai` dựng lại bảng lúc khởi động (cùng cơ chế `dung_lai_bang_lich_hen`).
 
 Bảng này vừa phục vụ kiểm chứng guardrail khi test, vừa là bằng chứng cho báo cáo cuối kỳ về cách
 dùng AI trong hệ thống.
