@@ -29,6 +29,8 @@
     <a href="/services">Dịch vụ</a>
     {# US-02 cho cả ba vai trò toàn quyền ở mục tiêm phòng, nên link này không lọc vai trò. #}
     <a href="/vaccinations">Tiêm phòng</a>
+    {# Thẻ Trợ lý AI trên trang chủ xuất hiện với cả ba vai trò, vì vậy menu cũng cần có link tương ứng. #}
+    <a href="/ai/hoi-dap">Trợ lý AI</a>
     {# Hỏi đáp và tóm tắt mở cho cả ba vai trò (người dùng chốt 18/09); riêng soạn tin nhắc
        là việc của quầy nên nút đó chỉ hiện ở lưới lịch và trang tiêm phòng. #}
     {# US-02 không cho `caretaker` quyền nào ở mục hóa đơn, kể cả xem. #}
@@ -55,7 +57,7 @@
 <div class="pet-account-float" aria-label="Tài khoản">
   <div class="pet-account-name"><strong>{{ user.full_name }}</strong><span>{{ user.ten_vai_tro }}</span></div>
   <a href="/doi-mat-khau">Đổi mật khẩu</a>
-  <form method="post" action="/logout"><button class="lien-ket">Đăng xuất</button></form>
+  {# Nút đăng xuất chỉ đặt trong thanh điều hướng để tránh có hai form cùng nhãn trên một trang. #}
 </div>
 <div class="pet-ai-widget" id="pet-ai-widget">
   <section class="pet-ai-panel" id="pet-ai-panel" aria-label="Trò chuyện với Trợ lý AI" hidden>
