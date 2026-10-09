@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block tieu_de %}Cổng khách hàng{% endblock %}</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v=20261010">
 </head>
 <body>
 {# Không dùng base.html: file đó là menu của NHÂN VIÊN. Khách không bao giờ thấy link tới trang nhân viên. #}
@@ -32,5 +32,92 @@
 <main class="{% block lop_main %}{% endblock %}">
   {% block noi_dung %}{% endblock %}
 </main>
+
+<script>
+(function () {
+  'use strict';
+
+  var body = document.body;
+  if (!body) return;
+
+  var reduceMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var navigating = false;
+
+  /* Lớp Mica/reveal nằm trên cùng, không chặn click bình thường. */
+  var veil = document.createElement('div');
+  veil.className = 'win11-transition';
+  veil.setAttribute('aria-hidden', 'true');
+  body.appendChild(veil);
+
+  function go(url, event) {
+    if (navigating) return;
+    navigating = true;
+
+    var x = event && Number.isFinite(event.clientX) ? event.clientX : window.innerWidth / 2;
+    var y = event && Number.isFinite(event.clientY) ? event.clientY : window.innerHeight / 2;
+    veil.style.setProperty('--win-x', x + 'px');
+    veil.style.setProperty('--win-y', y + 'px');
+
+    body.classList.remove('win11-enter');
+    body.classList.add('win11-leave');
+
+    /* Cho animation chạy đủ một nhịp trước khi trình duyệt tải URL mới. */
+    window.setTimeout(function () {
+      window.location.assign(url.href);
+    }, reduceMotion ? 0 : 300);
+  }
+
+  /* Hiệu ứng vào trang. */
+  if (!reduceMotion) {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        body.classList.add('win11-enter');
+        window.setTimeout(function () {
+          body.classList.remove('win11-enter');
+        }, 520);
+      });
+    });
+  }
+
+  /* Dùng capture phase để không bị listener khác chặn mất. */
+  document.addEventListener('click', function (event) {
+    var link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+    if (!link || navigating) return;
+
+    /* Ctrl/Cmd/Shift/Alt + click, middle-click hoặc target khác: giữ hành vi trình duyệt. */
+    if (event.button && event.button !== 0) return;
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    if (link.target && link.target !== '_self') return;
+    if (link.hasAttribute('download') || link.hasAttribute('data-no-transition')) return;
+
+    var url;
+    try {
+      url = new URL(link.href, window.location.href);
+    } catch (_) {
+      return;
+    }
+
+    if (url.origin !== window.location.origin) return;
+    if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+
+    event.preventDefault();
+    go(url, event);
+  }, true);
+
+  window.addEventListener('pageshow', function () {
+    navigating = false;
+    body.classList.remove('win11-leave');
+    if (!reduceMotion) body.classList.add('win11-enter');
+    window.setTimeout(function () {
+      body.classList.remove('win11-enter');
+    }, 520);
+  });
+})();
+</script>
+
+<script src="/static/pet-ui.js?v=20261010" defer></script>
+<script src="/static/pet-magic.js?v=20261010" defer></script>
+<script src="/static/pet-meme.js?v=20261011" defer></script>
 </body>
 </html>
