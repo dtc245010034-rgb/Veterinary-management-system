@@ -16,8 +16,6 @@
   <a class="thuong-hieu" href="/">🐾 Quản lý thú cưng</a>
 
   <nav>
-    {# Menu hiện theo vai trò — bảng phân quyền trong docs/user-stories/a-dang-nhap-phan-quyen.md US-02 #}
-    {# Nhân viên chăm sóc có quyền xem chủ nuôi và thú cưng. #}
     <a href="/owners">Chủ nuôi</a>
 
     {% if user.role in ('manager', 'receptionist') %}
@@ -68,7 +66,7 @@
   <div class="pet-account-actions">
     <a href="/doi-mat-khau">Đổi mật khẩu</a>
     <form method="post" action="/logout" class="pet-account-logout">
-      <button type="submit" class="lien-ket">Đăng xuất</button>
+      <button type="submit" class="lien-ket">Thoát</button>
     </form>
   </div>
 </div>
@@ -124,7 +122,6 @@
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var navigating = false;
 
-  /* Lớp Mica/reveal nằm trên cùng, không chặn click bình thường. */
   var veil = document.createElement('div');
   veil.className = 'win11-transition';
   veil.setAttribute('aria-hidden', 'true');
@@ -145,13 +142,11 @@
     body.classList.remove('win11-enter');
     body.classList.add('win11-leave');
 
-    /* Cho animation chạy đủ một nhịp trước khi tải URL mới. */
     window.setTimeout(function () {
       window.location.assign(url.href);
     }, reduceMotion ? 0 : 300);
   }
 
-  /* Hiệu ứng vào trang. */
   if (!reduceMotion) {
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
@@ -163,7 +158,6 @@
     });
   }
 
-  /* Chỉ áp dụng hiệu ứng chuyển trang cho liên kết; form đăng xuất vẫn POST bình thường. */
   document.addEventListener('click', function (event) {
     var link = event.target && event.target.closest
       ? event.target.closest('a[href]') : null;
@@ -313,4 +307,3 @@
 
 </body>
 </html>
-```
