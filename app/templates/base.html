@@ -9,36 +9,35 @@
 <body>
 {% if user %}
 <header class="thanh-dieu-huong" id="pet-sidebar">
-  <button type="button" class="sidebar-toggle" aria-label="Thu gọn thanh điều hướng" title="Thu gọn thanh điều hướng">☰</button>
+  <button type="button" class="sidebar-toggle"
+          aria-label="Thu gọn thanh điều hướng"
+          title="Thu gọn thanh điều hướng">☰</button>
+
   <a class="thuong-hieu" href="/">🐾 Quản lý thú cưng</a>
 
   <nav>
     {# Menu hiện theo vai trò — bảng phân quyền trong docs/user-stories/a-dang-nhap-phan-quyen.md US-02 #}
-    {# Nhân viên chăm sóc có quyền XEM chủ nuôi và thú cưng (US-02) — cần link để tra
-       lịch sử con vật mình sắp chăm. Thiếu link là họ phải tự gõ URL, đúng lỗi đã gặp
-       một lần với "Dịch vụ". #}
+    {# Nhân viên chăm sóc có quyền xem chủ nuôi và thú cưng. #}
     <a href="/owners">Chủ nuôi</a>
+
     {% if user.role in ('manager', 'receptionist') %}
       <a href="/appointments">Lịch hẹn</a>
     {% endif %}
+
     {% if user.role == 'caretaker' %}
       <a href="/appointments/cua-toi">Lịch của tôi</a>
     {% endif %}
-    {# Bảng phân quyền US-02 cho cả ba vai trò quyền XEM bảng giá; chỉ quản lý mới sửa.
-       Trước đây chỉ quản lý có link nên lễ tân và nhân viên phải tự gõ URL. #}
+
     <a href="/services">Dịch vụ</a>
-    {# US-02 cho cả ba vai trò toàn quyền ở mục tiêm phòng, nên link này không lọc vai trò. #}
     <a href="/vaccinations">Tiêm phòng</a>
-    {# Thẻ Trợ lý AI trên trang chủ xuất hiện với cả ba vai trò, vì vậy menu cũng cần có link tương ứng. #}
     <a href="/ai/hoi-dap">Trợ lý AI</a>
-    {# Hỏi đáp và tóm tắt mở cho cả ba vai trò (người dùng chốt 18/09); riêng soạn tin nhắc
-       là việc của quầy nên nút đó chỉ hiện ở lưới lịch và trang tiêm phòng. #}
-    {# US-02 không cho `caretaker` quyền nào ở mục hóa đơn, kể cả xem. #}
+
     {% if user.role in ('manager', 'receptionist') %}
       <a href="/invoices">Hóa đơn</a>
       <a href="/lich-cho-duyet">Lịch chờ duyệt</a>
       <a href="/lien-ket-khach">Liên kết khách</a>
     {% endif %}
+
     {% if user.role == 'manager' %}
       <a href="/stats">Thống kê</a>
       <a href="/users">Tài khoản</a>
@@ -48,25 +47,65 @@
   <div class="nguoi-dung">
     <span class="ten">{{ user.full_name }}</span>
     <span class="vai-tro">{{ user.ten_vai_tro }}</span>
-    {# Không đặt trong <nav>: đây là việc của tài khoản cá nhân, không phải một mục chức
-       năng — và phép canh "link menu nào cũng có thẻ trang chủ" chỉ soát khối <nav>. #}
+
     <a href="/doi-mat-khau">Đổi mật khẩu</a>
-    <form method="post" action="/logout"><button class="lien-ket">Đăng xuất</button></form>
+
+    <form method="post" action="/logout"
+          style="display: inline-flex !important; margin: 0;">
+      <button type="submit" class="lien-ket"
+              style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important; cursor: pointer;">
+        Đăng xuất
+      </button>
+    </form>
   </div>
 </header>
+
 <div class="pet-account-float" aria-label="Tài khoản">
-  <div class="pet-account-name"><strong>{{ user.full_name }}</strong><span>{{ user.ten_vai_tro }}</span></div>
-  <a href="/doi-mat-khau">Đổi mật khẩu</a>
-  {# Nút đăng xuất chỉ đặt trong thanh điều hướng để tránh có hai form cùng nhãn trên một trang. #}
+  <div class="pet-account-name">
+    <strong>{{ user.full_name }}</strong>
+    <span>{{ user.ten_vai_tro }}</span>
+  </div>
+  <div class="pet-account-actions">
+    <a href="/doi-mat-khau">Đổi mật khẩu</a>
+    <form method="post" action="/logout" class="pet-account-logout">
+      <button type="submit" class="lien-ket">Đăng xuất</button>
+    </form>
+  </div>
 </div>
+
 <div class="pet-ai-widget" id="pet-ai-widget">
-  <section class="pet-ai-panel" id="pet-ai-panel" aria-label="Trò chuyện với Trợ lý AI" hidden>
-    <header><div><strong>✨ Trợ lý AI</strong><small>Hỏi đáp chăm sóc thú cưng</small></div><button type="button" class="pet-ai-close" aria-label="Đóng chat">×</button></header>
-    <div class="pet-ai-messages" id="pet-ai-messages" aria-live="polite"><div class="pet-ai-msg bot">Xin chào! Bạn muốn hỏi gì về chăm sóc thú cưng?</div></div>
-    <form id="pet-ai-form"><textarea id="pet-ai-input" rows="2" required maxlength="1500" placeholder="Nhập câu hỏi của bạn..."></textarea><button type="submit">Gửi ↑</button></form>
-    <small class="pet-ai-note">AI chỉ hỗ trợ chăm sóc thường ngày, không thay thế bác sĩ thú y.</small>
+  <section class="pet-ai-panel" id="pet-ai-panel"
+           aria-label="Trò chuyện với Trợ lý AI" hidden>
+    <header>
+      <div>
+        <strong>✨ Trợ lý AI</strong>
+        <small>Hỏi đáp chăm sóc thú cưng</small>
+      </div>
+      <button type="button" class="pet-ai-close"
+              aria-label="Đóng chat">×</button>
+    </header>
+
+    <div class="pet-ai-messages" id="pet-ai-messages" aria-live="polite">
+      <div class="pet-ai-msg bot">
+        Xin chào! Bạn muốn hỏi gì về chăm sóc thú cưng?
+      </div>
+    </div>
+
+    <form id="pet-ai-form">
+      <textarea id="pet-ai-input" rows="2" required maxlength="1000"
+                placeholder="Nhập câu hỏi của bạn..."></textarea>
+      <button type="submit">Gửi ↑</button>
+    </form>
+
+    <small class="pet-ai-note">
+      AI chỉ hỗ trợ chăm sóc thường ngày, không thay thế bác sĩ thú y.
+    </small>
   </section>
-  <button type="button" class="pet-ai-bubble" id="pet-ai-toggle" aria-expanded="false"><span>✦</span> Trợ lý AI</button>
+
+  <button type="button" class="pet-ai-bubble" id="pet-ai-toggle"
+          aria-expanded="false">
+    <span>✦</span> Trợ lý AI
+  </button>
 </div>
 {% endif %}
 
@@ -95,15 +134,18 @@
     if (navigating) return;
     navigating = true;
 
-    var x = event && Number.isFinite(event.clientX) ? event.clientX : window.innerWidth / 2;
-    var y = event && Number.isFinite(event.clientY) ? event.clientY : window.innerHeight / 2;
+    var x = event && Number.isFinite(event.clientX)
+      ? event.clientX : window.innerWidth / 2;
+    var y = event && Number.isFinite(event.clientY)
+      ? event.clientY : window.innerHeight / 2;
+
     veil.style.setProperty('--win-x', x + 'px');
     veil.style.setProperty('--win-y', y + 'px');
 
     body.classList.remove('win11-enter');
     body.classList.add('win11-leave');
 
-    /* Cho animation chạy đủ một nhịp trước khi trình duyệt tải URL mới. */
+    /* Cho animation chạy đủ một nhịp trước khi tải URL mới. */
     window.setTimeout(function () {
       window.location.assign(url.href);
     }, reduceMotion ? 0 : 300);
@@ -121,16 +163,18 @@
     });
   }
 
-  /* Dùng capture phase để không bị listener khác chặn mất. */
+  /* Chỉ áp dụng hiệu ứng chuyển trang cho liên kết; form đăng xuất vẫn POST bình thường. */
   document.addEventListener('click', function (event) {
-    var link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+    var link = event.target && event.target.closest
+      ? event.target.closest('a[href]') : null;
+
     if (!link || navigating) return;
 
-    /* Ctrl/Cmd/Shift/Alt + click, middle-click hoặc target khác: giữ hành vi trình duyệt. */
     if (event.button && event.button !== 0) return;
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     if (link.target && link.target !== '_self') return;
-    if (link.hasAttribute('download') || link.hasAttribute('data-no-transition')) return;
+    if (link.hasAttribute('download') ||
+        link.hasAttribute('data-no-transition')) return;
 
     var url;
     try {
@@ -140,7 +184,9 @@
     }
 
     if (url.origin !== window.location.origin) return;
-    if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+
+    if (url.pathname === window.location.pathname &&
+        url.search === window.location.search) return;
 
     event.preventDefault();
     go(url, event);
@@ -149,7 +195,9 @@
   window.addEventListener('pageshow', function () {
     navigating = false;
     body.classList.remove('win11-leave');
+
     if (!reduceMotion) body.classList.add('win11-enter');
+
     window.setTimeout(function () {
       body.classList.remove('win11-enter');
     }, 520);
@@ -158,23 +206,111 @@
 </script>
 
 <script src="/static/pet-ui.js?v=20261010" defer></script>
-<script src="/static/pet-magic.js?v=20261010" defer></script>
 <script src="/static/pet-meme.js?v=20261011" defer></script>
 
 <script>
-(function(){
- const sidebar=document.getElementById('pet-sidebar');
- const toggle=sidebar&&sidebar.querySelector('.sidebar-toggle');
- if(toggle){toggle.addEventListener('click',()=>{const collapsed=document.body.classList.toggle('sidebar-collapsed');toggle.setAttribute('aria-label',collapsed?'Mở rộng thanh điều hướng':'Thu gọn thanh điều hướng');});}
- const panel=document.getElementById('pet-ai-panel'), bubble=document.getElementById('pet-ai-toggle'), close=document.querySelector('.pet-ai-close');
- function setChat(open){if(!panel||!bubble)return;panel.hidden=!open;bubble.setAttribute('aria-expanded',String(open));if(open)document.getElementById('pet-ai-input').focus();}
- bubble&&bubble.addEventListener('click',()=>setChat(panel.hidden));close&&close.addEventListener('click',()=>setChat(false));
- const form=document.getElementById('pet-ai-form');
- form&&form.addEventListener('submit',async e=>{e.preventDefault();const input=document.getElementById('pet-ai-input'),question=input.value.trim();if(!question)return;const messages=document.getElementById('pet-ai-messages');const user=document.createElement('div');user.className='pet-ai-msg user';user.textContent=question;messages.appendChild(user);input.value='';const wait=document.createElement('div');wait.className='pet-ai-msg bot';wait.textContent='Đang xử lý câu hỏi…';messages.appendChild(wait);messages.scrollTop=messages.scrollHeight;
- try{const fd=new FormData();fd.append('cau_hoi',question);const res=await fetch('/ai/hoi-dap',{method:'POST',body:fd,credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest'}});const html=await res.text();const doc=new DOMParser().parseFromString(html,'text/html');const answer=doc.querySelector('#noi-dung, #ban-chot, .ai-noi-dung');if(!res.ok)throw new Error('Máy chủ trả về lỗi '+res.status);if(answer){wait.textContent=answer.textContent.trim();}else{const err=doc.querySelector('[role=alert],.loi');wait.textContent=err?err.textContent.trim():'Máy chủ chưa trả về câu trả lời trong khung chat. Hãy kiểm tra cấu hình dịch vụ AI.';}}
- catch(err){wait.textContent='Không thể kết nối dịch vụ AI. Hãy kiểm tra máy chủ ứng dụng và cấu hình AI rồi thử lại.';}messages.scrollTop=messages.scrollHeight;});
+(function () {
+  const sidebar = document.getElementById('pet-sidebar');
+  const toggle = sidebar && sidebar.querySelector('.sidebar-toggle');
+
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const collapsed =
+        document.body.classList.toggle('sidebar-collapsed');
+
+      toggle.setAttribute(
+        'aria-label',
+        collapsed
+          ? 'Mở rộng thanh điều hướng'
+          : 'Thu gọn thanh điều hướng'
+      );
+    });
+  }
+
+  const panel = document.getElementById('pet-ai-panel');
+  const bubble = document.getElementById('pet-ai-toggle');
+  const close = document.querySelector('.pet-ai-close');
+
+  function setChat(open) {
+    if (!panel || !bubble) return;
+
+    panel.hidden = !open;
+    bubble.setAttribute('aria-expanded', String(open));
+
+    if (open) {
+      document.getElementById('pet-ai-input').focus();
+    }
+  }
+
+  bubble && bubble.addEventListener('click', () => setChat(panel.hidden));
+  close && close.addEventListener('click', () => setChat(false));
+
+  const form = document.getElementById('pet-ai-form');
+
+  form && form.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const input = document.getElementById('pet-ai-input');
+    const question = input.value.trim();
+    if (!question) return;
+
+    const messages = document.getElementById('pet-ai-messages');
+
+    const userMessage = document.createElement('div');
+    userMessage.className = 'pet-ai-msg user';
+    userMessage.textContent = question;
+    messages.appendChild(userMessage);
+
+    input.value = '';
+
+    const wait = document.createElement('div');
+    wait.className = 'pet-ai-msg bot';
+    wait.textContent = 'Đang xử lý câu hỏi…';
+    messages.appendChild(wait);
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+      const fd = new FormData();
+      fd.append('cau_hoi', question);
+
+      const res = await fetch('/ai/hoi-dap', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+
+      const answer = doc.querySelector(
+        '#noi-dung, #ban-chot, .ai-noi-dung'
+      );
+      const err = doc.querySelector('[role=alert], .loi');
+
+      if (!res.ok) {
+        wait.textContent = err
+          ? err.textContent.trim()
+          : 'Dịch vụ AI trả về lỗi HTTP ' + res.status + '.';
+      } else if (answer) {
+        wait.textContent = answer.textContent.trim();
+      } else {
+        wait.textContent = err
+          ? err.textContent.trim()
+          : 'Máy chủ chưa trả về câu trả lời trong khung chat. Hãy kiểm tra cấu hình dịch vụ AI.';
+      }
+    } catch (err) {
+      wait.textContent =
+        'Không thể kết nối dịch vụ AI. Hãy kiểm tra máy chủ ứng dụng và cấu hình AI rồi thử lại.';
+    }
+
+    messages.scrollTop = messages.scrollHeight;
+  });
 })();
 </script>
 
 </body>
 </html>
+```

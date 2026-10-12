@@ -2367,3 +2367,113 @@ input[type="reset"]:disabled {
     max-width: min(230px, calc(100vw - 88px)) !important;
   }
 }
+/* =========================================================
+   v13: nút Đăng xuất trong khối tài khoản + tự căn lại khi
+   thu nhỏ / mở rộng cửa sổ trình duyệt.
+   ========================================================= */
+
+.pet-account-float {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 240px);
+  transition: gap .2s ease, padding .2s ease, max-width .2s ease;
+}
+
+/* Tên + vai trò cắt gọn bằng ellipsis thay vì đẩy khối tràn ra ngoài. */
+.pet-account-name { min-width: 0; max-width: 160px; }
+.pet-account-name strong,
+.pet-account-name span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hai hành động xếp dọc: Đổi mật khẩu trên, Đăng xuất dưới. */
+.pet-account-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+.pet-account-actions a,
+.pet-account-actions button {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--chu);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 6px;
+  text-decoration: none !important;
+  transition: color .18s ease;
+}
+.pet-account-actions a:hover,
+.pet-account-actions button:hover { color: var(--chinh-dam); }
+
+/* Form đăng xuất không chiếm thêm dòng, không có khoảng lạ. */
+.pet-account-logout {
+  display: inline-flex;
+  margin: 0;
+}
+.pet-account-logout button.lien-ket {
+  padding: 0;
+  min-height: 0;
+  background: transparent;
+  border: 0;
+}
+
+/* Cửa sổ hẹp dần → khối tự thu lại theo từng mốc. */
+@media (max-width: 1100px) {
+  .pet-account-float { max-width: calc(100vw - 220px); }
+  .pet-account-name { max-width: 130px; }
+}
+
+@media (max-width: 850px) {
+  .pet-account-float {
+    right: 8px;
+    top: 8px;
+    gap: 8px;
+    padding: 7px 10px;
+    max-width: calc(100vw - 180px);
+  }
+  .pet-account-name { max-width: 110px; }
+}
+
+@media (max-width: 620px) {
+  .pet-account-float {
+    gap: 6px;
+    padding: 6px 9px;
+    max-width: calc(100vw - 96px);
+    font-size: 11px;
+  }
+  .pet-account-name { max-width: 90px; }
+  .pet-account-actions a,
+  .pet-account-actions button { font-size: 11px; }
+}
+
+@media (max-width: 430px) {
+  .pet-account-float {
+    right: 6px;
+    top: 6px;
+    gap: 5px;
+    padding: 5px 7px;
+    max-width: calc(100vw - 78px);
+  }
+  .pet-account-name { max-width: 76px; }
+  /* Màn hình rất hẹp: ẩn dòng vai trò, chỉ giữ tên. */
+  .pet-account-name span { display: none; }
+  .pet-account-actions a,
+  .pet-account-actions button { font-size: 10px; }
+  /* Nút đổi theme chỉ giữ icon để tiết kiệm chiều ngang. */
+  .pet-account-float .pet-theme-toggle { padding: 5px 7px; min-height: 30px; }
+  .pet-account-float .pet-theme-toggle span:not(.theme-icon) { display: none; }
+}
