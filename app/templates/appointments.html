@@ -82,9 +82,9 @@
               {% if user.role in ('manager', 'receptionist') %}
                 {# Soạn tin nhắc chỉ có nghĩa với buổi chưa diễn ra (US-24). #}
                 {% if a.status in ('booked', 'rescheduled') and a.start_at > bay_gio %}
-                <form method="post" action="/ai/nhac-lich/lich-hen/{{ a.id }}">
+                <form class="form-ai-nhac" method="post" action="/ai/nhac-lich/lich-hen/{{ a.id }}">
                   <input type="hidden" name="tu" value="{{ duong_dan }}?ngay={{ ngay.isoformat() }}">
-                  <button type="submit">Soạn tin nhắc (AI)</button>
+                  <button type="submit" class="nut-ai">Soạn tin nhắc (AI)</button>
                 </form>
                 {% endif %}
                 {% if a.status in ('booked', 'rescheduled') %}
