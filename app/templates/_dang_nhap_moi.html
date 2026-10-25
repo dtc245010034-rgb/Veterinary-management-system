@@ -271,7 +271,17 @@
     </div>
 
     <script>
-        let isDarkMode = true;
+        // Dùng chung khóa với các trang trong ứng dụng (pet-ui.js) → chọn nền tối ở đây thì vào trong vẫn tối.
+        // Chưa từng chọn thì giữ giao diện mặc định của trang đăng nhập (tối).
+        const THEME_KEY = 'pet-ui-theme';
+        function readStoredTheme() {
+            try { const v = localStorage.getItem(THEME_KEY); return (v === 'dark' || v === 'light') ? v : null; }
+            catch (e) { return null; }
+        }
+        function storeTheme(isDark) {
+            try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (e) {}
+        }
+        let isDarkMode = readStoredTheme() !== 'light';
         let isAnimatingTheme = false;
         let themeTimer1 = null, themeTimer2 = null, safetyResetTimer = null;
         let mousePos = { x: 0, y: 0 };
@@ -283,9 +293,31 @@
             if (passwordInput && plainTextSpan) plainTextSpan.textContent = passwordInput.value || '';
         }
 
+        // Một AudioContext dùng chung (tạo mới mỗi lần phát sẽ rò rỉ tài nguyên và bị trình duyệt giới hạn).
+        let sharedAudioCtx = null;
+        function getAudioCtx() {
+            try {
+                if (!sharedAudioCtx) {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (!Ctx) return null;
+                    sharedAudioCtx = new Ctx();
+                }
+                if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume().catch(() => {});
+                return sharedAudioCtx;
+            } catch (e) { return null; }
+        }
+        // Trình duyệt chỉ cho phát âm thanh sau khi người dùng tương tác: mở khóa ở lần bấm/gõ đầu tiên.
+        ['pointerdown', 'keydown', 'touchstart'].forEach((evt) => {
+            window.addEventListener(evt, function unlockAudio() {
+                getAudioCtx();
+                ['pointerdown', 'keydown', 'touchstart'].forEach((x) => window.removeEventListener(x, unlockAudio, true));
+            }, { capture: true, passive: true });
+        });
+
         function playSound(type) {
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const audioCtx = getAudioCtx();
+                if (!audioCtx) return;
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sine';
@@ -308,6 +340,7 @@
                 gain.connect(audioCtx.destination);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.15);
+                osc.onended = () => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} };
             } catch (e) {}
         }
 
@@ -321,25 +354,49 @@
             return Math.sqrt((p.x - projX)**2 + (p.y - projY)**2);
         }
 
-        function renderBeam() {
-            mousePos.x += (targetPos.x - mousePos.x) * 0.22;
-            mousePos.y += (targetPos.y - mousePos.y) * 0.22;
+        // Tìm phần tử một lần rồi dùng lại (trước đây mỗi khung hình gọi getElementById 11 lần).
+        let beamEls = null;
+        function getBeamEls() {
+            if (beamEls) return beamEls;
+            const $ = (id) => document.getElementById(id);
+            beamEls = {
+                rightPanel: $('right-panel'), sourceNode: $('flashlight-source-node'), owlWrapper: $('owl-wrapper'),
+                outerPolygon: $('beam-outer-polygon'), corePolygon: $('beam-core-polygon'),
+                spotlight: $('flashlight-spotlight'), flare: $('flashlight-nozzle-flare'), btnIcon: $('flashlight-icon'),
+                ambientGlow: $('ambient-light-glow'), passwordWrapper: $('password-wrapper'),
+                passwordRevealLayer: $('password-reveal-layer')
+            };
+            return beamEls;
+        }
 
-            const rightPanel = document.getElementById('right-panel');
-            const sourceNode = document.getElementById('flashlight-source-node');
-            const owlWrapper = document.getElementById('owl-wrapper');
-            const outerPolygon = document.getElementById('beam-outer-polygon');
-            const corePolygon = document.getElementById('beam-core-polygon');
-            const spotlight = document.getElementById('flashlight-spotlight');
-            const flare = document.getElementById('flashlight-nozzle-flare');
-            const btnIcon = document.getElementById('flashlight-icon');
-            const ambientGlow = document.getElementById('ambient-light-glow');
-            const passwordWrapper = document.getElementById('password-wrapper');
-            const passwordRevealLayer = document.getElementById('password-reveal-layer');
+        let lastBeamTime = 0;
+        let lastAmbientKey = '';
+        function renderBeam(now) {
+            // Con trỏ đã đứng yên: chỉ cập nhật ~10 lần/giây. Vẫn phải chạy vì thẻ đăng nhập đang nhấp nhô
+            // (animate-floatElevate) nên chân tia sáng và vị trí cú phải bám theo; ở tốc độ này mắt không phân biệt được.
+            const settled = Math.abs(targetPos.x - mousePos.x) < 0.3 && Math.abs(targetPos.y - mousePos.y) < 0.3;
+            if (settled) {
+                mousePos.x = targetPos.x;
+                mousePos.y = targetPos.y;
+                if (now - lastBeamTime < 100) { requestAnimationFrame(renderBeam); return; }
+            } else {
+                mousePos.x += (targetPos.x - mousePos.x) * 0.22;
+                mousePos.y += (targetPos.y - mousePos.y) * 0.22;
+            }
+            lastBeamTime = now;
+
+            const E = getBeamEls();
+            const { rightPanel, sourceNode, owlWrapper, outerPolygon, corePolygon, spotlight, flare,
+                    btnIcon, ambientGlow, passwordWrapper, passwordRevealLayer } = E;
 
             if (rightPanel && sourceNode && outerPolygon && corePolygon && spotlight && flare) {
+                // ---- ĐỌC layout một lượt (tránh đọc xen kẽ với ghi gây reflow nhiều lần mỗi khung hình) ----
                 const panelRect = rightPanel.getBoundingClientRect();
                 const nodeRect = sourceNode.getBoundingClientRect();
+                const owlRect = owlWrapper ? owlWrapper.getBoundingClientRect() : null;
+                const passRect = (passwordWrapper && passwordRevealLayer) ? passwordWrapper.getBoundingClientRect() : null;
+
+                // ---- TÍNH ----
                 const fx = (nodeRect.left + nodeRect.width / 2) - panelRect.left;
                 const fy = (nodeRect.top + nodeRect.height / 2) - panelRect.top;
                 const mx = mousePos.x;
@@ -348,11 +405,6 @@
                 const dy = my - fy;
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 const angle = Math.atan2(dy, dx);
-
-                if (btnIcon) {
-                    // Icon đèn pin trỏ sang phải nên xoay đúng bằng góc tới chuột
-                    btnIcon.style.transform = `rotate(${angle * 180 / Math.PI}deg) scale(1.1)`;
-                }
 
                 const spotlightRadius = Math.max(110, Math.min(200, dist * 0.55));
                 const outerSpread = Math.min(160, Math.max(60, dist * 0.40));
@@ -365,6 +417,11 @@
                 const c2x = mx + perpX * coreSpread, c2y = my + perpY * coreSpread;
                 const c3x = mx - perpX * coreSpread, c3y = my - perpY * coreSpread;
 
+                // ---- GHI ----
+                if (btnIcon) {
+                    // Icon đèn pin trỏ sang phải nên xoay đúng bằng góc tới chuột
+                    btnIcon.style.transform = `rotate(${angle * 180 / Math.PI}deg) scale(1.1)`;
+                }
                 outerPolygon.setAttribute('points', `${fx},${fy} ${o2x},${o2y} ${o3x},${o3y}`);
                 corePolygon.setAttribute('points', `${fx},${fy} ${c2x},${c2y} ${c3x},${c3y}`);
                 spotlight.setAttribute('cx', mx);
@@ -374,11 +431,15 @@
                 flare.setAttribute('cy', fy);
 
                 if (ambientGlow) {
-                    ambientGlow.style.background = `radial-gradient(circle 280px at ${mx}px ${my}px, rgba(251, 191, 36, 0.12) 0%, rgba(20, 184, 166, 0.05) 55%, transparent 100%)`;
+                    // Gradient toàn màn hình: chỉ ghi lại khi con trỏ thật sự đổi chỗ
+                    const key = mx.toFixed(1) + ',' + my.toFixed(1);
+                    if (key !== lastAmbientKey) {
+                        lastAmbientKey = key;
+                        ambientGlow.style.background = `radial-gradient(circle 280px at ${mx}px ${my}px, rgba(251, 191, 36, 0.12) 0%, rgba(20, 184, 166, 0.05) 55%, transparent 100%)`;
+                    }
                 }
 
-                if (owlWrapper) {
-                    const owlRect = owlWrapper.getBoundingClientRect();
+                if (owlWrapper && owlRect) {
                     const owlX = (owlRect.left + owlRect.width / 2) - panelRect.left;
                     const owlY = (owlRect.top + owlRect.height / 2) - panelRect.top;
                     const distToOwlCenter = Math.sqrt((mx - owlX) ** 2 + (my - owlY) ** 2);
@@ -392,8 +453,7 @@
                     }
                 }
 
-                if (passwordWrapper && passwordRevealLayer) {
-                    const passRect = passwordWrapper.getBoundingClientRect();
+                if (passRect) {
                     const passX = mx - (passRect.left - panelRect.left);
                     const passY = my - (passRect.top - panelRect.top);
                     passwordRevealLayer.style.clipPath = `circle(70px at ${passX}px ${passY}px)`;
@@ -502,6 +562,7 @@
             if (isAnimatingTheme) return;
             isAnimatingTheme = true;
             isDarkMode = !isDarkMode;
+            storeTheme(isDarkMode);
             playSound('toggle');
             if (themeTimer1) clearTimeout(themeTimer1);
             if (themeTimer2) clearTimeout(themeTimer2);
@@ -595,6 +656,16 @@
                 submitBtn.innerHTML = '<span>Đăng nhập</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
             }
         });
+
+        // Người dùng đã chọn nền sáng ở lần trước: áp dụng ngay, không chạy hiệu ứng chuyển 0,7 giây lúc mới vào.
+        if (!isDarkMode) {
+            const noAnim = document.createElement('style');
+            noAnim.textContent = '*,*::before,*::after{transition:none!important}';
+            document.head.appendChild(noAnim);
+            applyThemeStyles(false);
+            resetCelestialState();
+            requestAnimationFrame(() => requestAnimationFrame(() => noAnim.remove()));
+        }
 
         window.onload = function() {
             syncPasswordText();

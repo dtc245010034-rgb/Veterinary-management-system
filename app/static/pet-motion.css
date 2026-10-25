@@ -40,10 +40,7 @@ html:not([data-theme="dark"]) {
 
 /* ---------- Keyframes (sao chép nguyên từ trang đăng nhập) ---------- */
 /* Dùng thuộc tính `translate` riêng để KHÔNG đụng vào `transform` của hover/active */
-@keyframes pm-float-elevate {
-  0%, 100% { translate: 0 0; }
-  50%      { translate: 0 -8px; }
-}
+
 @keyframes pm-bounce-slow {
   0%, 100% { translate: 0 0; }
   50%      { translate: 0 -6px; }
@@ -75,11 +72,15 @@ main {
   animation: pm-page-in .32s var(--pm-ease) both;
 }
 main.giua-man-hinh { animation-duration: .4s; }
-body.pet-leaving main {
-  opacity: 0;
-  transition: opacity .12s linear;
-}
-.win11-transition { display: none !important; }   /* lớp phủ blur cũ: tắt */
+/* Chuyển trang do trình duyệt thực hiện (View Transitions, Chrome/Edge/Safari mới):
+   không chặn click, không trì hoãn. Trình duyệt chưa hỗ trợ sẽ bỏ qua và chuyển trang như thường. */
+@view-transition { navigation: auto; }
+::view-transition-group(root) { animation-duration: .18s; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+}   /* lớp phủ blur cũ: tắt */
 
 /* =========================================================
    2. THẺ: đứng yên (bỏ bồng bềnh vô hạn — mỗi thẻ là một lớp GPU luôn phải vẽ lại)
@@ -197,8 +198,6 @@ input[type="reset"],
 a.chinh,
 .chinh,
 .lien-ket,
-.thanh-dieu-huong .sidebar-toggle,
-.thanh-dieu-huong nav a,
 .pet-account-float a,
 .pet-ai-bubble,
 .pet-ai-close,
@@ -215,11 +214,10 @@ a.chinh,
 
 @media (hover: hover) and (pointer: fine) {
   .pet-theme-toggle:hover,
-  .thanh-dieu-huong .sidebar-toggle:hover,
-  .pet-account-float a:hover,
-  .pet-account-float button:hover,
-  .pet-ai-bubble:hover,
-  .lien-ket:hover {
+.pet-account-float a:hover,
+.pet-account-float button:hover,
+.pet-ai-bubble:hover,
+.lien-ket:hover {
     transform: scale(1.05) !important;
   }
   .pet-ai-close:hover {
@@ -243,8 +241,7 @@ button:active:not(:disabled),
 .pet-account-float a:active,
 .pet-ai-bubble:active,
 .pet-ai-close:active,
-.pet-theme-toggle:active,
-.thanh-dieu-huong .sidebar-toggle:active {
+.pet-theme-toggle:active {
   transform: scale(.95) !important;
 }
 .chinh:active:not(:disabled),
@@ -380,7 +377,6 @@ button.pm-loading::before {
   button.pm-loading::before { animation-duration: 1.6s; }
 }
 
-
 /* =========================================================
    9. LÀM MƯỢT TOÀN TRANG
    - Tắt mọi backdrop-filter (làm mờ nền sau mỗi lớp kính là thứ gây giật nhiều nhất)
@@ -392,14 +388,10 @@ button.pm-loading::before {
   backdrop-filter: none !important;
 }
 html { scroll-behavior: auto; }            /* cuộn tức thì, tránh smooth-scroll chồng lên main-thread */
-body::before { display: none; }            /* quầng sáng blur(70px) chuyển động 18s */
+            /* quầng sáng blur(70px) chuyển động 18s */
 .the { will-change: auto; }
 .the::after { animation: none; filter: none; box-shadow: none; }
-.meme-login-showcase::before, .meme-login-showcase::after { animation: none; filter: none; }
-.pet-welcome::before { filter: none; }
-.pet-welcome-paw { animation: none; filter: none; }
 .pet-photo { animation-duration: 9s !important; }
-.pet-navigation-spin { display: none !important; }
 
 /* Lớp kính không còn blur → cần nền đặc hơn để chữ không bị lẫn với nội dung phía sau */
 .the, table, main > ul li, main form.form-card, .meme-sticker {

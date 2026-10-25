@@ -52,19 +52,6 @@ body {
 }
 
 /* Ánh sáng nền chuyển động rất chậm — dùng transform nên nhẹ hơn animation layout. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: -30%;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 25% 35%, rgba(255,255,255,.70), transparent 17%),
-    radial-gradient(circle at 75% 60%, rgba(255,255,255,.44), transparent 19%);
-  filter: blur(70px);
-  will-change: transform;
-  animation: nen-tho 18s ease-in-out infinite alternate;
-}
 
 /* Hạt sáng nền rất nhẹ, không can thiệp nội dung. */
 body::after {
@@ -78,11 +65,6 @@ body::after {
     radial-gradient(circle at 75% 25%, rgba(255,255,255,.28) 0 1px, transparent 1px);
   background-size: 170px 170px, 230px 230px;
   opacity: .45;
-}
-
-@keyframes nen-tho {
-  from { transform: translate3d(-1%, -1%, 0) scale(1); }
-  to { transform: translate3d(1.5%, 1%, 0) scale(1.035); }
 }
 
 ::selection { background: rgba(22, 134, 90, .18); }
@@ -105,62 +87,6 @@ button { cursor: pointer; }
 /* =========================================================
    NAVBAR — kính trong + pill + tự xuống dòng
    ========================================================= */
-
-.thanh-dieu-huong {
-  position: sticky;
-  top: 10px;
-  z-index: 50;
-  width: min(1440px, calc(100% - 24px));
-  min-height: 64px;
-  margin: 10px auto 0;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  background: rgba(255,255,255,.69);
-  border: 1px solid rgba(255,255,255,.88);
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(28px) saturate(155%);
-  -webkit-backdrop-filter: blur(28px) saturate(155%);
-  isolation: isolate;
-}
-
-.thanh-dieu-huong::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  left: 8%;
-  top: -20px;
-  width: 120px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.72);
-  filter: blur(16px);
-  opacity: .9;
-  pointer-events: none;
-}
-
-.thanh-dieu-huong::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  right: 8%;
-  bottom: -12px;
-  width: 64px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(22,134,90,.10);
-  filter: blur(14px);
-  pointer-events: none;
-  animation: giot-nav 5.5s ease-in-out infinite alternate;
-}
-
-@keyframes giot-nav {
-  from { transform: translateX(0) scale(.95); opacity: .45; }
-  to { transform: translateX(-22px) scale(1.15); opacity: .78; }
-}
 
 .thuong-hieu {
   flex: 0 0 auto;
@@ -187,55 +113,6 @@ button { cursor: pointer; }
   background: rgba(255,255,255,.90);
   box-shadow: 0 8px 24px rgba(31,42,58,.08), inset 0 1px rgba(255,255,255,.95);
 }
-
-.thanh-dieu-huong nav {
-  min-width: 0;
-  flex: 1 1 360px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  flex-wrap: wrap;
-  row-gap: 3px;
-}
-
-.thanh-dieu-huong nav a,
-.thanh-dieu-huong > .nguoi-dung > a {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-  padding: 6px 10px;
-  border: 0;
-  border-radius: 12px;
-  color: var(--chu-phu);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color .22s var(--ease), background .22s var(--ease), transform .22s var(--ease);
-}
-
-.thanh-dieu-huong nav a::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 4px;
-  width: 0;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--chinh);
-  transform: translateX(-50%);
-  transition: width .25s var(--ease);
-}
-
-.thanh-dieu-huong nav a:hover,
-.thanh-dieu-huong > .nguoi-dung > a:hover {
-  color: var(--chu);
-  background: rgba(255,255,255,.74);
-  transform: translateY(-1px);
-}
-
-.thanh-dieu-huong nav a:hover::after { width: 16px; }
 
 .nguoi-dung {
   flex: 0 1 auto;
@@ -898,30 +775,7 @@ td.thao-tac button { padding: 5px 10px; font-size: 13px; }
    RESPONSIVE AUTO ALIGN
    ========================================================= */
 
-@media (max-width: 1100px) {
-  .thanh-dieu-huong nav { justify-content: flex-start; }
-}
-
 @media (max-width: 980px) {
-  .thanh-dieu-huong {
-    position: relative;
-    top: 0;
-    width: min(100% - 16px, 900px);
-    margin-top: 8px;
-  }
-
-  .thanh-dieu-huong nav {
-    order: 3;
-    flex-basis: 100%;
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 2px 1px 4px;
-    scrollbar-width: thin;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .thanh-dieu-huong nav a { flex: 0 0 auto; }
   .nguoi-dung { margin-left: auto; }
 
   main {
@@ -934,12 +788,6 @@ td.thao-tac button { padding: 5px 10px; font-size: 13px; }
 
 @media (max-width: 680px) {
   body { font-size: 14px; }
-
-  .thanh-dieu-huong {
-    width: calc(100% - 14px);
-    padding: 8px;
-    border-radius: 20px;
-  }
 
   .thuong-hieu {
     max-width: calc(100% - 8px);
@@ -1002,12 +850,6 @@ td.thao-tac button { padding: 5px 10px; font-size: 13px; }
   .hang-nut { flex-direction: column; align-items: stretch; }
   .hang-nut .chinh { width: 100%; }
 
-  .thanh-dieu-huong nav a,
-  .thanh-dieu-huong > .nguoi-dung > a {
-    min-height: 34px;
-    padding-inline: 8px;
-  }
-
   .dong-thanh-phan { grid-template-columns: 1fr; }
   .doi-gia { flex-wrap: wrap; }
 }
@@ -1022,12 +864,11 @@ td.thao-tac button { padding: 5px 10px; font-size: 13px; }
 
 /* Không có backdrop-filter thì vẫn giữ nền rõ ràng. */
 @supports not ((backdrop-filter: blur(1px))) {
-  .thanh-dieu-huong,
   .the,
-  table,
-  .khung-sua,
-  .ai-cau-hoi,
-  .ai-noi-dung { background: rgba(255,255,255,.96); }
+table,
+.khung-sua,
+.ai-cau-hoi,
+.ai-noi-dung { background: rgba(255,255,255,.96); }
 }
 
 /* Tôn trọng thiết lập giảm chuyển động của hệ điều hành. */
@@ -1039,7 +880,6 @@ td.thao-tac button { padding: 5px 10px; font-size: 13px; }
     transition-duration: .01ms !important;
   }
 }
-
 
 /* =========================================================
    NÚT LƯU + SOẠN TIN NHẮN AI
@@ -1188,116 +1028,14 @@ td:last-child {
    - Nội dung cũ scale/blur rất nhẹ; trang mới trượt + focus.
    ========================================================= */
 
-.chuyen-trang {
-  --x: 50vw;
-  --y: 50vh;
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  pointer-events: none;
-  overflow: hidden;
-  opacity: 0;
-  visibility: hidden;
-  background:
-    radial-gradient(circle at var(--x) var(--y),
-      rgba(255,255,255,.92) 0 2%,
-      rgba(255,255,255,.62) 7%,
-      rgba(255,255,255,.23) 17%,
-      transparent 39%),
-    rgba(247,249,252,.05);
-  backdrop-filter: blur(0px) saturate(100%);
-  -webkit-backdrop-filter: blur(0px) saturate(100%);
-  transition:
-    opacity .18s ease,
-    visibility 0s linear .42s,
-    backdrop-filter .42s cubic-bezier(.16,1,.3,1),
-    -webkit-backdrop-filter .42s cubic-bezier(.16,1,.3,1);
-}
-
 /* Hai “giọt” lớn như các mảng liquid glass của iOS */
-.chuyen-trang::before,
-.chuyen-trang::after {
-  content: "";
-  position: absolute;
-  width: 42vmax;
-  height: 42vmax;
-  border-radius: 48% 52% 58% 42% / 42% 46% 54% 58%;
-  opacity: 0;
-  filter: blur(5px);
-  mix-blend-mode: screen;
-  will-change: transform, opacity, border-radius;
-}
-
-.chuyen-trang::before {
-  left: calc(var(--x) - 20vmax);
-  top: calc(var(--y) - 18vmax);
-  background:
-    radial-gradient(circle at 36% 32%, rgba(255,255,255,.86), transparent 26%),
-    radial-gradient(circle at 55% 60%, rgba(127,255,204,.25), transparent 54%);
-}
-
-.chuyen-trang::after {
-  left: calc(var(--x) - 12vmax);
-  top: calc(var(--y) - 11vmax);
-  background:
-    radial-gradient(circle at 60% 40%, rgba(255,255,255,.66), transparent 25%),
-    radial-gradient(circle at 35% 68%, rgba(166,191,255,.23), transparent 55%);
-}
 
 body.dang-chuyen-trang {
   overflow: hidden;
 }
 
-body.dang-chuyen-trang .chuyen-trang {
-  opacity: 1;
-  visibility: visible;
-  backdrop-filter: blur(15px) saturate(130%);
-  -webkit-backdrop-filter: blur(15px) saturate(130%);
-}
-
-body.dang-chuyen-trang .chuyen-trang::before {
-  opacity: .92;
-  animation: liquid-giot-1 .52s cubic-bezier(.16,1,.3,1) forwards;
-}
-
-body.dang-chuyen-trang .chuyen-trang::after {
-  opacity: .70;
-  animation: liquid-giot-2 .60s cubic-bezier(.16,1,.3,1) forwards;
-}
-
-@keyframes liquid-giot-1 {
-  0% {
-    transform: scale(.28) rotate(-12deg);
-    border-radius: 55% 45% 64% 36% / 45% 58% 42% 55%;
-  }
-  55% {
-    transform: scale(1.10) rotate(4deg);
-    border-radius: 47% 53% 42% 58% / 52% 42% 58% 48%;
-  }
-  100% {
-    transform: scale(1.65) rotate(0deg);
-    border-radius: 50%;
-  }
-}
-
-@keyframes liquid-giot-2 {
-  0% {
-    transform: scale(.18) translate(15px, 8px);
-    border-radius: 36% 64% 50% 50%;
-  }
-  55% {
-    transform: scale(1.02) translate(-5px, -4px);
-    border-radius: 55% 45% 58% 42%;
-  }
-  100% {
-    transform: scale(1.58);
-    border-radius: 50%;
-  }
-}
-
 /* “Tấm app” rời khỏi vị trí cũ như navigation native */
-body.dang-chuyen-trang main,
-body.dang-chuyen-trang .thanh-dieu-huong {
+body.dang-chuyen-trang main {
   animation: ios-trang-cu-ra .40s cubic-bezier(.32,0,.67,0) both;
 }
 
@@ -1314,8 +1052,7 @@ body.dang-chuyen-trang .thanh-dieu-huong {
   }
 }
 
-body.trang-moi main,
-body.trang-moi .thanh-dieu-huong {
+body.trang-moi main {
   animation: ios-trang-moi-vao .70s cubic-bezier(.16,1,.3,1) both;
 }
 
@@ -1338,28 +1075,6 @@ body.trang-moi .thanh-dieu-huong {
 }
 
 /* Chạm vào link/button: một vòng gợn nhỏ như nước */
-.ios-ripple {
-  position: absolute;
-  z-index: 9999;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  pointer-events: none;
-  transform: translate(-50%, -50%) scale(.2);
-  background: radial-gradient(circle,
-    rgba(255,255,255,.86) 0 6%,
-    rgba(255,255,255,.36) 20%,
-    rgba(22,134,90,.10) 48%,
-    transparent 70%);
-  filter: blur(.2px);
-  animation: ios-ripple .62s cubic-bezier(.16,1,.3,1) forwards;
-}
-
-@keyframes ios-ripple {
-  0% { opacity: .95; transform: translate(-50%,-50%) scale(.2); }
-  65% { opacity: .34; }
-  100% { opacity: 0; transform: translate(-50%,-50%) scale(11); }
-}
 
 /* Nút/links phản hồi rất nhanh khi chạm */
 a:active,
@@ -1368,22 +1083,11 @@ button:active {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chuyen-trang {
-    transition-duration: .01ms !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  .chuyen-trang::before,
-  .chuyen-trang::after,
-  .ios-ripple { display: none; }
   body.trang-moi main,
-  body.trang-moi .thanh-dieu-huong,
-  body.dang-chuyen-trang main,
-  body.dang-chuyen-trang .thanh-dieu-huong {
+body.dang-chuyen-trang main {
     animation: none !important;
   }
 }
-
 
 /* iPhone safe-area + dynamic viewport */
 :root {
@@ -1410,7 +1114,6 @@ main.giua-man-hinh {
   }
 }
 
-
 /* =========================================================
    WINDOWS 11 / MICA — PAGE TRANSITION + REVEAL
    Ghi đè transition iOS cũ để chuyển sang phong cách Windows 11.
@@ -1434,25 +1137,8 @@ body {
     #f3f4f6;
 }
 
-.thanh-dieu-huong {
-  background: var(--win-mica);
-  border-color: var(--win-border);
-  border-radius: 14px;
-  box-shadow: var(--win-shadow);
-  backdrop-filter: blur(32px) saturate(135%);
-  -webkit-backdrop-filter: blur(32px) saturate(135%);
-}
-
-.thuong-hieu,
-.thanh-dieu-huong nav a,
-.thanh-dieu-huong > .nguoi-dung > a {
+.thuong-hieu {
   border-radius: 8px;
-}
-
-.thanh-dieu-huong nav a:hover,
-.thanh-dieu-huong > .nguoi-dung > a:hover {
-  color: #111827;
-  background: rgba(255,255,255,.58);
 }
 
 .the,
@@ -1503,116 +1189,8 @@ button.nut-ai {
 }
 
 /* Mica transition overlay: sạch, nhẹ và tương thích hơn liquid animation. */
-.win11-transition {
-  --win-x: 50vw;
-  --win-y: 50vh;
-  position: fixed;
-  inset: 0;
-  z-index: 2147483000;
-  pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at var(--win-x) var(--win-y),
-      rgba(255,255,255,.92) 0,
-      rgba(255,255,255,.68) 9%,
-      rgba(226,235,246,.40) 22%,
-      transparent 44%),
-    rgba(243,246,250,.08);
-  backdrop-filter: blur(0) saturate(100%);
-  -webkit-backdrop-filter: blur(0) saturate(100%);
-}
-
-.win11-transition::before {
-  content: "";
-  position: absolute;
-  width: min(46vw, 520px);
-  height: min(46vw, 520px);
-  left: calc(var(--win-x) - min(23vw, 260px));
-  top: calc(var(--win-y) - min(23vw, 260px));
-  border-radius: 50%;
-  background: radial-gradient(circle,
-    rgba(255,255,255,.76) 0,
-    rgba(255,255,255,.36) 35%,
-    rgba(0,103,192,.06) 62%,
-    transparent 72%);
-  transform: scale(.18);
-  opacity: 0;
-}
-
-body.win11-leave {
-  overflow: hidden;
-}
-
-body.win11-leave .win11-transition {
-  opacity: 1;
-  visibility: visible;
-  backdrop-filter: blur(7px) saturate(112%);
-  -webkit-backdrop-filter: blur(7px) saturate(112%);
-  animation: win11-veil-in .30s var(--win-ease) both;
-}
-
-body.win11-leave .win11-transition::before {
-  opacity: .9;
-  animation: win11-reveal .30s var(--win-ease) both;
-}
-
-body.win11-leave main,
-body.win11-leave .thanh-dieu-huong {
-  animation: win11-page-out .30s var(--win-ease) both;
-}
-
-body.win11-enter main,
-body.win11-enter .thanh-dieu-huong {
-  animation: win11-page-in .52s var(--win-ease) both;
-}
-
-@keyframes win11-veil-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes win11-reveal {
-  from { opacity: 0; transform: scale(.18); }
-  55% { opacity: .75; transform: scale(1.15); }
-  to { opacity: 0; transform: scale(1.45); }
-}
-
-@keyframes win11-page-out {
-  from {
-    opacity: 1;
-    transform: translate3d(0,0,0) scale(1);
-    filter: blur(0);
-  }
-  to {
-    opacity: .74;
-    transform: translate3d(0,3px,0) scale(.988);
-    filter: blur(2px);
-  }
-}
-
-@keyframes win11-page-in {
-  from {
-    opacity: 0;
-    transform: translate3d(0,9px,0) scale(.992);
-    filter: blur(5px);
-  }
-  48% {
-    opacity: .92;
-    transform: translate3d(0,-1px,0) scale(1.001);
-    filter: blur(1px);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0,0,0) scale(1);
-    filter: blur(0);
-  }
-}
 
 /* Windows 11-style reveal when hovering over clickable elements. */
-.thanh-dieu-huong nav a,
-.thanh-dieu-huong > .nguoi-dung > a,
 button,
 a.chinh,
 .the-lien-ket {
@@ -1620,39 +1198,26 @@ a.chinh,
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .thanh-dieu-huong nav a:hover,
-  .thanh-dieu-huong > .nguoi-dung > a:hover,
   .thuong-hieu:hover,
-  button.chinh:hover,
-  a.chinh:hover,
-  .the-lien-ket:hover {
+button.chinh:hover,
+a.chinh:hover,
+.the-lien-ket:hover {
     box-shadow: 0 8px 22px rgba(0,0,0,.08);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .win11-transition { display: none !important; }
-  body.win11-leave main,
-  body.win11-leave .thanh-dieu-huong,
-  body.win11-enter main,
-  body.win11-enter .thanh-dieu-huong { animation: none !important; }
-}
-
 @supports not ((backdrop-filter: blur(1px))) {
-  .win11-transition { background: rgba(243,246,250,.88); }
-  .thanh-dieu-huong,
   .the,
-  table,
-  .khung-sua,
-  .ai-cau-hoi,
-  .ai-noi-dung { background: rgba(255,255,255,.96); }
+table,
+.khung-sua,
+.ai-cau-hoi,
+.ai-noi-dung { background: rgba(255,255,255,.96); }
 }
 
 /* ===== PET MAGIC PLUS: polished color system, theme toggle, pet gallery ===== */
 :root { --pet-accent:#7c5cff; --pet-coral:#ff8a76; --pet-mint:#5bd6ad; --pet-glow:rgba(124,92,255,.18); }
 html { transition: background-color .35s ease, color .35s ease; }
 body { isolation:isolate; }
-body::before { z-index:-2; }
 .pet-theme-toggle {
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
   min-height:40px; padding:8px 13px; border:1px solid var(--vien);
@@ -1665,8 +1230,6 @@ body::before { z-index:-2; }
 .pet-theme-toggle:hover .theme-icon { transform:rotate(25deg) scale(1.15); }
 html[data-theme="dark"] { color-scheme:dark; --nen:#111522; --the:rgba(28,33,49,.82); --the-dam:rgba(31,37,54,.96); --vien:rgba(230,236,255,.12); --vien-sang:rgba(255,255,255,.10); --chu:#eef2ff; --chu-phu:#a7b0c5; --chinh:#6ee7b7; --chinh-dam:#8df0c6; --chinh-sang:rgba(49,190,139,.14); --loi:#ff938b; --loi-nen:rgba(180,35,24,.16); --vang:#ffd477; --xanh:#8abaff; --shadow:0 18px 55px rgba(0,0,0,.25),0 2px 8px rgba(0,0,0,.16); --shadow-hover:0 26px 72px rgba(0,0,0,.38),0 6px 18px rgba(0,0,0,.2); }
 html[data-theme="dark"] body { background:radial-gradient(circle at 8% 5%,rgba(43,190,145,.12),transparent 30rem),radial-gradient(circle at 92% 12%,rgba(124,92,255,.17),transparent 34rem),#111522; }
-html[data-theme="dark"] body::before { background:radial-gradient(circle at 25% 35%,rgba(124,92,255,.12),transparent 17%),radial-gradient(circle at 75% 60%,rgba(91,214,173,.10),transparent 19%); }
-html[data-theme="dark"] .thanh-dieu-huong { background:rgba(20,25,39,.78); border-color:rgba(255,255,255,.10); }
 html[data-theme="dark"] .thuong-hieu, html[data-theme="dark"] .the, html[data-theme="dark"] table,
 html[data-theme="dark"] .khung-sua, html[data-theme="dark"] .ai-cau-hoi, html[data-theme="dark"] .ai-noi-dung {
   color:var(--chu); background:var(--the); border-color:var(--vien);
@@ -1675,20 +1238,7 @@ html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="
   color:var(--chu); background:rgba(12,16,27,.72); border-color:var(--vien);
 }
 html[data-theme="dark"] .phu, html[data-theme="dark"] small { color:var(--chu-phu); }
-.pet-welcome {
-  position:relative; display:grid; grid-template-columns:1.1fr .9fr; align-items:center;
-  gap:28px; overflow:hidden; margin:26px auto 30px; padding:clamp(24px,4vw,48px);
-  width:min(1440px,calc(100% - 32px)); border:1px solid var(--vien-sang);
-  border-radius:32px; background:linear-gradient(125deg,rgba(255,255,255,.86),rgba(239,247,255,.62));
-  box-shadow:var(--shadow); isolation:isolate;
-}
-html[data-theme="dark"] .pet-welcome { background:linear-gradient(125deg,rgba(34,40,60,.92),rgba(33,42,57,.76)); border-color:var(--vien); }
-.pet-welcome::before { content:""; position:absolute; width:340px;height:340px;right:20%;top:-230px;border-radius:50%;background:var(--pet-glow);filter:blur(12px);z-index:-1; }
-.pet-welcome-copy { position:relative; z-index:1; }
 .pet-eyebrow { display:inline-flex; gap:8px; align-items:center; padding:7px 12px; border-radius:999px; background:rgba(91,214,173,.16); color:var(--chinh-dam); font-size:.82rem;font-weight:800;letter-spacing:.04em; }
-.pet-welcome h2 { margin:15px 0 10px; font-size:clamp(1.9rem,4vw,3.35rem);line-height:1.08;letter-spacing:-.055em; }
-.pet-welcome p { max-width:540px;color:var(--chu-phu);font-size:1.02rem; }
-.pet-welcome-art { position:relative; min-height:260px; }
 .pet-photo { position:absolute; overflow:hidden; border-radius:28px; border:5px solid rgba(255,255,255,.78); box-shadow:0 18px 44px rgba(36,45,65,.20); transition:transform .5s var(--ease); }
 .pet-photo img { width:100%;height:100%;display:block;object-fit:cover; }
 .pet-photo.one { width:58%;height:220px;right:2%;top:0;transform:rotate(5deg);animation:pet-float 6s ease-in-out infinite; }
@@ -1696,8 +1246,7 @@ html[data-theme="dark"] .pet-welcome { background:linear-gradient(125deg,rgba(34
 .pet-photo.three { width:30%;height:112px;right:1%;bottom:-4px;transform:rotate(7deg);animation:pet-float 5.5s ease-in-out -2s infinite; }
 .pet-photo:hover { z-index:2; transform:rotate(0) scale(1.05); }
 @keyframes pet-float { 0%,100% { translate:0 0; } 50% { translate:0 -10px; } }
-.pet-welcome-paw { position:absolute;right:2%;top:2%;font-size:2.2rem;filter:drop-shadow(0 8px 15px rgba(124,92,255,.25));animation:pet-spin 14s linear infinite; }
-@keyframes pet-spin { to { transform:rotate(360deg); } }
+
 .pet-mini-stats { display:flex;flex-wrap:wrap;gap:10px;margin-top:20px; }
 .pet-mini-stats span { padding:8px 12px;border-radius:14px;background:var(--the);border:1px solid var(--vien);font-size:.86rem;font-weight:700; }
 .luoi-the { gap:18px; }
@@ -1705,17 +1254,13 @@ html[data-theme="dark"] .pet-welcome { background:linear-gradient(125deg,rgba(34
 .the-lien-ket::after { content:"";position:absolute;right:-32px;top:-38px;width:100px;height:100px;border-radius:50%;background:var(--pet-glow);transition:transform .45s var(--ease);pointer-events:none; }
 .the-lien-ket:hover { transform:translateY(-6px);box-shadow:var(--shadow-hover);border-color:rgba(124,92,255,.28); }
 .the-lien-ket:hover::after { transform:scale(1.8); }
-.pet-blobs { z-index:-1; }
-.pet-blob { opacity:.55; }
 .pet-floater { box-shadow:0 12px 35px rgba(124,92,255,.24)!important; }
 @media(max-width:760px) {
- .pet-welcome { grid-template-columns:1fr;gap:12px;padding:24px;border-radius:25px; }
- .pet-welcome-art { min-height:235px;max-width:440px;width:100%;margin:auto; }
  .pet-photo.one {height:190px}.pet-photo.two{height:145px}.pet-photo.three{height:95px}
  .pet-theme-toggle { min-height:36px; }
 }
 @media(prefers-reduced-motion:reduce) {
- .pet-photo,.pet-welcome-paw { animation:none!important; }
+ .pet-photo { animation:none!important; }
  *,*::before,*::after { scroll-behavior:auto!important; }
 }
 
@@ -1725,21 +1270,10 @@ html[data-theme="dark"] .pet-welcome { background:linear-gradient(125deg,rgba(34
 @keyframes pet-click-pop { 0%{opacity:0;transform:translate(-50%,-30%) scale(.4) rotate(-18deg)} 25%{opacity:1} 100%{opacity:0;transform:translate(-50%,-95px) scale(1.25) rotate(18deg)} }
 @media(prefers-reduced-motion:reduce){.pet-card-reveal{opacity:1;transform:none}}
 
-
 /* ===== COMPLETE PAGE POLISH: child pages, forms, login, tables ===== */
 :root { --pet-radius:22px; }
 html { scroll-behavior:smooth; }
 body { min-height:100vh; }
-.thanh-dieu-huong {
-  position:sticky; top:10px; z-index:1000; width:calc(100% - 28px); max-width:1500px;
-  margin:10px auto 0; padding:12px 16px; gap:14px; flex-wrap:wrap;
-  border:1px solid var(--vien); border-radius:22px; background:rgba(255,255,255,.78);
-  box-shadow:0 12px 35px rgba(40,50,70,.08); backdrop-filter:blur(24px) saturate(150%);
-  -webkit-backdrop-filter:blur(24px) saturate(150%);
-}
-.thanh-dieu-huong nav { display:flex; align-items:center; gap:4px; flex:1 1 480px; flex-wrap:wrap; }
-.thanh-dieu-huong nav a, .thanh-dieu-huong > .nguoi-dung > a { border-radius:12px; }
-.thanh-dieu-huong .thuong-hieu { flex-shrink:0; }
 main:not(.giua-man-hinh) { padding-bottom:36px; }
 main > h1:first-child { margin-top:4px; }
 main > form:not(.the-dang-nhap), main > .khung-sua, main > .khung-form,
@@ -1786,8 +1320,6 @@ html[data-theme="dark"] .the-dang-nhap::before { box-shadow:0 12px 30px rgba(0,0
 html[data-theme="dark"] th { background:rgba(124,92,255,.15); }
 html[data-theme="dark"] tbody tr:hover { background:rgba(124,92,255,.12); }
 @media(max-width:850px) {
-  .thanh-dieu-huong { position:relative; top:auto; width:calc(100% - 18px); margin:9px auto; }
-  .thanh-dieu-huong nav { flex-basis:100%; order:3; }
   .nguoi-dung { justify-content:flex-start; }
   main { width:calc(100% - 24px); margin:26px auto 42px; }
   table { display:block; overflow-x:auto; white-space:nowrap; }
@@ -1800,17 +1332,10 @@ html[data-theme="dark"] tbody tr:hover { background:rgba(124,92,255,.12); }
 }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
 
-
 /* ===== MEME EDITION: vui nhộn hơn trên mọi trang ===== */
 :root { --meme-pink:#ff6fae; --meme-purple:#9272ff; --meme-yellow:#ffd166; }
 .meme-login-layout{width:min(1000px,100%);display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:24px;align-items:stretch;margin:auto}
-.meme-login-showcase{position:relative;isolation:isolate;overflow:hidden;min-height:520px;padding:30px;border-radius:30px;color:#fff;background:linear-gradient(145deg,#6d5dfc 0%,#a855f7 48%,#ff78a8 100%);box-shadow:0 28px 80px #7754d433;display:flex;flex-direction:column;justify-content:space-between}
-.meme-login-showcase:before,.meme-login-showcase:after{content:"";position:absolute;z-index:-1;border-radius:50%;filter:blur(1px);animation:meme-orbit 9s ease-in-out infinite alternate}
-.meme-login-showcase:before{width:250px;height:250px;right:-55px;top:-60px;background:#ffffff26}
-.meme-login-showcase:after{width:180px;height:180px;left:-50px;bottom:50px;background:#ffd16640;animation-delay:-3s}
 .meme-eyebrow{display:inline-flex;align-self:flex-start;gap:8px;align-items:center;padding:8px 13px;border:1px solid #ffffff55;background:#ffffff20;border-radius:999px;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-.meme-login-showcase h2{font-size:clamp(30px,4vw,46px);line-height:1.06;color:white;margin:20px 0 12px;max-width:440px}
-.meme-login-showcase p{color:#fff;opacity:.9;max-width:400px}
 .meme-photo-stack{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:center;margin-top:20px}
 .meme-photo{position:relative;overflow:hidden;border:3px solid #ffffffb8;border-radius:22px;box-shadow:0 16px 32px #39206438;transform:rotate(-4deg);animation:meme-float 5s ease-in-out infinite}
 .meme-photo:nth-child(2){transform:rotate(4deg) translateY(20px);animation-delay:-2.4s}
@@ -1831,11 +1356,12 @@ html[data-theme="dark"] tbody tr:hover { background:rgba(124,92,255,.12); }
 .meme-global-bubble button{margin-left:4px;border:0;border-radius:50%;width:24px;height:24px;background:#eee8ff;color:#5934a6;font-weight:900}
 .meme-paw{position:fixed;z-index:99;pointer-events:none;font-size:21px;animation:paw-pop .8s ease-out forwards;filter:drop-shadow(0 4px 8px #0002)}
 @keyframes meme-float{0%,100%{translate:0 0}50%{translate:0 -9px}}
-@keyframes meme-orbit{from{transform:translate3d(-8px,0,0) scale(.95)}to{transform:translate3d(16px,14px,0) scale(1.08)}}
+
 @keyframes bubble-in{from{opacity:0;transform:translateY(16px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes paw-pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-20deg)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-95px) scale(1.4) rotate(20deg)}}
-@media(max-width:760px){.meme-login-layout{grid-template-columns:1fr;max-width:480px}.meme-login-showcase{min-height:unset;padding:23px}.meme-login-showcase h2{font-size:30px}.meme-photo img{height:130px}.meme-sticker-wall{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.meme-sticker,.meme-sticker img{min-height:125px;height:125px}.meme-global-bubble{right:10px;bottom:10px}}
-@media(prefers-reduced-motion:reduce){.meme-login-showcase:before,.meme-login-showcase:after,.meme-photo,.meme-global-bubble{animation:none!important}*{scroll-behavior:auto!important}}
+@media(max-width:760px){.meme-login-layout{grid-template-columns:1fr;max-width:480px}.meme-photo img{height:130px}.meme-sticker-wall{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.meme-sticker,.meme-sticker img{min-height:125px;height:125px}.meme-global-bubble{right:10px;bottom:10px}}
+@media(prefers-reduced-motion:reduce){.meme-photo,
+.meme-global-bubble {animation:none!important}*{scroll-behavior:auto!important}}
 
 /* Meme cards: square thumbnails matching the original meme images */
 .meme-sticker-wall{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
@@ -1849,34 +1375,15 @@ html[data-theme="dark"] tbody tr:hover { background:rgba(124,92,255,.12); }
 @media(max-width:760px){.meme-sticker-wall{grid-template-columns:repeat(2,minmax(0,1fr))}.meme-sticker,.meme-sticker img{height:auto;min-height:0}.meme-sticker{aspect-ratio:1/1}.meme-photo{aspect-ratio:1/1}.meme-photo img{height:100%}}
 
 /* Rotating "ui a ui a" cat during internal page navigation */
-.pet-navigation-spin{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(13,15,28,.58);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .16s ease}
-.pet-navigation-spin.is-active{opacity:1;pointer-events:auto}
-.pet-navigation-spin img{width:clamp(110px,20vw,180px);height:clamp(110px,20vw,180px);object-fit:cover;border-radius:50%;border:5px solid #fff;box-shadow:0 0 0 8px #b38aff55,0 18px 65px #0008;animation:pet-ui-a-spin .55s linear infinite}
-.pet-navigation-spin span{font-size:clamp(18px,3vw,26px);font-weight:1000;color:#fff;text-shadow:0 3px 16px #000;letter-spacing:.04em;animation:pet-ui-a-bounce .45s ease-in-out infinite alternate}
-@keyframes pet-ui-a-spin{to{transform:rotate(360deg)}}
-@keyframes pet-ui-a-bounce{to{transform:translateY(-7px) scale(1.05)}}
-@media(prefers-reduced-motion:reduce){.pet-navigation-spin img,.pet-navigation-spin span{animation:none!important}}
 
 /* Sidebar collapse, right-side account controls and inline AI chat bubble */
-.thanh-dieu-huong{position:fixed!important;left:10px;top:10px;bottom:10px;width:186px!important;max-width:186px!important;margin:0!important;padding:54px 10px 12px!important;display:flex;flex-direction:column;flex-wrap:nowrap!important;align-items:stretch;gap:10px;border-radius:20px!important;overflow:hidden;transition:width .48s cubic-bezier(.2,.85,.2,1),transform .48s cubic-bezier(.2,.85,.2,1),padding .48s;}
-.thanh-dieu-huong .thuong-hieu{position:absolute;top:12px;left:10px;right:10px;white-space:nowrap;overflow:hidden;}
-.sidebar-toggle{position:absolute;top:13px;right:12px;z-index:3;width:30px;height:30px;border:1px solid var(--vien);background:var(--the);color:var(--chu);border-radius:9px;cursor:pointer}
-.thanh-dieu-huong nav{display:flex!important;flex:1 1 auto!important;flex-direction:column;align-items:stretch!important;flex-wrap:nowrap!important;gap:4px!important;overflow:auto;min-height:0;padding-top:8px}
-.thanh-dieu-huong nav a{flex:0 0 auto!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.thanh-dieu-huong .nguoi-dung{display:none!important}
+
 main:not(.giua-man-hinh){margin-left:210px!important;width:calc(100% - 230px)!important;transition:margin .48s,width .48s}
-body.sidebar-collapsed .thanh-dieu-huong{width:58px!important;max-width:58px!important;padding-left:7px!important;padding-right:7px!important}
-body.sidebar-collapsed .thanh-dieu-huong .thuong-hieu{left:7px;right:7px;font-size:0}
-body.sidebar-collapsed .thanh-dieu-huong .thuong-hieu:first-letter{font-size:20px}
-body.sidebar-collapsed .thanh-dieu-huong nav a{font-size:0;text-align:center;padding:12px 2px}
-body.sidebar-collapsed .thanh-dieu-huong nav a::first-letter{font-size:16px}
-body.sidebar-collapsed main:not(.giua-man-hinh){margin-left:80px!important;width:calc(100% - 100px)!important}
 .pet-account-float{position:fixed;z-index:1800;right:18px;top:14px;display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--vien);border-radius:16px;background:var(--the);backdrop-filter:blur(18px);box-shadow:var(--shadow);font-size:12px}
 .pet-account-name{display:grid;gap:3px}.pet-account-name span{color:var(--chu-phu)}.pet-account-float a,.pet-account-float button{color:var(--chu);font-size:12px}.pet-account-float form{margin:0}.pet-account-float .pet-theme-toggle{position:static!important;margin:0!important}
 .pet-ai-widget{position:fixed;right:20px;bottom:20px;z-index:5000;font-family:inherit}.pet-ai-bubble{display:flex;align-items:center;gap:9px;padding:13px 19px;border:1px solid rgba(255,255,255,.3);border-radius:999px;background:linear-gradient(120deg,#7658f5,#149e88);color:white;font-weight:800;box-shadow:0 10px 32px #0004}.pet-ai-bubble span{font-size:20px}.pet-ai-panel{width:min(370px,calc(100vw - 28px));height:min(510px,calc(100vh - 115px));margin-bottom:12px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--vien);border-radius:20px;background:var(--the-dam,var(--the));color:var(--chu);box-shadow:0 20px 70px #0005;backdrop-filter:blur(22px)}.pet-ai-panel[hidden]{display:none}.pet-ai-panel>header{display:flex;justify-content:space-between;align-items:center;padding:14px;background:linear-gradient(120deg,rgba(124,92,255,.2),rgba(46,189,148,.16));border-bottom:1px solid var(--vien)}.pet-ai-panel>header div{display:grid;gap:4px}.pet-ai-panel>header small,.pet-ai-note{color:var(--chu-phu);font-size:11px}.pet-ai-close{font-size:24px;border:0;background:transparent;color:var(--chu)}.pet-ai-messages{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}.pet-ai-msg{max-width:90%;white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.5}.pet-ai-msg.bot{align-self:flex-start;background:var(--the);border:1px solid var(--vien)}.pet-ai-msg.user{align-self:flex-end;background:#168f7d;color:white}.pet-ai-panel form{display:flex;align-items:flex-end;gap:8px;padding:10px;border-top:1px solid var(--vien)}.pet-ai-panel textarea{min-height:44px;max-height:100px;resize:vertical;margin:0!important;font-size:13px}.pet-ai-panel form button{flex-shrink:0;background:#168f7d;color:white;border:0;padding:12px}.pet-ai-note{padding:0 12px 10px;margin:0}
-@media(max-width:850px){.thanh-dieu-huong{left:6px;top:6px;bottom:6px;width:166px!important;max-width:166px!important}.pet-account-float{right:8px;top:8px;max-width:calc(100vw - 185px);flex-wrap:wrap}main:not(.giua-man-hinh){margin-left:184px!important;width:calc(100% - 196px)!important}body.sidebar-collapsed main:not(.giua-man-hinh){margin-left:72px!important;width:calc(100% - 84px)!important}}
-@media(max-width:520px){.thanh-dieu-huong{width:58px!important;max-width:58px!important}.thanh-dieu-huong nav a{font-size:0!important;text-align:center;padding:12px 2px!important}main:not(.giua-man-hinh){margin-left:72px!important;width:calc(100% - 84px)!important}.pet-account-float{top:8px;right:8px;gap:6px;padding:6px;font-size:10px}.pet-account-float a,.pet-account-float button{font-size:10px}.pet-ai-widget{right:10px;bottom:12px}.pet-ai-panel{height:min(470px,calc(100vh - 95px))}}
-
+@media(max-width:850px){.pet-account-float{right:8px;top:8px;max-width:calc(100vw - 185px);flex-wrap:wrap}main:not(.giua-man-hinh){margin-left:184px!important;width:calc(100% - 196px)!important}}
+@media(max-width:520px){main:not(.giua-man-hinh){margin-left:72px!important;width:calc(100% - 84px)!important}.pet-account-float{top:8px;right:8px;gap:6px;padding:6px;font-size:10px}.pet-account-float a,.pet-account-float button{font-size:10px}.pet-ai-widget{right:10px;bottom:12px}.pet-ai-panel{height:min(470px,calc(100vh - 95px))}}
 
 /* =========================================================
    FINTECH-INSPIRED BUTTONS — dark glass, neon edge, active pill
@@ -1889,16 +1396,6 @@ body.sidebar-collapsed main:not(.giua-man-hinh){margin-left:80px!important;width
   --btn-neon: #13d9c0;
   --btn-neon-soft: rgba(19, 217, 192, .18);
 }
-
-.thanh-dieu-huong {
-  background: rgba(5, 10, 18, .91) !important;
-  border: 1px solid rgba(65, 99, 128, .55) !important;
-  border-radius: 999px !important;
-  box-shadow: 0 10px 34px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.06) !important;
-  color: #e7eef9;
-}
-.thanh-dieu-huong::before { opacity: .18; }
-.thanh-dieu-huong::after { background: rgba(19,217,192,.18); }
 .thuong-hieu {
   color: #f4f7ff !important;
   background: linear-gradient(145deg, rgba(23,32,49,.98), rgba(7,12,22,.98)) !important;
@@ -1910,33 +1407,6 @@ body.sidebar-collapsed main:not(.giua-man-hinh){margin-left:80px!important;width
   color: #fff !important;
   border-color: rgba(255,178,66,.72) !important;
   box-shadow: 0 0 0 2px rgba(255,178,66,.10), 0 0 20px rgba(255,178,66,.15) !important;
-}
-.thanh-dieu-huong nav a,
-.thanh-dieu-huong > .nguoi-dung > a {
-  color: #aab8cc !important;
-  border: 1px solid transparent !important;
-  border-radius: 999px !important;
-  min-height: 38px;
-  padding: 7px 14px;
-  font-weight: 650;
-  text-decoration: none !important;
-  transition: color .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease !important;
-}
-.thanh-dieu-huong nav a::after { display: none !important; }
-.thanh-dieu-huong nav a:hover,
-.thanh-dieu-huong > .nguoi-dung > a:hover {
-  color: #e9fffb !important;
-  background: rgba(16, 211, 185, .09) !important;
-  border-color: rgba(19,217,192,.30) !important;
-  box-shadow: 0 0 18px rgba(19,217,192,.08) !important;
-}
-.thanh-dieu-huong nav a[aria-current="page"],
-.thanh-dieu-huong nav a.active,
-.thanh-dieu-huong nav a.dang-chon {
-  color: #17e0bf !important;
-  background: linear-gradient(180deg, rgba(11,80,70,.42), rgba(7,43,42,.52)) !important;
-  border-color: rgba(19,217,192,.55) !important;
-  box-shadow: inset 0 0 0 1px rgba(19,217,192,.06), 0 0 18px rgba(19,217,192,.10) !important;
 }
 
 /* Standard controls: compact dark-glass pills with a clear focus state. */
@@ -1960,7 +1430,8 @@ input[type="button"]:hover, input[type="reset"]:hover {
   color: #eafffb;
   box-shadow: 0 0 0 2px rgba(19,217,192,.07), 0 0 20px rgba(19,217,192,.11);
 }
-button:focus-visible, a.chinh:focus-visible, .thanh-dieu-huong a:focus-visible {
+button:focus-visible,
+a.chinh:focus-visible {
   outline: 2px solid #19dfc2;
   outline-offset: 3px;
 }
@@ -1989,10 +1460,6 @@ body[data-theme="light"] button:not(.nut-luu):not(.nut-ai):not(.pet-ai-bubble):n
   color: #075d55;
   background: #e8fbf7;
   border-color: #36bfae;
-}
-@media (max-width: 700px) {
-  .thanh-dieu-huong { border-radius: 22px !important; }
-  .thanh-dieu-huong nav a { padding: 7px 10px; }
 }
 
 /* ===== FINAL UI FIX: consistent pill buttons + readable sidebar ===== */
@@ -2038,179 +1505,15 @@ form[action="/khach/doi-mat-khau"] input[type="submit"]:hover {
 }
 
 /* The sidebar is a normal rounded rectangle, not a tall capsule. */
-.thanh-dieu-huong {
-  border-radius: 16px !important;
-  overflow: hidden;
-}
-.thanh-dieu-huong .thuong-hieu {
-  left: 10px !important;
-  right: 49px !important; /* keep clear of the hamburger button */
-  top: 12px !important;
-  min-height: 42px;
-  box-sizing: border-box;
-  display: flex !important;
-  align-items: center;
-  padding: 8px 10px !important;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  z-index: 2;
-}
-.thanh-dieu-huong .sidebar-toggle {
-  top: 17px !important;
-  right: 10px !important;
-  z-index: 5 !important;
-  width: 31px;
-  height: 31px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border-radius: 9px !important;
-  line-height: 1;
-}
-.thanh-dieu-huong nav {
-  padding-top: 10px !important;
-  gap: 6px !important;
-}
-.thanh-dieu-huong nav a {
-  text-decoration: none !important;
-  border-radius: 12px !important;
-  min-height: 40px;
-  box-sizing: border-box;
-}
-@media (max-width: 850px) {
-  .thanh-dieu-huong {
-    border-radius: 16px !important;
-  }
-  .thanh-dieu-huong .thuong-hieu {
-    right: 48px !important;
-  }
-}
-@media (max-width: 520px) {
-  .thanh-dieu-huong {
-    border-radius: 14px !important;
-  }
-  .thanh-dieu-huong .thuong-hieu {
-    left: 7px !important;
-    right: 43px !important;
-    padding: 7px 6px !important;
-    font-size: 11px;
-  }
-  .thanh-dieu-huong .sidebar-toggle {
-    top: 15px !important;
-    right: 7px !important;
-    width: 29px;
-    height: 29px;
-  }
-}
-
 
 /* ===== v11: fix light-theme sidebar, header toggle placement and left alignment ===== */
 /* Keep the sidebar's top controls on separate rows: brand first, hamburger underneath. */
-.thanh-dieu-huong {
-  border-radius: 18px !important;
-  padding: 104px 10px 12px !important;
-  background: rgba(5, 10, 18, .94) !important;
-}
-.thanh-dieu-huong .thuong-hieu {
-  top: 12px !important;
-  left: 10px !important;
-  right: 10px !important;
-  width: auto !important;
-  max-width: none !important;
-  min-height: 42px !important;
-}
-.thanh-dieu-huong .sidebar-toggle {
-  top: 62px !important;
-  left: 10px !important;
-  right: auto !important;
-  width: 34px !important;
-  height: 30px !important;
-  display: grid !important;
-  place-items: center !important;
-  padding: 0 !important;
-}
-.thanh-dieu-huong nav {
-  align-items: stretch !important;
-  padding-top: 4px !important;
-}
-.thanh-dieu-huong nav a {
-  text-align: left !important;
-  justify-content: flex-start !important;
-  padding-left: 12px !important;
-  padding-right: 8px !important;
-  border-radius: 10px !important;
-}
 
 /* Explicit light palette: previous dark-glass rules were overriding the theme toggle. */
-html[data-theme="light"] .thanh-dieu-huong,
-body[data-theme="light"] .thanh-dieu-huong {
-  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(239,245,250,.98)) !important;
-  border-color: #cbd7e3 !important;
-  color: #1d2938 !important;
-  box-shadow: 0 10px 30px rgba(24,39,58,.12), inset 0 1px #fff !important;
-}
-html[data-theme="light"] .thanh-dieu-huong::before,
-body[data-theme="light"] .thanh-dieu-huong::before { opacity: .04 !important; }
-html[data-theme="light"] .thanh-dieu-huong::after,
-body[data-theme="light"] .thanh-dieu-huong::after { background: rgba(13,148,136,.06) !important; }
-html[data-theme="light"] .thanh-dieu-huong .thuong-hieu,
-body[data-theme="light"] .thanh-dieu-huong .thuong-hieu {
-  color: #1d2938 !important;
-  background: linear-gradient(145deg,#fff,#edf3f8) !important;
-  border-color: #cbd7e3 !important;
-  box-shadow: inset 0 1px #fff, 0 3px 10px rgba(24,39,58,.07) !important;
-}
-html[data-theme="light"] .thanh-dieu-huong .sidebar-toggle,
-body[data-theme="light"] .thanh-dieu-huong .sidebar-toggle {
-  color: #26384b !important;
-  background: linear-gradient(180deg,#fff,#edf3f8) !important;
-  border-color: #c5d2df !important;
-  box-shadow: 0 2px 8px rgba(24,39,58,.08) !important;
-}
-html[data-theme="light"] .thanh-dieu-huong nav a,
-body[data-theme="light"] .thanh-dieu-huong nav a {
-  color: #43546a !important;
-}
-html[data-theme="light"] .thanh-dieu-huong nav a:hover,
-html[data-theme="light"] .thanh-dieu-huong nav a[aria-current="page"],
-html[data-theme="light"] .thanh-dieu-huong nav a.active,
-html[data-theme="light"] .thanh-dieu-huong nav a.dang-chon,
-body[data-theme="light"] .thanh-dieu-huong nav a:hover,
-body[data-theme="light"] .thanh-dieu-huong nav a[aria-current="page"],
-body[data-theme="light"] .thanh-dieu-huong nav a.active,
-body[data-theme="light"] .thanh-dieu-huong nav a.dang-chon {
-  color: #08796d !important;
-  background: rgba(13,148,136,.09) !important;
-  border-color: rgba(13,148,136,.24) !important;
-  box-shadow: none !important;
-}
 
 /* Collapsed/mobile sidebar: keep the hamburger visible below the logo and prevent overlap. */
-body.sidebar-collapsed .thanh-dieu-huong { padding-top: 104px !important; }
-body.sidebar-collapsed .thanh-dieu-huong .thuong-hieu {
-  left: 7px !important; right: 7px !important; width: auto !important;
-}
-body.sidebar-collapsed .thanh-dieu-huong .sidebar-toggle {
-  left: 11px !important; top: 62px !important; right: auto !important;
-}
-@media (max-width: 520px) {
-  .thanh-dieu-huong { padding-top: 104px !important; }
-  .thanh-dieu-huong .thuong-hieu { left: 7px !important; right: 7px !important; }
-  .thanh-dieu-huong .sidebar-toggle { left: 11px !important; top: 62px !important; }
-  .thanh-dieu-huong nav a { text-align: left !important; padding-left: 8px !important; }
-}
 
 /* ===== v12: menu starts at the top + tactile press feedback on every button ===== */
-.thanh-dieu-huong nav {
-  flex: 0 0 auto !important;
-  justify-content: flex-start !important;
-  align-content: flex-start !important;
-  margin-top: 0 !important;
-  padding-top: 8px !important;
-}
-.thanh-dieu-huong nav a {
-  flex: 0 0 auto !important;
-}
 
 /* Consistent subtle "press down" response for buttons and button-like links. */
 button,
@@ -2221,9 +1524,6 @@ input[type="reset"],
 a.chinh,
 .chinh,
 .lien-ket,
-.thanh-dieu-huong nav a,
-.thanh-dieu-huong .thuong-hieu,
-.thanh-dieu-huong .sidebar-toggle,
 .pet-account-float a,
 .pet-ai-bubble,
 .pet-ai-close,
@@ -2244,9 +1544,6 @@ input[type="reset"]:active:not(:disabled),
 a.chinh:active,
 .chinh:active,
 .lien-ket:active,
-.thanh-dieu-huong nav a:active,
-.thanh-dieu-huong .thuong-hieu:active,
-.thanh-dieu-huong .sidebar-toggle:active,
 .pet-account-float a:active,
 .pet-ai-bubble:active,
 .pet-ai-close:active,
@@ -2262,37 +1559,31 @@ input[type="reset"]:disabled {
 }
 @media (prefers-reduced-motion: reduce) {
   button,
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
-  [role="button"],
-  a.chinh,
-  .chinh,
-  .lien-ket,
-  .thanh-dieu-huong nav a,
-  .thanh-dieu-huong .thuong-hieu,
-  .thanh-dieu-huong .sidebar-toggle,
-  .pet-account-float a,
-  .pet-ai-bubble,
-  .pet-ai-close,
-  .pet-theme-toggle {
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"],
+a.chinh,
+.chinh,
+.lien-ket,
+.pet-account-float a,
+.pet-ai-bubble,
+.pet-ai-close,
+.pet-theme-toggle {
     transition: none !important;
   }
   button:active:not(:disabled),
-  input[type="button"]:active:not(:disabled),
-  input[type="submit"]:active:not(:disabled),
-  input[type="reset"]:active:not(:disabled),
-  [role="button"]:active,
-  a.chinh:active,
-  .chinh:active,
-  .lien-ket:active,
-  .thanh-dieu-huong nav a:active,
-  .thanh-dieu-huong .thuong-hieu:active,
-  .thanh-dieu-huong .sidebar-toggle:active,
-  .pet-account-float a:active,
-  .pet-ai-bubble:active,
-  .pet-ai-close:active,
-  .pet-theme-toggle:active {
+input[type="button"]:active:not(:disabled),
+input[type="submit"]:active:not(:disabled),
+input[type="reset"]:active:not(:disabled),
+[role="button"]:active,
+a.chinh:active,
+.chinh:active,
+.lien-ket:active,
+.pet-account-float a:active,
+.pet-ai-bubble:active,
+.pet-ai-close:active,
+.pet-theme-toggle:active {
     transform: none !important;
   }
 }

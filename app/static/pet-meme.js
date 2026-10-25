@@ -5,9 +5,9 @@
   window.__petMemeEdition = true;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var photos = [
-    {src:'/static/images/cat-middle-finger.png', alt:'Meme mèo giơ ngón giữa cực bựa', caption:'Tâm trạng khi deadline dí 💀'},
-    {src:'/static/images/tiger-meme.png', alt:'Meme hổ ngồi tạo dáng hài hước', caption:'Tôi sau khi xem đúng một video gym 🐯'},
-    {src:'/static/images/shocked-cat.png', alt:'Meme mèo mắt trợn ngạc nhiên', caption:'Khi nhớ ra mai phải nộp bài 😳'}
+    {src:'/static/images/cat-middle-finger.webp', alt:'Meme mèo giơ ngón giữa cực bựa', caption:'Tâm trạng khi deadline dí 💀'},
+    {src:'/static/images/tiger-meme.webp', alt:'Meme hổ ngồi tạo dáng hài hước', caption:'Tôi sau khi xem đúng một video gym 🐯'},
+    {src:'/static/images/shocked-cat.webp', alt:'Meme mèo mắt trợn ngạc nhiên', caption:'Khi nhớ ra mai phải nộp bài 😳'}
   ];
   function make(tag, cls) { var e=document.createElement(tag); if(cls)e.className=cls; return e; }
   function addMemeWall() {

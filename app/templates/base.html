@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block tieu_de %}Quản lý thú cưng{% endblock %}</title>
-  <link rel="stylesheet" href="/static/style.css?v=20261026">
-  <link rel="stylesheet" href="/static/pet-motion.css?v=20261026">
+  <script>/* Gán theme trước khi vẽ để không nháy nền sáng; cùng khóa với pet-ui.js và trang đăng nhập */try{document.documentElement.setAttribute('data-theme',localStorage.getItem('pet-ui-theme')||'light')}catch(e){}</script>
+  <link rel="stylesheet" href="/static/style.css?v=20261027">
+  <link rel="stylesheet" href="/static/pet-motion.css?v=20261027">
 </head>
 <body>
 {% if user %}
@@ -69,7 +70,7 @@
   </div>
 </div>
 
-<div class="pet-ai-widget" id="pet-ai-widget">
+<div class="pet-ai-widget" id="pet-ai-widget" data-uid="{{ user.id }}">
   <section class="pet-ai-panel" id="pet-ai-panel"
            aria-label="Trò chuyện với Trợ lý AI" hidden>
     <header>
@@ -103,61 +104,116 @@
     <span>✦</span> Trợ lý AI
   </button>
 </div>
+<script>
+/* Trang /ai/hoi-dap đã có sẵn form hỏi đáp → ẩn khung chat nổi cho khỏi trùng lặp. */
+if (/^\/ai\/hoi-dap\/?$/.test(location.pathname)) {
+  document.getElementById('pet-ai-widget').style.setProperty('display', 'none', 'important');
+}
+</script>
 {% endif %}
 
 <main class="{% block lop_main %}{% endblock %}">
   {% block noi_dung %}{% endblock %}
 </main>
 
-<script src="/static/pet-nav.js?v=20261026" defer></script>
+<script src="/static/pet-nav.js?v=20261027" defer></script>
 
-<script src="/static/pet-ui.js?v=20261026" defer></script>
-<script src="/static/pet-meme.js?v=20261026" defer></script>
-<script src="/static/pet-motion.js?v=20261026" defer></script>
+<script src="/static/pet-ui.js?v=20261027" defer></script>
+<script src="/static/pet-meme.js?v=20261027" defer></script>
+<script src="/static/pet-motion.js?v=20261027" defer></script>
 
 <script>
 (function () {
+  const widget = document.getElementById('pet-ai-widget');
   const panel = document.getElementById('pet-ai-panel');
   const bubble = document.getElementById('pet-ai-toggle');
   const close = document.querySelector('.pet-ai-close');
+  const form = document.getElementById('pet-ai-form');
+  const input = document.getElementById('pet-ai-input');
+  const messages = document.getElementById('pet-ai-messages');
+  if (!widget || !panel || !bubble || !form || !input || !messages) return;
 
-  function setChat(open) {
-    if (!panel || !bubble) return;
+  const sendBtn = form.querySelector('button[type="submit"]');
 
+  /* ---- Lịch sử chat: giữ qua các lần chuyển trang (chỉ trong tab này) ----
+     Khóa gắn theo id người dùng, và bị xóa khi đăng xuất → người khác dùng chung tab không thấy. */
+  const KEY = 'pet-ai-chat:' + (widget.dataset.uid || '');
+  const OPEN_KEY = KEY + ':open';
+  const MAX_MESSAGES = 40;
+  let history = [];
+
+  function loadHistory() {
+    try {
+      const raw = sessionStorage.getItem(KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr)
+        ? arr.filter(m => m && (m.r === 'user' || m.r === 'bot') && typeof m.t === 'string').slice(-MAX_MESSAGES)
+        : [];
+    } catch (_) { return []; }
+  }
+  function saveHistory() {
+    try { sessionStorage.setItem(KEY, JSON.stringify(history.slice(-MAX_MESSAGES))); } catch (_) {}
+  }
+  function addMessage(role, text) {
+    const node = document.createElement('div');
+    node.className = 'pet-ai-msg ' + role;
+    node.textContent = text;
+    messages.appendChild(node);
+    messages.scrollTop = messages.scrollHeight;
+    return node;
+  }
+
+  history = loadHistory();
+  history.forEach(m => addMessage(m.r, m.t));
+
+  document.addEventListener('submit', e => {
+    const f = e.target;
+    if (f && f.matches && f.matches('form[action="/logout"]')) {
+      try { sessionStorage.removeItem(KEY); sessionStorage.removeItem(OPEN_KEY); } catch (_) {}
+    }
+  });
+
+  /* ---- Mở / đóng ---- */
+  function setChat(open, focusInput) {
     panel.hidden = !open;
     bubble.setAttribute('aria-expanded', String(open));
-
+    try { sessionStorage.setItem(OPEN_KEY, open ? '1' : '0'); } catch (_) {}
     if (open) {
-      document.getElementById('pet-ai-input').focus();
+      messages.scrollTop = messages.scrollHeight;
+      if (focusInput !== false && !input.disabled) input.focus();
     }
   }
 
-  bubble && bubble.addEventListener('click', () => setChat(panel.hidden));
+  bubble.addEventListener('click', () => setChat(panel.hidden));
   close && close.addEventListener('click', () => setChat(false));
 
-  const form = document.getElementById('pet-ai-form');
+  try { if (sessionStorage.getItem(OPEN_KEY) === '1') setChat(true, false); } catch (_) {}
 
-  form && form.addEventListener('submit', async e => {
+  /* ---- Gửi câu hỏi: khóa nút + ô nhập tới khi có phản hồi (tránh gửi 2 lần, tốn hạn mức) ---- */
+  let busy = false;
+  function setBusy(value) {
+    busy = value;
+    input.disabled = value;
+    if (sendBtn) sendBtn.disabled = value;
+    form.setAttribute('aria-busy', String(value));
+  }
+
+  form.addEventListener('submit', async e => {
     e.preventDefault();
+    if (busy) return;
 
-    const input = document.getElementById('pet-ai-input');
     const question = input.value.trim();
     if (!question) return;
 
-    const messages = document.getElementById('pet-ai-messages');
+    setBusy(true);
 
-    const userMessage = document.createElement('div');
-    userMessage.className = 'pet-ai-msg user';
-    userMessage.textContent = question;
-    messages.appendChild(userMessage);
-
+    addMessage('user', question);
+    history.push({ r: 'user', t: question });
+    saveHistory();
     input.value = '';
 
-    const wait = document.createElement('div');
-    wait.className = 'pet-ai-msg bot';
-    wait.textContent = 'Đang xử lý câu hỏi…';
-    messages.appendChild(wait);
-    messages.scrollTop = messages.scrollHeight;
+    const wait = addMessage('bot', 'Đang xử lý câu hỏi…');
+    let reply = '';
 
     try {
       const fd = new FormData();
@@ -181,22 +237,27 @@
       const err = doc.querySelector('[role=alert], .loi');
 
       if (!res.ok) {
-        wait.textContent = err
+        reply = err
           ? err.textContent.trim()
           : 'Dịch vụ AI trả về lỗi HTTP ' + res.status + '.';
       } else if (answer) {
-        wait.textContent = answer.textContent.trim();
+        reply = answer.textContent.trim();
       } else {
-        wait.textContent = err
+        reply = err
           ? err.textContent.trim()
           : 'Máy chủ chưa trả về câu trả lời trong khung chat. Hãy kiểm tra cấu hình dịch vụ AI.';
       }
     } catch (err) {
-      wait.textContent =
+      reply =
         'Không thể kết nối dịch vụ AI. Hãy kiểm tra máy chủ ứng dụng và cấu hình AI rồi thử lại.';
+    } finally {
+      wait.textContent = reply;
+      history.push({ r: 'bot', t: reply });
+      saveHistory();
+      messages.scrollTop = messages.scrollHeight;
+      setBusy(false);
+      if (!panel.hidden) input.focus();
     }
-
-    messages.scrollTop = messages.scrollHeight;
   });
 })();
 </script>

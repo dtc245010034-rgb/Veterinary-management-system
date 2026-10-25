@@ -1,13 +1,9 @@
-/* PET NAV — menu dropdown + chuyển trang nhẹ.
- * Chỉ dùng opacity/transform (chạy trên GPU), không blur, không overlay toàn màn hình. */
+/* PET NAV — menu dropdown.
+ * Chuyển trang dùng View Transitions của trình duyệt (CSS), không còn trì hoãn 130ms. */
 (function () {
   'use strict';
   var doc = document;
-  var body = doc.body;
-  if (!body) return;
-
-  var reduceMotion = !!(window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if (!doc.body) return;
 
   /* ---------- Dropdown ---------- */
   var menu = doc.getElementById('pet-menu');
@@ -62,35 +58,7 @@
     }
   }
 
-  /* ---------- Chuyển trang: fade ngắn rồi đi tiếp ---------- */
-  var navigating = false;
-  doc.addEventListener('click', function (event) {
-    if (navigating) return;
-    var link = event.target && event.target.closest
-      ? event.target.closest('a[href]') : null;
-    if (!link) return;
-    if (event.defaultPrevented) return;
-    if (event.button && event.button !== 0) return;
-    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-    if (link.target && link.target !== '_self') return;
-    if (link.hasAttribute('download') || link.hasAttribute('data-no-transition')) return;
-
-    var url;
-    try { url = new URL(link.href, window.location.href); } catch (_) { return; }
-    if (url.origin !== window.location.origin) return;
-    if (url.pathname === window.location.pathname &&
-        url.search === window.location.search) return;
-
-    if (reduceMotion) return;          // đi thẳng, không trì hoãn
-    event.preventDefault();
-    navigating = true;
-    setOpen(false);
-    body.classList.add('pet-leaving');
-    window.setTimeout(function () { window.location.assign(url.href); }, 130);
-  });
-
-  window.addEventListener('pageshow', function () {
-    navigating = false;
-    body.classList.remove('pet-leaving');
-  });
+  /* Chuyển trang: KHÔNG chặn click, KHÔNG trì hoãn điều hướng.
+   * Hiệu ứng mờ dần do trình duyệt đảm nhiệm qua `@view-transition { navigation: auto; }`
+   * trong pet-motion.css. Trình duyệt chưa hỗ trợ thì chuyển trang bình thường. */
 })();
