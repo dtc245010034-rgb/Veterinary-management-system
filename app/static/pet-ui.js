@@ -7,6 +7,7 @@
   var root = document.documentElement;
   var storageKey = 'pet-ui-theme';
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var themeAnimating = false;
 
   function getTheme() {
     try { return localStorage.getItem(storageKey) || 'light'; }
@@ -25,19 +26,53 @@
   setTheme(getTheme());
 
   function addThemeButton() {
-    var header = document.querySelector('.thanh-dieu-huong');
+    var header = document.querySelector('.pet-topbar');
     if (document.querySelector('.pet-theme-toggle')) return;
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'pet-theme-toggle';
     button.addEventListener('click', function () {
       var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      setTheme(next);
       try { localStorage.setItem(storageKey, next); } catch (_) {}
+
+      // Giảm chuyển động / đang chạy dở: đổi ngay như trước, không làm mất chức năng.
+      if (reduceMotion) { setTheme(next); return; }
+      if (themeAnimating) return;
+      themeAnimating = true;
+
+      // Đồng bộ với trang đăng nhập: biểu tượng chìm xuống (280ms) → đổi giao diện
+      // → biểu tượng mới nổi lên; màu sắc chuyển mềm 0.7s.
+      root.classList.add('pm-theme-fade');
+      document.querySelectorAll('.pet-theme-toggle .theme-icon').forEach(function (icon) {
+        icon.classList.add('pm-sink');
+      });
+
+      window.setTimeout(function () {
+        setTheme(next);                       // dựng lại nút với biểu tượng mới
+        var icons = document.querySelectorAll('.pet-theme-toggle .theme-icon');
+        icons.forEach(function (icon) { icon.classList.add('pm-sink'); });
+        window.setTimeout(function () {
+          icons.forEach(function (icon) {
+            icon.classList.remove('pm-sink');
+            icon.classList.add('pm-rise');
+          });
+          window.setTimeout(function () {
+            icons.forEach(function (icon) { icon.classList.remove('pm-rise'); });
+            themeAnimating = false;
+          }, 300);
+        }, 40);
+        window.setTimeout(function () { root.classList.remove('pm-theme-fade'); }, 750);
+      }, 280);
+
+      // Lưới an toàn như safetyResetTimer của trang đăng nhập
+      window.setTimeout(function () {
+        themeAnimating = false;
+        root.classList.remove('pm-theme-fade');
+      }, 1200);
     });
-    var userArea = document.querySelector('.pet-account-float') || (header && header.querySelector('.nguoi-dung'));
+    var userArea = document.querySelector('.pet-account-float');
     if (userArea) userArea.insertBefore(button, userArea.firstChild);
-    else if (header) header.appendChild(button);
+    else if (header) { button.classList.add('pet-theme-inbar'); header.appendChild(button); }
     else { button.classList.add('pet-theme-floating'); document.body.appendChild(button); }
     setTheme(root.getAttribute('data-theme') || getTheme());
   }

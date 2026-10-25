@@ -1,39 +1,15 @@
-{% extends "khach_base.html" %}
-{% block tieu_de %}Đăng nhập{% endblock %}
-{% block lop_main %}giua-man-hinh{% endblock %}
-
-{% block noi_dung %}
-<div class="meme-login-layout">
-  <section class="meme-login-showcase" aria-label="Góc meme thú cưng">
-    <div>
-      <span class="meme-eyebrow">🐾 PET CLUB · GOOD VIBES ONLY</span>
-      <h2>Xin chào, sen!</h2>
-      <p>Hồ sơ, lịch hẹn và những chiếc bụng cần được vuốt ve — tất cả ở ngay đây.</p>
-    </div>
-    <div class="meme-photo-stack">
-      <div class="meme-photo"><img src="/static/images/cat-middle-finger.png" alt="Meme mèo giơ ngón giữa"><span class="meme-caption">Tâm trạng hôm nay: đừng ai làm phiền 💀</span></div>
-      <div class="meme-photo"><img src="/static/images/shocked-cat.png" alt="Meme mèo mắt trợn ngạc nhiên"><span class="meme-caption">Khi thấy thông báo lịch hẹn 😳</span></div>
-    </div>
-    <p class="phu-nho" style="color:#fff;margin-top:24px">✨ Chế độ vui vẻ đã bật. Năng lượng hôm nay: 100% đáng yêu.</p>
-  </section>
-<form class="the the-dang-nhap" method="post" action="/khach/dang-nhap">
-  <h1>🐾 Cổng khách hàng</h1>
-  <p class="phu">Đăng nhập để tiếp tục</p>
-
-  {% if da_dat_lai %}<p class="thanh-cong" role="status">Đã đặt lại mật khẩu. Hãy đăng nhập bằng mật khẩu mới.</p>{% endif %}
-  {% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
-
-  <label>
-    Email
-    <input name="email" type="email" value="{{ email or "" }}" required autofocus autocomplete="email">
-  </label>
-  <label>
-    Mật khẩu
-    <input name="mat_khau" type="password" required autocomplete="current-password">
-  </label>
-
-  <button type="submit" class="chinh">Đăng nhập</button>
-  <p class="nhan-nho"><a href="/khach/quen-mat-khau">Quên mật khẩu?</a> · <a href="/khach/dang-ky">Đăng ký</a></p>
-</form>
-</div>
-{% endblock %}
+{% set tieu_de_trang = 'Đăng nhập - Cổng khách hàng' %}
+{% set thuong_hieu = 'Pet Care' %}
+{% set tieu_de_banner = 'Cổng khách hàng' %}
+{% set mo_ta_banner = 'Đăng nhập để xem hồ sơ thú cưng, lịch hẹn và hóa đơn của bạn.' %}
+{% set hanh_dong = '/khach/dang-nhap' %}
+{% set nhan_tai_khoan = 'Email' %}
+{% set ten_truong_tk = 'email' %}
+{% set kieu_tk = 'email' %}
+{% set gia_tri_tk = email %}
+{% set goi_y_tk = 'nhap@email.com' %}
+{% set autocomplete_tk = 'email' %}
+{% set ten_truong_mk = 'mat_khau' %}
+{% set quen_mat_khau = '/khach/quen-mat-khau' %}
+{% set dang_ky = '/khach/dang-ky' %}
+{% include '_dang_nhap_moi.html' %}

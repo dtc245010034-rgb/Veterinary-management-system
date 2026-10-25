@@ -4,57 +4,55 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block tieu_de %}Quản lý thú cưng{% endblock %}</title>
-  <link rel="stylesheet" href="/static/style.css?v=20261010">
+  <link rel="stylesheet" href="/static/style.css?v=20261026">
+  <link rel="stylesheet" href="/static/pet-motion.css?v=20261026">
 </head>
 <body>
 {% if user %}
-<header class="thanh-dieu-huong" id="pet-sidebar">
-  <button type="button" class="sidebar-toggle"
-          aria-label="Thu gọn thanh điều hướng"
-          title="Thu gọn thanh điều hướng">☰</button>
+<header class="pet-topbar" id="pet-topbar">
+  <a class="thuong-hieu" href="/">🐾 <span>Quản lý thú cưng</span></a>
 
-  <a class="thuong-hieu" href="/">🐾 Quản lý thú cưng</a>
+  <div class="pet-menu" id="pet-menu">
+    <button type="button" class="pet-menu-btn" id="pet-menu-btn"
+            aria-haspopup="true" aria-expanded="false"
+            aria-controls="pet-menu-list">
+      <span class="pet-menu-icon" aria-hidden="true">☰</span>
+      <span class="pet-menu-label">Menu</span>
+      <span class="pet-menu-caret" aria-hidden="true">▾</span>
+    </button>
 
-  <nav>
-    <a href="/owners">Chủ nuôi</a>
+        <div class="pet-menu-list" id="pet-menu-list">
+    <nav>
+      <a href="/owners">Chủ nuôi</a>
 
-    {% if user.role in ('manager', 'receptionist') %}
-      <a href="/appointments">Lịch hẹn</a>
-    {% endif %}
+      {% if user.role in ('manager', 'receptionist') %}
+        <a href="/appointments">Lịch hẹn</a>
+      {% endif %}
 
-    {% if user.role == 'caretaker' %}
-      <a href="/appointments/cua-toi">Lịch của tôi</a>
-    {% endif %}
+      {% if user.role == 'caretaker' %}
+        <a href="/appointments/cua-toi">Lịch của tôi</a>
+      {% endif %}
 
-    <a href="/services">Dịch vụ</a>
-    <a href="/vaccinations">Tiêm phòng</a>
-    <a href="/ai/hoi-dap">Trợ lý AI</a>
+      <a href="/services">Dịch vụ</a>
+      <a href="/vaccinations">Tiêm phòng</a>
+      <a href="/ai/hoi-dap">Trợ lý AI</a>
 
-    {% if user.role in ('manager', 'receptionist') %}
-      <a href="/invoices">Hóa đơn</a>
-      <a href="/lich-cho-duyet">Lịch chờ duyệt</a>
-      <a href="/lien-ket-khach">Liên kết khách</a>
-    {% endif %}
+      {% if user.role in ('manager', 'receptionist') %}
+        <a href="/invoices">Hóa đơn</a>
+        <a href="/lich-cho-duyet">Lịch chờ duyệt</a>
+        <a href="/lien-ket-khach">Liên kết khách</a>
+      {% endif %}
 
-    {% if user.role == 'manager' %}
-      <a href="/stats">Thống kê</a>
-      <a href="/users">Tài khoản</a>
-    {% endif %}
-  </nav>
-
-  <div class="nguoi-dung">
-    <span class="ten">{{ user.full_name }}</span>
-    <span class="vai-tro">{{ user.ten_vai_tro }}</span>
-
-    <a href="/doi-mat-khau">Đổi mật khẩu</a>
-
-    <form method="post" action="/logout"
-          style="display: inline-flex !important; margin: 0;">
-      <button type="submit" class="lien-ket"
-              style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important; cursor: pointer;">
-        Đăng xuất
-      </button>
+      {% if user.role == 'manager' %}
+        <a href="/stats">Thống kê</a>
+        <a href="/users">Tài khoản</a>
+      {% endif %}
+        </nav>
+    <hr>
+    <form method="post" action="/logout">
+      <button type="submit" class="lien-ket">Đăng xuất</button>
     </form>
+    </div>
   </div>
 </header>
 
@@ -111,116 +109,14 @@
   {% block noi_dung %}{% endblock %}
 </main>
 
-<script>
-(function () {
-  'use strict';
+<script src="/static/pet-nav.js?v=20261026" defer></script>
 
-  var body = document.body;
-  if (!body) return;
-
-  var reduceMotion = window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var navigating = false;
-
-  var veil = document.createElement('div');
-  veil.className = 'win11-transition';
-  veil.setAttribute('aria-hidden', 'true');
-  body.appendChild(veil);
-
-  function go(url, event) {
-    if (navigating) return;
-    navigating = true;
-
-    var x = event && Number.isFinite(event.clientX)
-      ? event.clientX : window.innerWidth / 2;
-    var y = event && Number.isFinite(event.clientY)
-      ? event.clientY : window.innerHeight / 2;
-
-    veil.style.setProperty('--win-x', x + 'px');
-    veil.style.setProperty('--win-y', y + 'px');
-
-    body.classList.remove('win11-enter');
-    body.classList.add('win11-leave');
-
-    window.setTimeout(function () {
-      window.location.assign(url.href);
-    }, reduceMotion ? 0 : 300);
-  }
-
-  if (!reduceMotion) {
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        body.classList.add('win11-enter');
-        window.setTimeout(function () {
-          body.classList.remove('win11-enter');
-        }, 520);
-      });
-    });
-  }
-
-  document.addEventListener('click', function (event) {
-    var link = event.target && event.target.closest
-      ? event.target.closest('a[href]') : null;
-
-    if (!link || navigating) return;
-
-    if (event.button && event.button !== 0) return;
-    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-    if (link.target && link.target !== '_self') return;
-    if (link.hasAttribute('download') ||
-        link.hasAttribute('data-no-transition')) return;
-
-    var url;
-    try {
-      url = new URL(link.href, window.location.href);
-    } catch (_) {
-      return;
-    }
-
-    if (url.origin !== window.location.origin) return;
-
-    if (url.pathname === window.location.pathname &&
-        url.search === window.location.search) return;
-
-    event.preventDefault();
-    go(url, event);
-  }, true);
-
-  window.addEventListener('pageshow', function () {
-    navigating = false;
-    body.classList.remove('win11-leave');
-
-    if (!reduceMotion) body.classList.add('win11-enter');
-
-    window.setTimeout(function () {
-      body.classList.remove('win11-enter');
-    }, 520);
-  });
-})();
-</script>
-
-<script src="/static/pet-ui.js?v=20261010" defer></script>
-<script src="/static/pet-meme.js?v=20261011" defer></script>
+<script src="/static/pet-ui.js?v=20261026" defer></script>
+<script src="/static/pet-meme.js?v=20261026" defer></script>
+<script src="/static/pet-motion.js?v=20261026" defer></script>
 
 <script>
 (function () {
-  const sidebar = document.getElementById('pet-sidebar');
-  const toggle = sidebar && sidebar.querySelector('.sidebar-toggle');
-
-  if (toggle) {
-    toggle.addEventListener('click', () => {
-      const collapsed =
-        document.body.classList.toggle('sidebar-collapsed');
-
-      toggle.setAttribute(
-        'aria-label',
-        collapsed
-          ? 'Mở rộng thanh điều hướng'
-          : 'Thu gọn thanh điều hướng'
-      );
-    });
-  }
-
   const panel = document.getElementById('pet-ai-panel');
   const bubble = document.getElementById('pet-ai-toggle');
   const close = document.querySelector('.pet-ai-close');

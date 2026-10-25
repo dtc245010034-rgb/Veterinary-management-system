@@ -4,36 +4,42 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block tieu_de %}Cổng khách hàng{% endblock %}</title>
-  <link rel="stylesheet" href="/static/style.css?v=20261010">
+  <link rel="stylesheet" href="/static/style.css?v=20261026">
+  <link rel="stylesheet" href="/static/pet-motion.css?v=20261026">
 </head>
 <body>
 {# Không dùng base.html: file đó là menu của NHÂN VIÊN. Khách không bao giờ thấy link tới trang nhân viên. #}
 {% if khach %}
-<header class="thanh-dieu-huong">
-  <a class="thuong-hieu" href="/khach">🐾 Cổng khách hàng</a>
+<header class="pet-topbar" id="pet-topbar">
+  <a class="thuong-hieu" href="/khach">🐾 <span>Cổng khách hàng</span></a>
 
-  <div class="nguoi-dung">
-    {% if khach.owner_id is not none %}
-    <a href="/khach/thu-cung">Thú cưng</a>
-    <a href="/khach/lich-hen">Lịch hẹn</a>
-    <a href="/khach/khung-trong">Giờ trống</a>
-    <a href="/khach/dat-lich">Xin đặt lịch</a>
-    <a href="/khach/hoa-don">Hóa đơn</a>
-    {% else %}
-    <a href="/khach/lien-ket">Liên kết hồ sơ</a>
-    {% endif %}
+  <div class="pet-menu" id="pet-menu">
+    <button type="button" class="pet-menu-btn" id="pet-menu-btn"
+            aria-haspopup="true" aria-expanded="false"
+            aria-controls="pet-menu-list">
+      <span class="pet-menu-icon" aria-hidden="true">☰</span>
+      <span class="pet-menu-label">Menu</span>
+      <span class="pet-menu-caret" aria-hidden="true">▾</span>
+    </button>
 
-    <a href="/khach/hoi-dap">Hỏi AI</a>
-    <span class="ten">{{ khach.full_name }}</span>
-    <a href="/khach/doi-mat-khau">Đổi mật khẩu</a>
-
-    <form method="post" action="/khach/dang-xuat"
-          style="display: inline-flex !important; margin: 0;">
-      <button type="submit" class="lien-ket"
-              style="display: inline-flex !important; visibility: visible !important; opacity: 1 !important; cursor: pointer;">
-        Đăng xuất
-      </button>
-    </form>
+    <nav class="pet-menu-list" id="pet-menu-list" aria-label="Điều hướng chính">
+      {% if khach.owner_id is not none %}
+      <a href="/khach/thu-cung">Thú cưng</a>
+      <a href="/khach/lich-hen">Lịch hẹn</a>
+      <a href="/khach/khung-trong">Giờ trống</a>
+      <a href="/khach/dat-lich">Xin đặt lịch</a>
+      <a href="/khach/hoa-don">Hóa đơn</a>
+      {% else %}
+      <a href="/khach/lien-ket">Liên kết hồ sơ</a>
+      {% endif %}
+      <a href="/khach/hoi-dap">Hỏi AI</a>
+      <hr>
+      <span class="pet-menu-user">{{ khach.full_name }}</span>
+      <a href="/khach/doi-mat-khau">Đổi mật khẩu</a>
+      <form method="post" action="/khach/dang-xuat">
+        <button type="submit" class="lien-ket">Đăng xuất</button>
+      </form>
+    </nav>
   </div>
 </header>
 {% endif %}
@@ -42,100 +48,10 @@
   {% block noi_dung %}{% endblock %}
 </main>
 
-<script>
-(function () {
-  'use strict';
+<script src="/static/pet-nav.js?v=20261026" defer></script>
 
-  var body = document.body;
-  if (!body) return;
-
-  var reduceMotion = window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var navigating = false;
-
-  /* Lớp Mica/reveal nằm trên cùng, không chặn click bình thường. */
-  var veil = document.createElement('div');
-  veil.className = 'win11-transition';
-  veil.setAttribute('aria-hidden', 'true');
-  body.appendChild(veil);
-
-  function go(url, event) {
-    if (navigating) return;
-    navigating = true;
-
-    var x = event && Number.isFinite(event.clientX)
-      ? event.clientX : window.innerWidth / 2;
-    var y = event && Number.isFinite(event.clientY)
-      ? event.clientY : window.innerHeight / 2;
-
-    veil.style.setProperty('--win-x', x + 'px');
-    veil.style.setProperty('--win-y', y + 'px');
-
-    body.classList.remove('win11-enter');
-    body.classList.add('win11-leave');
-
-    /* Cho animation chạy đủ một nhịp trước khi trình duyệt tải URL mới. */
-    window.setTimeout(function () {
-      window.location.assign(url.href);
-    }, reduceMotion ? 0 : 300);
-  }
-
-  /* Hiệu ứng vào trang. */
-  if (!reduceMotion) {
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        body.classList.add('win11-enter');
-        window.setTimeout(function () {
-          body.classList.remove('win11-enter');
-        }, 520);
-      });
-    });
-  }
-
-  /* Chỉ áp dụng hiệu ứng cho liên kết, không chặn form đăng xuất. */
-  document.addEventListener('click', function (event) {
-    var link = event.target && event.target.closest
-      ? event.target.closest('a[href]') : null;
-
-    if (!link || navigating) return;
-
-    /* Giữ hành vi Ctrl/Cmd/Shift/Alt + click, middle-click và target khác. */
-    if (event.button && event.button !== 0) return;
-    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-    if (link.target && link.target !== '_self') return;
-    if (link.hasAttribute('download') ||
-        link.hasAttribute('data-no-transition')) return;
-
-    var url;
-    try {
-      url = new URL(link.href, window.location.href);
-    } catch (_) {
-      return;
-    }
-
-    if (url.origin !== window.location.origin) return;
-    if (url.pathname === window.location.pathname &&
-        url.search === window.location.search) return;
-
-    event.preventDefault();
-    go(url, event);
-  }, true);
-
-  window.addEventListener('pageshow', function () {
-    navigating = false;
-    body.classList.remove('win11-leave');
-
-    if (!reduceMotion) body.classList.add('win11-enter');
-
-    window.setTimeout(function () {
-      body.classList.remove('win11-enter');
-    }, 520);
-  });
-})();
-</script>
-
-<script src="/static/pet-ui.js?v=20261010" defer></script>
-<script src="/static/pet-meme.js?v=20261011" defer></script>
+<script src="/static/pet-ui.js?v=20261026" defer></script>
+<script src="/static/pet-meme.js?v=20261026" defer></script>
+<script src="/static/pet-motion.js?v=20261026" defer></script>
 </body>
 </html>
-```

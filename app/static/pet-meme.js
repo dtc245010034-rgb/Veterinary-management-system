@@ -33,48 +33,6 @@
     close.addEventListener('click',function(){bubble.remove();});
     bubble.appendChild(img); bubble.appendChild(text); bubble.appendChild(close); document.body.appendChild(bubble);
   }
-  function paws(e) {
-    if(reduce || !e.target.closest('button, .chinh, .lien-ket')) return;
-    var paw=make('span','meme-paw'); paw.textContent=['🐾','✨','💖'][Math.floor(Math.random()*3)];
-    paw.style.left=(e.clientX||window.innerWidth/2)+'px'; paw.style.top=(e.clientY||window.innerHeight/2)+'px'; document.body.appendChild(paw);
-    window.setTimeout(function(){paw.remove();},850);
-  }
-  function init(){addMemeWall();addBubble();document.addEventListener('click',paws);}
+  function init(){addMemeWall();addBubble();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
-
-/* Cat spins with a playful "ui a ui a" sound-effect caption on navigation. */
-(function () {
-  'use strict';
-  if (window.__petNavigationCat) return;
-  window.__petNavigationCat = true;
-  var overlay;
-  function createOverlay() {
-    if (overlay) return overlay;
-    overlay = document.createElement('div');
-    overlay.className = 'pet-navigation-spin';
-    overlay.setAttribute('aria-hidden', 'true');
-    var img = document.createElement('img');
-    img.src = '/static/images/shocked-cat.png';
-    img.alt = '';
-    var label = document.createElement('span');
-    label.textContent = 'UI A UI A UI A 🐈';
-    overlay.appendChild(img);
-    overlay.appendChild(label);
-    document.body.appendChild(overlay);
-    return overlay;
-  }
-  document.addEventListener('click', function (event) {
-    var link = event.target.closest('a[href]');
-    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    if (link.target === '_blank' || link.hasAttribute('download')) return;
-    var url;
-    try { url = new URL(link.href, window.location.href); } catch (_) { return; }
-    if (url.origin !== window.location.origin || url.href === window.location.href || url.hash && url.pathname === window.location.pathname && url.search === window.location.search) return;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    event.preventDefault();
-    var layer = createOverlay();
-    layer.classList.add('is-active');
-    window.setTimeout(function () { window.location.href = url.href; }, 520);
-  }, true);
 })();

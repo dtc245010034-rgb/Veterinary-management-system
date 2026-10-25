@@ -316,6 +316,10 @@
 | `templates/stats.html` | Form chọn kỳ, bốn thẻ số (lượt, doanh thu, chưa thu, tỉ lệ quay lại), bảng theo dịch vụ, trạng thái rỗng; một dòng giải thích ba mốc ngày |
 | `templates/appointments.html` | Lưới lịch, form đặt lịch, cột thao tác đổi/hủy, khung trống khi bị từ chối. Dùng chung cho `/appointments` và `/appointments/cua-toi` |
 | `static/style.css` | Toàn bộ CSS, một file, không build tool |
+| `static/pet-motion.css` | Hiệu ứng chuyển động, menu dropdown, tối ưu hiệu năng; nạp sau style.css |
+| `static/pet-nav.js` | Menu dropdown và chuyển trang nhẹ |
+| `static/pet-motion.js` | Nền động, toast, spinner khi gửi form |
+| `templates/_dang_nhap_moi.html` | Trang đăng nhập giao diện mới (Tailwind), độc lập với base.html |
 
 ### Kiểm thử (`tests/`) — từ P1
 

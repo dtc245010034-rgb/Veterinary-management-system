@@ -1,0 +1,557 @@
+/* =========================================================
+   PET MOTION — đồng bộ hiệu ứng chuyển động với trang đăng nhập
+   ---------------------------------------------------------
+   Nguồn tham chiếu: templates/_dang_nhap_moi.html
+   Tệp này nạp SAU style.css, chỉ thêm/ghi đè phần chuyển động.
+   Không đổi bố cục, không đổi màu thương hiệu, không đổi chức năng.
+
+   Bộ chuyển động lấy từ trang đăng nhập:
+   1. floatElevate  – thẻ chính bồng bềnh 6s (-8px)
+   2. twinkle       – sao nhấp nháy 3s (chỉ hiện ở nền tối)
+   3. dustFloat     – hạt bụi sáng bay lên 4s
+   4. bounceSlow    – bong bóng thoại nảy nhẹ 2.5s
+   5. Quầng sáng nền (glow) + ánh sáng đuổi theo con trỏ
+   6. Đổi Sáng/Tối: biểu tượng chìm xuống rồi nổi lên, màu chuyển 0.7s
+   7. hover:scale-105 / active:scale-95, transition 300ms
+   8. Toast trượt từ phải với lò xo + spinner khi gửi form
+   9. Modal vào/ra: scale 0.9 ↔ 1 + opacity
+   ========================================================= */
+
+:root {
+  --pm-ease: cubic-bezier(.4, 0, .2, 1);      /* easing mặc định của trang đăng nhập */
+  --pm-spring: cubic-bezier(.34, 1.56, .64, 1); /* lò xo của toast / cú */
+  --pm-theme-dur: .35s;
+
+  --pm-glow-a: rgba(13, 148, 136, .20);   /* teal  – nền tối */
+  --pm-glow-b: rgba(79, 70, 229, .20);    /* indigo – nền tối */
+  --pm-dust-a: rgba(255, 255, 255, .6);
+  --pm-dust-b: rgba(254, 240, 138, .6);
+  --pm-ambient-1: rgba(251, 191, 36, .12);
+  --pm-ambient-2: rgba(20, 184, 166, .05);
+}
+
+/* Nền sáng của trang đăng nhập: quầng hổ phách + trời xanh */
+html:not([data-theme="dark"]) {
+  --pm-glow-a: rgba(252, 211, 77, .30);
+  --pm-glow-b: rgba(125, 211, 252, .30);
+  --pm-dust-a: rgba(245, 158, 11, .55);
+  --pm-dust-b: rgba(20, 184, 166, .50);
+}
+
+/* ---------- Keyframes (sao chép nguyên từ trang đăng nhập) ---------- */
+/* Dùng thuộc tính `translate` riêng để KHÔNG đụng vào `transform` của hover/active */
+@keyframes pm-float-elevate {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -8px; }
+}
+@keyframes pm-bounce-slow {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -6px; }
+}
+@keyframes pm-twinkle {
+  0%, 100% { opacity: .25; }
+  50%      { opacity: .9; }
+}
+@keyframes pm-dust-float {
+  0%   { transform: translate3d(0, 0, 0); opacity: .2; }
+  50%  { opacity: .6; }
+  100% { transform: translate3d(22px, -30px, 0); opacity: 0; }
+}
+@keyframes pm-spin { to { transform: rotate(360deg); } }
+
+@keyframes pm-pop-in {
+  from { opacity: 0; transform: scale(.9) translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* =========================================================
+   1. VÀO TRANG / RỜI TRANG — chỉ opacity + translate (GPU), không blur, không scale
+   ========================================================= */
+@keyframes pm-page-in {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+main {
+  animation: pm-page-in .32s var(--pm-ease) both;
+}
+main.giua-man-hinh { animation-duration: .4s; }
+body.pet-leaving main {
+  opacity: 0;
+  transition: opacity .12s linear;
+}
+.win11-transition { display: none !important; }   /* lớp phủ blur cũ: tắt */
+
+/* =========================================================
+   2. THẺ: đứng yên (bỏ bồng bềnh vô hạn — mỗi thẻ là một lớp GPU luôn phải vẽ lại)
+   ========================================================= */
+.the-dang-nhap,
+.the-loi,
+.the-xac-nhan,
+main > .the,
+main > form.the,
+main > .luoi-the > .the {
+  animation: none;
+}
+
+/* =========================================================
+   3. NỀN: QUẦNG SÁNG + SAO + BỤI + ÁNH SÁNG THEO CON TRỎ
+   (phần tử được pet-motion.js chèn vào đầu <body>)
+   ========================================================= */
+.pm-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.pm-glow {
+  position: absolute;
+  pointer-events: none;
+  width: 650px;
+  height: 650px;
+  max-width: 90vw;
+  max-height: 90vw;
+  border-radius: 50%;
+}
+.pm-glow-a {
+  top: -160px;
+  left: -160px;
+  background: radial-gradient(circle, var(--pm-glow-a) 0%, transparent 68%);
+}
+.pm-glow-b {
+  bottom: -160px;
+  right: -160px;
+  background: radial-gradient(circle, var(--pm-glow-b) 0%, transparent 68%);
+}
+
+.pm-ambient {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 560px;
+  height: 560px;
+  margin: -280px 0 0 -280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--pm-ambient-1) 0%, var(--pm-ambient-2) 55%, transparent 70%);
+  opacity: .6;
+  transform: translate3d(-600px, -600px, 0);
+  will-change: transform;
+}
+
+.pm-stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .7s var(--pm-ease);
+}
+html[data-theme="dark"] .pm-stars { opacity: 1; }
+html:not([data-theme="dark"]) .pm-star { animation-play-state: paused; }
+
+.pm-star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: pm-twinkle 3s ease-in-out infinite;
+}
+.pm-dust {
+  position: absolute;
+  border-radius: 50%;
+  animation: pm-dust-float 4s linear infinite;
+}
+
+/* =========================================================
+   4. ĐỔI SÁNG / TỐI — biểu tượng chìm rồi nổi, màu chuyển 0.7s
+   ========================================================= */
+.pet-theme-toggle .theme-icon {
+  transition: transform .45s var(--pm-ease), opacity .45s var(--pm-ease);
+  will-change: transform, opacity;
+}
+.pet-theme-toggle .theme-icon.pm-sink {
+  transform: translateY(14px) scale(.55);
+  opacity: 0;
+}
+.pet-theme-toggle .theme-icon.pm-rise {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+html.pm-theme-fade,
+html.pm-theme-fade *:not(.theme-icon),
+html.pm-theme-fade *:not(.theme-icon)::before,
+html.pm-theme-fade *:not(.theme-icon)::after {
+  transition:
+    background-color var(--pm-theme-dur) var(--pm-ease),
+    color var(--pm-theme-dur) var(--pm-ease),
+    border-color var(--pm-theme-dur) var(--pm-ease),
+    fill var(--pm-theme-dur) var(--pm-ease) !important;
+}
+
+/* =========================================================
+   5. NÚT / ĐIỀU KHIỂN: hover scale-105, active scale-95, 300ms
+   ========================================================= */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"],
+a.chinh,
+.chinh,
+.lien-ket,
+.thanh-dieu-huong .sidebar-toggle,
+.thanh-dieu-huong nav a,
+.pet-account-float a,
+.pet-ai-bubble,
+.pet-ai-close,
+.pet-theme-toggle {
+  transition:
+    transform .3s var(--pm-ease),
+    box-shadow .3s var(--pm-ease),
+    background-color .3s var(--pm-ease),
+    border-color .3s var(--pm-ease),
+    color .3s var(--pm-ease),
+    filter .3s var(--pm-ease),
+    opacity .3s var(--pm-ease) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pet-theme-toggle:hover,
+  .thanh-dieu-huong .sidebar-toggle:hover,
+  .pet-account-float a:hover,
+  .pet-account-float button:hover,
+  .pet-ai-bubble:hover,
+  .lien-ket:hover {
+    transform: scale(1.05) !important;
+  }
+  .pet-ai-close:hover {
+    transform: scale(1.1) !important;
+  }
+  /* Nút thường trong bảng/biểu mẫu: nhích nhẹ hơn để không tràn ô */
+  button:not(.chinh):not(.pet-theme-toggle):not(.sidebar-toggle):not(.pet-ai-close):not(.pet-ai-bubble):not(.lien-ket):not(:disabled):hover {
+    transform: scale(1.03);
+  }
+  /* Nút chính (như nút Đăng nhập): sáng lên + bóng teal, không phóng to */
+  .chinh:not(:disabled):hover,
+  .the-dang-nhap button[type="submit"]:not(:disabled):hover {
+    filter: brightness(1.08);
+    box-shadow: 0 14px 32px -8px rgba(20, 184, 166, .45) !important;
+  }
+}
+
+button:active:not(:disabled),
+[role="button"]:active,
+.lien-ket:active,
+.pet-account-float a:active,
+.pet-ai-bubble:active,
+.pet-ai-close:active,
+.pet-theme-toggle:active,
+.thanh-dieu-huong .sidebar-toggle:active {
+  transform: scale(.95) !important;
+}
+.chinh:active:not(:disabled),
+a.chinh:active,
+.the-dang-nhap button[type="submit"]:active:not(:disabled) {
+  transform: scale(.99) !important;
+}
+
+/* Ô nhập: chuyển trạng thái mượt 300ms như ô email/mật khẩu của trang đăng nhập */
+input, select, textarea {
+  transition:
+    border-color .3s var(--pm-ease),
+    background-color .3s var(--pm-ease),
+    box-shadow .3s var(--pm-ease),
+    color .3s var(--pm-ease);
+}
+tbody tr { transition: background-color .3s var(--pm-ease); }
+
+/* =========================================================
+   6. TRỢ LÝ AI + BÓNG MEME: vào bằng lò xo, nảy nhẹ như bong bóng thoại cú
+   ========================================================= */
+.pet-ai-panel:not([hidden]) {
+  transform-origin: 100% 100%;
+  animation: pm-pop-in .45s var(--pm-spring) both;
+}
+.pet-ai-msg {
+  animation: pm-pop-in .35s var(--pm-spring) both;
+}
+.pet-ai-msg.user { transform-origin: 100% 100%; }
+.pet-ai-msg.bot  { transform-origin: 0 100%; }
+
+.pet-ai-bubble {
+  animation: pm-bounce-slow 2.5s ease-in-out infinite;
+}
+.pet-ai-bubble:hover,
+.pet-ai-bubble:focus-visible,
+.pet-ai-widget:has(.pet-ai-panel:not([hidden])) .pet-ai-bubble {
+  animation-play-state: paused;
+}
+.meme-global-bubble {
+  animation:
+    bubble-in .65s cubic-bezier(.2, .8, .2, 1) both,
+    pm-bounce-slow 2.5s ease-in-out .65s infinite;
+}
+
+/* =========================================================
+   7. TOAST (trượt từ phải, lò xo) + SPINNER KHI GỬI FORM
+   ========================================================= */
+#pm-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 2147483200;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(380px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(51, 65, 85, .8);
+  background: rgba(15, 23, 42, .9);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  transform: translateX(calc(100% + 32px));
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .35s var(--pm-spring), opacity .35s ease;
+}
+/* Trang có khối tài khoản nổi ở góc phải: đặt toast ngay bên dưới để không che nút nào */
+body:has(.pet-account-float, .pet-theme-floating) #pm-toast { top: 84px; }
+@media (max-width: 520px) {
+  body:has(.pet-account-float, .pet-theme-floating) #pm-toast { top: 96px; right: 12px; }
+  #pm-toast { right: 12px; }
+}
+#pm-toast.is-show {
+  transform: translateX(0);
+  opacity: 1;
+}
+#pm-toast .pm-toast-icon {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(20, 184, 166, .2);
+  color: #2dd4bf;
+}
+#pm-toast.is-success .pm-toast-icon { background: rgba(16, 185, 129, .2); color: #34d399; }
+#pm-toast.is-error   .pm-toast-icon { background: rgba(244, 63, 94, .2);  color: #fb7185; }
+
+/* Spinner trong nút khi đang gửi (không đổi chữ, không vô hiệu hóa nút) */
+button.pm-loading,
+input.pm-loading {
+  pointer-events: none;
+  opacity: .85;
+}
+button.pm-loading::before {
+  all: unset;
+  content: "";
+  display: inline-block;
+  box-sizing: border-box;
+  width: .95em;
+  height: .95em;
+  margin-right: .5em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -.12em;
+  animation: pm-spin .7s linear infinite;
+}
+
+/* =========================================================
+   8. TÔN TRỌNG "GIẢM CHUYỂN ĐỘNG" CỦA HỆ ĐIỀU HÀNH
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  main,
+  .the-dang-nhap, .the-loi, .the-xac-nhan,
+  main > .the, main > form.the, main > .luoi-the > .the,
+  .pet-ai-panel, .pet-ai-msg, .pet-ai-bubble, .meme-global-bubble,
+  .pm-star, .pm-dust {
+    animation: none !important;
+  }
+  .pm-ambient { display: none; }
+  #pm-toast { transition-duration: .01ms; }
+  button.pm-loading::before { animation-duration: 1.6s; }
+}
+
+
+/* =========================================================
+   9. LÀM MƯỢT TOÀN TRANG
+   - Tắt mọi backdrop-filter (làm mờ nền sau mỗi lớp kính là thứ gây giật nhiều nhất)
+   - Bỏ animation vô hạn có blur trên từng thẻ, bỏ will-change thừa
+   - Bóng đổ nhỏ hơn để vẽ lại nhanh hơn
+   ========================================================= */
+*, *::before, *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html { scroll-behavior: auto; }            /* cuộn tức thì, tránh smooth-scroll chồng lên main-thread */
+body::before { display: none; }            /* quầng sáng blur(70px) chuyển động 18s */
+.the { will-change: auto; }
+.the::after { animation: none; filter: none; box-shadow: none; }
+.meme-login-showcase::before, .meme-login-showcase::after { animation: none; filter: none; }
+.pet-welcome::before { filter: none; }
+.pet-welcome-paw { animation: none; filter: none; }
+.pet-photo { animation-duration: 9s !important; }
+.pet-navigation-spin { display: none !important; }
+
+/* Lớp kính không còn blur → cần nền đặc hơn để chữ không bị lẫn với nội dung phía sau */
+.the, table, main > ul li, main form.form-card, .meme-sticker {
+  box-shadow: 0 8px 24px rgba(31, 42, 58, .08);
+}
+html[data-theme="dark"] .the, html[data-theme="dark"] table,
+html[data-theme="dark"] main > ul li, html[data-theme="dark"] main form.form-card {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+}
+.pet-account-float, .meme-global-bubble, #pm-toast {
+  background: var(--the-dam, #fff);
+}
+.pet-ai-bubble, .pet-ai-panel { box-shadow: 0 8px 24px rgba(0, 0, 0, .25) !important; }
+
+/* =========================================================
+   10. THANH ĐIỀU HƯỚNG DẠNG DROPDOWN (thay thanh bên)
+   ========================================================= */
+/* Chừa chỗ cho thanh trên bằng padding của body (margin của main sẽ bị gộp ra ngoài, lộ nền html) */
+body:has(.pet-topbar) { padding-top: 84px; }
+body main:not(.giua-man-hinh) {
+  margin: 0 auto 64px !important;
+  width: min(1120px, calc(100% - 32px)) !important;
+  transition: none !important;
+}
+
+.pet-topbar {
+  position: fixed;
+  z-index: 1900;
+  left: 14px;
+  top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 28px);
+}
+.pet-topbar .thuong-hieu {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 14px !important;
+  position: static !important;
+  white-space: nowrap;
+  font-weight: 750;
+  text-decoration: none !important;
+  border-radius: 14px !important;
+  color: var(--chu) !important;
+  background: var(--the-dam, #fff) !important;
+  border: 1px solid var(--vien) !important;
+  box-shadow: 0 4px 14px rgba(24, 39, 58, .10) !important;
+}
+.pet-topbar .thuong-hieu:hover { border-color: rgba(13, 148, 136, .45) !important; }
+
+.pet-menu { position: relative; }
+.pet-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 14px;
+  font-weight: 700;
+  border-radius: 14px !important;
+  color: var(--chu) !important;
+  background: var(--the-dam, #fff) !important;
+  border: 1px solid var(--vien) !important;
+  box-shadow: 0 4px 14px rgba(24, 39, 58, .10) !important;
+}
+.pet-menu-btn:hover { border-color: rgba(13, 148, 136, .45) !important; }
+.pet-menu.is-open .pet-menu-btn { border-color: rgba(13, 148, 136, .6) !important; }
+.pet-menu-caret { display: inline-block; transition: transform .2s var(--pm-ease); }
+.pet-menu.is-open .pet-menu-caret { transform: rotate(180deg); }
+.pet-menu-label { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.pet-menu-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 230px;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 16px;
+  border: 1px solid var(--vien);
+  background: var(--the-dam, #fff);
+  box-shadow: 0 14px 36px rgba(24, 39, 58, .18);
+  /* đóng: ẩn bằng visibility + opacity/transform (không dùng display để còn animate) */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(0, -6px, 0) scale(.98);
+  transform-origin: 0 0;
+  transition: opacity .16s var(--pm-ease), transform .16s var(--pm-ease), visibility 0s linear .16s;
+}
+.pet-menu.is-open .pet-menu-list {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  transition: opacity .18s var(--pm-ease), transform .18s var(--pm-ease), visibility 0s;
+}
+.pet-menu-list a,
+.pet-menu-list .lien-ket {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--chu) !important;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: background-color .15s ease, color .15s ease !important;
+}
+.pet-menu-list a:hover,
+.pet-menu-list a:focus-visible,
+.pet-menu-list .lien-ket:hover {
+  background: rgba(13, 148, 136, .10) !important;
+  color: var(--chinh-dam) !important;
+  transform: none !important;
+}
+.pet-menu-list a[aria-current="page"] {
+  background: rgba(13, 148, 136, .14) !important;
+  color: var(--chinh-dam) !important;
+}
+.pet-menu-list hr { width: 100%; margin: 4px 0; border: 0; border-top: 1px solid var(--vien); }
+.pet-menu-list form { margin: 0; display: block; }
+.pet-menu-user { padding: 6px 12px 2px; font-size: 12px; color: var(--chu-phu); }
+
+/* Nút đổi giao diện khi không có khối tài khoản (cổng khách) */
+.pet-topbar .pet-theme-inbar { margin-left: 4px; }
+
+/* Khối tài khoản nổi bên phải: cùng ngôn ngữ, cùng chiều cao với topbar */
+.pet-account-float { top: 14px; }
+
+@media (max-width: 700px) {
+  .pet-topbar { left: 8px; top: 8px; gap: 6px; }
+  .pet-topbar .thuong-hieu span { display: none; }   /* chỉ giữ biểu tượng 🐾 */
+  .pet-topbar .thuong-hieu { padding: 8px 11px !important; }
+  body:has(.pet-topbar) { padding-top: 72px; }
+  body main:not(.giua-man-hinh) { width: calc(100% - 20px) !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pet-menu-list, .pet-menu.is-open .pet-menu-list, .pet-menu-caret { transition: none !important; }
+}
+.pet-menu-list > nav { display: contents; }

@@ -260,6 +260,8 @@ def test_moi_class_dung_trong_template_deu_co_trong_css():
 
     thieu = []
     for tep in sorted((GOC / "app" / "templates").glob("*.html")):
+        if tep.name == "_dang_nhap_moi.html":
+            continue  # trang đăng nhập độc lập dùng Tailwind, class không nằm trong style.css
         noi_dung = _doc(tep)
         ten_class = []
 
