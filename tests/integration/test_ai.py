@@ -305,7 +305,7 @@ def test_ai_loi_thi_trang_khong_vo_va_du_lieu_lich_hen_con_nguyen(client, db, ne
     r = client.post(f"/ai/nhac-lich/lich-hen/{nen['sap_toi'].id}", data={"tu": "/appointments"})
 
     assert r.status_code == 400
-    assert "500" not in r.text
+    assert "Internal Server Error" not in r.text
     assert "hết lượt miễn phí hôm nay" in r.text
     db.refresh(nen["sap_toi"])
     assert nen["sap_toi"].status == "booked"

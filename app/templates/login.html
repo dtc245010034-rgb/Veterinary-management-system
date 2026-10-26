@@ -1,24 +1,13 @@
-{% extends "base.html" %}
-{% block tieu_de %}Đăng nhập{% endblock %}
-{% block lop_main %}giua-man-hinh{% endblock %}
-
-{% block noi_dung %}
-<form class="the the-dang-nhap" method="post" action="/login">
-  <h1>🐾 Quản lý thú cưng</h1>
-  <p class="phu">Đăng nhập để tiếp tục</p>
-
-  {% if loi %}<p class="loi" role="alert">{{ loi }}</p>{% endif %}
-
-  <label>
-    Tên đăng nhập
-    <input name="username" value="{{ username or "" }}" required autofocus autocomplete="username">
-  </label>
-
-  <label>
-    Mật khẩu
-    <input name="password" type="password" required autocomplete="current-password">
-  </label>
-
-  <button type="submit" class="chinh">Đăng nhập</button>
-</form>
-{% endblock %}
+{% set tieu_de_trang = 'Đăng nhập - Quản lý thú cưng' %}
+{% set thuong_hieu = 'Pet Care' %}
+{% set tieu_de_banner = 'Quản lý thú cưng' %}
+{% set mo_ta_banner = 'Đăng nhập để quản lý hồ sơ, lịch hẹn và chăm sóc thú cưng cùng đội ngũ.' %}
+{% set hanh_dong = '/login' %}
+{% set nhan_tai_khoan = 'Tên đăng nhập' %}
+{% set ten_truong_tk = 'username' %}
+{% set kieu_tk = 'text' %}
+{% set gia_tri_tk = username %}
+{% set goi_y_tk = 'Nhập tên đăng nhập' %}
+{% set autocomplete_tk = 'username' %}
+{% set ten_truong_mk = 'password' %}
+{% include '_dang_nhap_moi.html' %}

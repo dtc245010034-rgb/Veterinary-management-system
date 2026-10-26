@@ -34,7 +34,7 @@
                   <input type="hidden" name="mo_ta" value="{{ s.description or '' }}">
                   <input name="gia" inputmode="numeric" value="{{ s.price|round|int }}"
                          aria-label="Giá của {{ s.name }}">
-                  <button type="submit">Lưu</button>
+                  <button type="submit" class="nut-luu">Lưu</button>
                 </form>
                 {% if s.is_active %}
                   <form method="post" action="/services/{{ s.id }}/ngung-ban"><button class="lien-ket">Ngưng bán</button></form>

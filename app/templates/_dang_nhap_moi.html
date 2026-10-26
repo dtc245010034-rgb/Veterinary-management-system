@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tieu_de_trang }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Be Vietnam Pro', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a' }
+                    },
+                    keyframes: {
+                        twinkle: { '0%, 100%': { opacity: '0.2', transform: 'scale(0.8)' }, '50%': { opacity: '1', transform: 'scale(1.2)' } },
+                        bounceSlow: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-6px)' } },
+                        floatElevate: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-8px)' } },
+                        dustFloat: { '0%': { transform: 'translate(0, 0)', opacity: '0.2' }, '50%': { opacity: '0.7' }, '100%': { transform: 'translate(25px, -35px)', opacity: '0' } }
+                    },
+                    animation: {
+                        twinkle: 'twinkle 3s ease-in-out infinite',
+                        bounceSlow: 'bounceSlow 2.5s ease-in-out infinite',
+                        floatElevate: 'floatElevate 6s ease-in-out infinite',
+                        dustFloat: 'dustFloat 4s linear infinite'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; transition: background-color 0.7s cubic-bezier(0.4,0,0.2,1), color 0.7s cubic-bezier(0.4,0,0.2,1); user-select: none; }
+        input { user-select: text; -webkit-user-select: text; }
+        .body-dark { background-color: #0a0d14; color: #f8fafc; }
+        .body-light { background-color: #f0f9ff; color: #0f172a; }
+        .glass-modal-dark { background: rgba(15,23,42,0.88); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); border: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 40px 90px -15px rgba(0,0,0,0.85), 0 15px 35px -10px rgba(0,0,0,0.6), 0 0 1px 1px rgba(255,255,255,0.1), inset 0 1px 1px 0 rgba(255,255,255,0.2), 0 0 60px rgba(20,184,166,0.12); }
+        .glass-modal-light { background: rgba(255,255,255,0.88); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); border: 1px solid rgba(255,255,255,0.95);
+            box-shadow: 0 30px 70px -15px rgba(100,116,139,0.25), 0 15px 30px -10px rgba(100,116,139,0.15), inset 0 1px 1px 0 rgba(255,255,255,0.9), 0 0 50px rgba(20,184,166,0.12); }
+        .custom-input-dark { background: rgba(30,41,59,0.85); border: 1px solid rgba(255,255,255,0.15); color: #f8fafc; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.15); }
+        .custom-input-light { background: rgba(241,245,249,0.95); border: 1px solid rgba(203,213,225,0.9); color: #0f172a; box-shadow: inset 0 2px 4px rgba(0,0,0,0.04); }
+        .celestial-body { transition: transform 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.45s cubic-bezier(0.4,0,0.2,1); will-change: transform, opacity; }
+        .celestial-sink { transform: translateY(140px) scale(0.55) !important; opacity: 0 !important; }
+        .celestial-rise { transform: translateY(0px) scale(1) !important; opacity: 1 !important; }
+        .owl-avatar { transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease, filter 0.4s ease; opacity: 0.3; transform: translateY(10px) scale(0.9); filter: brightness(0.4) blur(1px); }
+        .owl-avatar.revealed { opacity: 1; transform: translateY(0) scale(1.06); filter: brightness(1.1) blur(0px) drop-shadow(0 0 20px rgba(250,204,21,0.8)); }
+        .password-overlay { letter-spacing: 0.15em; word-spacing: normal; transition: clip-path 0.02s linear; background: transparent !important; border: none !important; box-shadow: none !important; }
+        #flashlight-svg { mix-blend-mode: screen; pointer-events: none; }
+        .star { position: absolute; background-color: #ffffff; border-radius: 50%; }
+        #toast { transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s ease; }
+    </style>
+</head>
+<body id="page-body" class="body-dark min-h-screen flex items-center justify-center p-4 md:p-8 overflow-x-hidden selection:bg-teal-500 selection:text-white relative">
+
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div id="bg-glow-1" class="absolute -top-40 -left-40 w-[650px] h-[650px] bg-teal-600/20 rounded-full blur-[140px] transition-all duration-700"></div>
+        <div id="bg-glow-2" class="absolute -bottom-40 -right-40 w-[650px] h-[650px] bg-indigo-600/20 rounded-full blur-[140px] transition-all duration-700"></div>
+        <div id="bg-gradient-overlay" class="absolute inset-0 bg-gradient-to-b from-[#0a0d14]/80 via-[#111726]/60 to-[#07090e]/90 transition-all duration-700"></div>
+    </div>
+
+    <button id="reopen-btn" type="button" onclick="toggleModal(true)" class="hidden fixed bottom-6 right-6 z-50 bg-teal-600 hover:bg-teal-500 text-white px-6 py-3.5 rounded-full shadow-2xl shadow-teal-950/70 font-semibold flex items-center gap-2.5 transition-all hover:scale-105 active:scale-95 border border-teal-400/30">
+        <i class="fa-solid fa-arrow-right-to-bracket text-base"></i>
+        <span>Mở lại Form Đăng nhập</span>
+    </button>
+
+    <div id="login-modal" class="relative z-30 w-full max-w-4xl rounded-3xl transition-all duration-700 glass-modal-dark overflow-hidden scale-100 opacity-100 my-auto animate-floatElevate">
+        <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[590px]">
+
+            <!-- LEFT PANEL -->
+            <div id="left-panel" class="lg:col-span-5 relative p-8 flex flex-col justify-between overflow-hidden border-b lg:border-b-0 lg:border-r border-slate-700/40 min-h-[280px] lg:min-h-full transition-colors duration-700">
+                <div class="absolute inset-0 z-0 overflow-hidden">
+                    <div id="sky-bg" class="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 transition-all duration-700"></div>
+
+                    <div id="stars-container" class="absolute inset-0 opacity-100 transition-opacity duration-700 pointer-events-none">
+                        <div class="star w-1 h-1 top-6 left-10 animate-twinkle" style="animation-delay: 0.1s;"></div>
+                        <div class="star w-1.5 h-1.5 top-12 left-1/3 animate-twinkle" style="animation-delay: 0.5s;"></div>
+                        <div class="star w-1 h-1 top-20 right-12 animate-twinkle" style="animation-delay: 0.8s;"></div>
+                        <div class="star w-1 h-1 top-32 left-16 animate-twinkle" style="animation-delay: 1.2s;"></div>
+                        <div class="star w-1.5 h-1.5 top-28 right-1/4 animate-twinkle" style="animation-delay: 0.3s;"></div>
+                        <div class="star w-0.5 h-0.5 top-8 right-1/3 animate-twinkle" style="animation-delay: 1.5s;"></div>
+                        <div class="star w-1 h-1 top-40 left-1/2 animate-twinkle" style="animation-delay: 0.7s;"></div>
+                    </div>
+
+                    <div id="celestial-wrapper" onclick="toggleTheme()" class="absolute top-10 right-10 w-20 h-20 z-10 cursor-pointer group flex items-center justify-center" title="Click để chuyển Chế độ Ngày / Đêm">
+                        <div id="moon-element" class="celestial-body w-20 h-20 rounded-full bg-slate-100 shadow-[0_0_35px_rgba(255,255,255,0.85)] relative overflow-hidden group-hover:scale-110">
+                            <div class="absolute top-3 left-4 w-4 h-4 rounded-full bg-slate-200/60"></div>
+                            <div class="absolute top-8 left-9 w-6 h-6 rounded-full bg-slate-200/50"></div>
+                            <div class="absolute bottom-4 left-5 w-3 h-3 rounded-full bg-slate-200/70"></div>
+                        </div>
+                        <div id="sun-element" class="celestial-body w-20 h-20 rounded-full bg-amber-400 shadow-[0_0_45px_rgba(251,191,36,0.85)] absolute inset-0 hidden group-hover:scale-110"></div>
+                    </div>
+
+                    <svg class="absolute bottom-0 inset-x-0 w-full h-48 text-slate-900/90 transition-colors duration-700 z-20 pointer-events-none" id="mountain-back" viewBox="0 0 500 150" preserveAspectRatio="none">
+                        <path d="M0,150 L0,90 L80,40 L160,80 L240,30 L340,95 L420,50 L500,85 L500,150 Z" fill="currentColor"/>
+                    </svg>
+                    <svg class="absolute bottom-0 inset-x-0 w-full h-36 text-slate-950 transition-colors duration-700 z-25 pointer-events-none" id="mountain-front" viewBox="0 0 500 150" preserveAspectRatio="none">
+                        <path d="M0,150 L0,110 L60,70 L140,115 L220,60 L310,110 L400,75 L500,105 L500,150 Z" fill="currentColor"/>
+                    </svg>
+                    <div id="mountain-gradient-overlay" class="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-slate-950/90 to-transparent pointer-events-none z-28 transition-colors duration-700"></div>
+                </div>
+
+                <div class="relative z-30 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-500/20 backdrop-blur-md border border-teal-500/40 flex items-center justify-center text-teal-400 shadow-lg">
+                        <i class="fa-solid fa-paw text-lg"></i>
+                    </div>
+                    <span id="brand-text" class="font-bold tracking-widest text-white uppercase text-xs opacity-90 transition-colors duration-700">{{ thuong_hieu }}</span>
+                </div>
+
+                <div class="relative z-30 mt-24 lg:mt-0">
+                    <h2 id="banner-title" class="text-2xl lg:text-3xl font-bold text-white mb-3 tracking-tight leading-snug drop-shadow-md transition-colors duration-700">{{ tieu_de_banner }}</h2>
+                    <p id="banner-subtext" class="text-slate-300 text-xs lg:text-sm leading-relaxed font-normal opacity-90 max-w-sm transition-colors duration-700">{{ mo_ta_banner }}</p>
+                    <div class="flex items-center gap-1.5 mt-6">
+                        <span class="w-6 h-1.5 rounded-full bg-teal-400"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div id="right-panel" class="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between relative bg-transparent overflow-hidden">
+
+                <div id="ambient-light-glow" class="absolute inset-0 pointer-events-none z-40 transition-opacity duration-300 opacity-60" style="background: radial-gradient(circle 260px at 0px 0px, rgba(251,191,36,0.12) 0%, rgba(20,184,166,0.05) 55%, transparent 100%);"></div>
+
+                <svg id="flashlight-svg" class="absolute inset-0 w-full h-full z-50 opacity-100 transition-opacity duration-300 pointer-events-none" style="mix-blend-mode: screen;">
+                    <defs>
+                        <filter id="beam-soft-outer" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="32" /></filter>
+                        <filter id="beam-soft-inner" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="18" /></filter>
+                        <filter id="spotlight-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="24" /></filter>
+                        <filter id="flare-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10" /></filter>
+                        <linearGradient id="beam-outer-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fef08a" stop-opacity="0.25" /><stop offset="35%" stop-color="#fde047" stop-opacity="0.18" />
+                            <stop offset="70%" stop-color="#eab308" stop-opacity="0.08" /><stop offset="100%" stop-color="#ca8a04" stop-opacity="0.02" />
+                        </linearGradient>
+                        <linearGradient id="beam-core-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" /><stop offset="35%" stop-color="#fef08a" stop-opacity="0.22" />
+                            <stop offset="75%" stop-color="#fde047" stop-opacity="0.10" /><stop offset="100%" stop-color="#eab308" stop-opacity="0.02" />
+                        </linearGradient>
+                        <radialGradient id="spotlight-radial" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.30" /><stop offset="40%" stop-color="#fde047" stop-opacity="0.18" />
+                            <stop offset="75%" stop-color="#eab308" stop-opacity="0.08" /><stop offset="100%" stop-color="#f59e0b" stop-opacity="0.0" />
+                        </radialGradient>
+                        <radialGradient id="bulb-flare-grad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6" /><stop offset="45%" stop-color="#fef08a" stop-opacity="0.4" />
+                            <stop offset="80%" stop-color="#f59e0b" stop-opacity="0.2" /><stop offset="100%" stop-color="#d97706" stop-opacity="0.0" />
+                        </radialGradient>
+                    </defs>
+                    <polygon id="beam-outer-polygon" points="0,0 0,0 0,0" fill="url(#beam-outer-grad)" filter="url(#beam-soft-outer)"/>
+                    <polygon id="beam-core-polygon" points="0,0 0,0 0,0" fill="url(#beam-core-grad)" filter="url(#beam-soft-inner)"/>
+                    <circle id="flashlight-spotlight" cx="0" cy="0" r="130" fill="url(#spotlight-radial)" filter="url(#spotlight-blur)"/>
+                    <circle id="flashlight-nozzle-flare" cx="0" cy="0" r="18" fill="url(#bulb-flare-grad)" filter="url(#flare-glow)"/>
+                    <circle class="animate-dustFloat" cx="120" cy="100" r="2" fill="#ffffff" opacity="0.6"/>
+                    <circle class="animate-dustFloat" cx="220" cy="180" r="2.5" fill="#fef08a" opacity="0.6" style="animation-delay: 0.8s;"/>
+                    <circle class="animate-dustFloat" cx="300" cy="140" r="1.8" fill="#ffffff" opacity="0.5" style="animation-delay: 1.5s;"/>
+                    <circle class="animate-dustFloat" cx="180" cy="260" r="2.2" fill="#fde047" opacity="0.6" style="animation-delay: 2.2s;"/>
+                </svg>
+
+                <div class="flex items-center justify-between mb-6 z-30 relative">
+                    <button id="theme-toggle-btn" type="button" onclick="toggleTheme()" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/70 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-medium transition-all duration-300 shadow-md hover:scale-105 active:scale-95" title="Chuyển chế độ Giao diện">
+                        <span id="theme-icon-container" class="text-amber-400 text-sm"><i class="fa-solid fa-moon"></i></span>
+                        <span id="theme-text-label">Chế độ tối</span>
+                    </button>
+                    <button id="close-modal-btn" type="button" onclick="toggleModal(false)" class="w-9 h-9 rounded-full bg-slate-800/50 hover:bg-slate-700/80 border border-slate-700/50 text-slate-400 hover:text-white flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-md" title="Đóng modal">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="relative z-30 my-auto">
+                    <div class="mb-6">
+                        <h1 id="form-title" class="text-2xl sm:text-3xl font-bold text-white mb-1.5 tracking-tight drop-shadow-sm transition-colors duration-700">Đăng nhập</h1>
+                        <p id="form-subtitle" class="text-slate-400 text-xs sm:text-sm transition-colors duration-700">Vui lòng nhập thông tin tài khoản của bạn</p>
+                    </div>
+
+                    <div id="owl-wrapper" class="owl-avatar absolute -top-16 left-4 sm:left-8 z-30 pointer-events-none flex flex-col items-center">
+                        <div id="owl-speech" class="bg-amber-100 text-amber-950 font-bold text-[11px] px-3 py-1 rounded-xl mb-1 shadow-xl border border-amber-300 animate-bounceSlow whitespace-nowrap">Soi sáng tui rồi! 🔑🦉</div>
+                        <svg class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 88 C30 85, 70 85, 90 88" stroke="#78350f" stroke-width="6" stroke-linecap="round"/>
+                            <circle cx="38" cy="82" r="3" fill="#f59e0b"/><circle cx="44" cy="82" r="3" fill="#f59e0b"/>
+                            <circle cx="56" cy="82" r="3" fill="#f59e0b"/><circle cx="62" cy="82" r="3" fill="#f59e0b"/>
+                            <ellipse cx="50" cy="55" rx="28" ry="30" fill="#64748b"/>
+                            <ellipse cx="50" cy="60" rx="19" ry="20" fill="#f8fafc"/>
+                            <path d="M44 52 Q50 56 56 52 M42 60 Q50 64 58 60 M45 68 Q50 72 55 68" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M22 45 C15 55, 20 72, 28 70" fill="#475569"/><path d="M78 45 C85 55, 80 72, 72 70" fill="#475569"/>
+                            <path d="M30 32 L22 18 L38 26 Z" fill="#475569"/><path d="M70 32 L78 18 L62 26 Z" fill="#475569"/>
+                            <path d="M32 38 A14 14 0 0 1 50 42 A14 14 0 0 1 68 38 A16 16 0 0 1 32 38 Z" fill="#e2e8f0"/>
+                            <circle cx="37" cy="38" r="11" fill="#ffffff" stroke="#334155" stroke-width="2"/>
+                            <circle cx="63" cy="38" r="11" fill="#ffffff" stroke="#334155" stroke-width="2"/>
+                            <circle cx="37" cy="38" r="6" fill="#0f172a"/><circle cx="63" cy="38" r="6" fill="#0f172a"/>
+                            <circle cx="35" cy="36" r="2.5" fill="#ffffff"/><circle cx="61" cy="36" r="2.5" fill="#ffffff"/>
+                            <polygon points="50,42 45,49 55,49" fill="#f59e0b"/>
+                            <ellipse cx="28" cy="44" rx="3.5" ry="2" fill="#f43f5e" opacity="0.8"/>
+                            <ellipse cx="72" cy="44" rx="3.5" ry="2" fill="#f43f5e" opacity="0.8"/>
+                        </svg>
+                    </div>
+
+                    <!-- FORM: gửi thật tới máy chủ Flask -->
+                    <form id="login-form" method="post" action="{{ hanh_dong }}" onsubmit="handleFormSubmit(event)" class="space-y-4">
+
+                        {% if da_dat_lai %}
+                        <p id="server-ok" role="status" class="px-3 py-2.5 rounded-xl text-xs font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-500">Đã đặt lại mật khẩu. Hãy đăng nhập bằng mật khẩu mới.</p>
+                        {% endif %}
+                        {% if loi %}
+                        <p id="server-error" role="alert" class="px-3 py-2.5 rounded-xl text-xs font-medium bg-rose-500/10 border border-rose-500/30 text-rose-500">{{ loi }}</p>
+                        {% endif %}
+
+                        <div class="space-y-1.5 relative">
+                            <label id="email-label" for="email" class="block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700">{{ nhan_tai_khoan }}</label>
+                            <div class="relative rounded-xl overflow-hidden">
+                                <input type="{{ kieu_tk }}" id="email" name="{{ ten_truong_tk }}" value="{{ gia_tri_tk or '' }}" required autofocus autocomplete="{{ autocomplete_tk }}"
+                                    class="w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 custom-input-dark font-medium placeholder-slate-500"
+                                    placeholder="{{ goi_y_tk }}">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5 relative">
+                            <div class="flex items-center justify-between">
+                                <label id="password-label" for="password" class="block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700">Mật khẩu</label>
+                            </div>
+                            <div id="password-wrapper" class="relative rounded-xl overflow-hidden custom-input-dark flex items-center transition-all duration-300">
+                                <input type="password" id="password" name="{{ ten_truong_mk }}" oninput="syncPasswordText()" required autocomplete="current-password"
+                                    class="w-full pl-4 pr-12 py-3.5 bg-transparent text-sm outline-none font-mono tracking-widest text-slate-400 placeholder-slate-500"
+                                    placeholder="••••••••••••">
+                                <div id="password-reveal-layer" class="password-overlay absolute inset-0 pl-4 pr-12 py-3.5 font-mono text-sm tracking-widest text-amber-300 font-bold flex items-center pointer-events-none select-none bg-transparent" style="clip-path: circle(0px at 0px 0px);">
+                                    <span id="password-plain-text"></span>
+                                </div>
+                                <div id="flashlight-source-node" class="absolute right-3.5 text-amber-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.7)] pointer-events-none z-30">
+                                    <!-- Đèn pin (SVG, trỏ sang phải; JS xoay theo chuột) -->
+                                    <svg id="flashlight-icon" class="transform transition-transform duration-100" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M3 9h9v6H3z"/><path d="M12 7h3l5-3v16l-5-3h-3z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if quen_mat_khau %}
+                        <div class="flex items-center justify-end pt-1">
+                            <a id="forgot-link" href="{{ quen_mat_khau }}" class="text-xs font-medium text-slate-400 hover:text-teal-400 transition-colors">Quên mật khẩu?</a>
+                        </div>
+                        {% endif %}
+
+                        <button type="submit" id="submit-btn" class="w-full py-3.5 px-6 mt-2 rounded-xl bg-gradient-to-r from-teal-600 via-teal-500 to-teal-600 hover:from-teal-500 hover:to-teal-400 text-white font-semibold text-sm shadow-xl shadow-teal-950/60 hover:shadow-teal-500/30 transition-all duration-300 flex items-center justify-center gap-2 transform active:scale-[0.99] border border-teal-400/20">
+                            <span>Đăng nhập</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+
+                {% if dang_ky %}
+                <div id="footer-border" class="mt-8 pt-4 border-t border-slate-700/40 text-center z-30 relative transition-colors duration-700">
+                    <p id="footer-text" class="text-xs text-slate-400 transition-colors duration-700">
+                        Bạn chưa có tài khoản?
+                        <a href="{{ dang_ky }}" class="font-semibold text-teal-400 hover:underline ml-1">Đăng ký</a>
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-6 right-6 z-50 transform translate-x-full opacity-0 pointer-events-none flex items-center gap-3 px-4 py-3.5 rounded-xl bg-slate-900/90 backdrop-blur-xl border border-slate-700/80 text-white shadow-2xl text-sm font-medium">
+        <div id="toast-icon" class="w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></div>
+        <span id="toast-message">Thông báo!</span>
+    </div>
+
+    <script>
+        // Dùng chung khóa với các trang trong ứng dụng (pet-ui.js) → chọn nền tối ở đây thì vào trong vẫn tối.
+        // Chưa từng chọn thì giữ giao diện mặc định của trang đăng nhập (tối).
+        const THEME_KEY = 'pet-ui-theme';
+        function readStoredTheme() {
+            try { const v = localStorage.getItem(THEME_KEY); return (v === 'dark' || v === 'light') ? v : null; }
+            catch (e) { return null; }
+        }
+        function storeTheme(isDark) {
+            try { localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); } catch (e) {}
+        }
+        let isDarkMode = readStoredTheme() !== 'light';
+        let isAnimatingTheme = false;
+        let themeTimer1 = null, themeTimer2 = null, safetyResetTimer = null;
+        let mousePos = { x: 0, y: 0 };
+        let targetPos = { x: 0, y: 0 };
+
+        function syncPasswordText() {
+            const passwordInput = document.getElementById('password');
+            const plainTextSpan = document.getElementById('password-plain-text');
+            if (passwordInput && plainTextSpan) plainTextSpan.textContent = passwordInput.value || '';
+        }
+
+        // Một AudioContext dùng chung (tạo mới mỗi lần phát sẽ rò rỉ tài nguyên và bị trình duyệt giới hạn).
+        let sharedAudioCtx = null;
+        function getAudioCtx() {
+            try {
+                if (!sharedAudioCtx) {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (!Ctx) return null;
+                    sharedAudioCtx = new Ctx();
+                }
+                if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume().catch(() => {});
+                return sharedAudioCtx;
+            } catch (e) { return null; }
+        }
+        // Trình duyệt chỉ cho phát âm thanh sau khi người dùng tương tác: mở khóa ở lần bấm/gõ đầu tiên.
+        ['pointerdown', 'keydown', 'touchstart'].forEach((evt) => {
+            window.addEventListener(evt, function unlockAudio() {
+                getAudioCtx();
+                ['pointerdown', 'keydown', 'touchstart'].forEach((x) => window.removeEventListener(x, unlockAudio, true));
+            }, { capture: true, passive: true });
+        });
+
+        function playSound(type) {
+            try {
+                const audioCtx = getAudioCtx();
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                if (type === 'toggle') {
+                    osc.frequency.setValueAtTime(420, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(780, audioCtx.currentTime + 0.14);
+                } else if (type === 'success') {
+                    osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1040, audioCtx.currentTime + 0.16);
+                } else if (type === 'owl') {
+                    osc.frequency.setValueAtTime(680, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(920, audioCtx.currentTime + 0.1);
+                } else {
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.08);
+                }
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+                osc.onended = () => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} };
+            } catch (e) {}
+        }
+
+        function distToSegment(p, v, w) {
+            const l2 = (w.x - v.x)**2 + (w.y - v.y)**2;
+            if (l2 === 0) return Math.sqrt((p.x - v.x)**2 + (p.y - v.y)**2);
+            let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+            t = Math.max(0, Math.min(1, t));
+            const projX = v.x + t * (w.x - v.x);
+            const projY = v.y + t * (w.y - v.y);
+            return Math.sqrt((p.x - projX)**2 + (p.y - projY)**2);
+        }
+
+        // Tìm phần tử một lần rồi dùng lại (trước đây mỗi khung hình gọi getElementById 11 lần).
+        let beamEls = null;
+        function getBeamEls() {
+            if (beamEls) return beamEls;
+            const $ = (id) => document.getElementById(id);
+            beamEls = {
+                rightPanel: $('right-panel'), sourceNode: $('flashlight-source-node'), owlWrapper: $('owl-wrapper'),
+                outerPolygon: $('beam-outer-polygon'), corePolygon: $('beam-core-polygon'),
+                spotlight: $('flashlight-spotlight'), flare: $('flashlight-nozzle-flare'), btnIcon: $('flashlight-icon'),
+                ambientGlow: $('ambient-light-glow'), passwordWrapper: $('password-wrapper'),
+                passwordRevealLayer: $('password-reveal-layer')
+            };
+            return beamEls;
+        }
+
+        let lastBeamTime = 0;
+        let lastAmbientKey = '';
+        function renderBeam(now) {
+            // Con trỏ đã đứng yên: chỉ cập nhật ~10 lần/giây. Vẫn phải chạy vì thẻ đăng nhập đang nhấp nhô
+            // (animate-floatElevate) nên chân tia sáng và vị trí cú phải bám theo; ở tốc độ này mắt không phân biệt được.
+            const settled = Math.abs(targetPos.x - mousePos.x) < 0.3 && Math.abs(targetPos.y - mousePos.y) < 0.3;
+            if (settled) {
+                mousePos.x = targetPos.x;
+                mousePos.y = targetPos.y;
+                if (now - lastBeamTime < 100) { requestAnimationFrame(renderBeam); return; }
+            } else {
+                mousePos.x += (targetPos.x - mousePos.x) * 0.22;
+                mousePos.y += (targetPos.y - mousePos.y) * 0.22;
+            }
+            lastBeamTime = now;
+
+            const E = getBeamEls();
+            const { rightPanel, sourceNode, owlWrapper, outerPolygon, corePolygon, spotlight, flare,
+                    btnIcon, ambientGlow, passwordWrapper, passwordRevealLayer } = E;
+
+            if (rightPanel && sourceNode && outerPolygon && corePolygon && spotlight && flare) {
+                // ---- ĐỌC layout một lượt (tránh đọc xen kẽ với ghi gây reflow nhiều lần mỗi khung hình) ----
+                const panelRect = rightPanel.getBoundingClientRect();
+                const nodeRect = sourceNode.getBoundingClientRect();
+                const owlRect = owlWrapper ? owlWrapper.getBoundingClientRect() : null;
+                const passRect = (passwordWrapper && passwordRevealLayer) ? passwordWrapper.getBoundingClientRect() : null;
+
+                // ---- TÍNH ----
+                const fx = (nodeRect.left + nodeRect.width / 2) - panelRect.left;
+                const fy = (nodeRect.top + nodeRect.height / 2) - panelRect.top;
+                const mx = mousePos.x;
+                const my = mousePos.y;
+                const dx = mx - fx;
+                const dy = my - fy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+
+                const spotlightRadius = Math.max(110, Math.min(200, dist * 0.55));
+                const outerSpread = Math.min(160, Math.max(60, dist * 0.40));
+                const coreSpread = outerSpread * 0.5;
+                const perpX = -Math.sin(angle);
+                const perpY = Math.cos(angle);
+
+                const o2x = mx + perpX * outerSpread, o2y = my + perpY * outerSpread;
+                const o3x = mx - perpX * outerSpread, o3y = my - perpY * outerSpread;
+                const c2x = mx + perpX * coreSpread, c2y = my + perpY * coreSpread;
+                const c3x = mx - perpX * coreSpread, c3y = my - perpY * coreSpread;
+
+                // ---- GHI ----
+                if (btnIcon) {
+                    // Icon đèn pin trỏ sang phải nên xoay đúng bằng góc tới chuột
+                    btnIcon.style.transform = `rotate(${angle * 180 / Math.PI}deg) scale(1.1)`;
+                }
+                outerPolygon.setAttribute('points', `${fx},${fy} ${o2x},${o2y} ${o3x},${o3y}`);
+                corePolygon.setAttribute('points', `${fx},${fy} ${c2x},${c2y} ${c3x},${c3y}`);
+                spotlight.setAttribute('cx', mx);
+                spotlight.setAttribute('cy', my);
+                spotlight.setAttribute('r', spotlightRadius);
+                flare.setAttribute('cx', fx);
+                flare.setAttribute('cy', fy);
+
+                if (ambientGlow) {
+                    // Gradient toàn màn hình: chỉ ghi lại khi con trỏ thật sự đổi chỗ
+                    const key = mx.toFixed(1) + ',' + my.toFixed(1);
+                    if (key !== lastAmbientKey) {
+                        lastAmbientKey = key;
+                        ambientGlow.style.background = `radial-gradient(circle 280px at ${mx}px ${my}px, rgba(251, 191, 36, 0.12) 0%, rgba(20, 184, 166, 0.05) 55%, transparent 100%)`;
+                    }
+                }
+
+                if (owlWrapper && owlRect) {
+                    const owlX = (owlRect.left + owlRect.width / 2) - panelRect.left;
+                    const owlY = (owlRect.top + owlRect.height / 2) - panelRect.top;
+                    const distToOwlCenter = Math.sqrt((mx - owlX) ** 2 + (my - owlY) ** 2);
+                    const beamDistToOwl = distToSegment({ x: owlX, y: owlY }, { x: fx, y: fy }, { x: mx, y: my });
+                    const isIlluminated = (distToOwlCenter < spotlightRadius + 25 || beamDistToOwl < outerSpread + 20);
+                    if (isIlluminated) {
+                        if (!owlWrapper.classList.contains('revealed')) playSound('owl');
+                        owlWrapper.classList.add('revealed');
+                    } else {
+                        owlWrapper.classList.remove('revealed');
+                    }
+                }
+
+                if (passRect) {
+                    const passX = mx - (passRect.left - panelRect.left);
+                    const passY = my - (passRect.top - panelRect.top);
+                    passwordRevealLayer.style.clipPath = `circle(70px at ${passX}px ${passY}px)`;
+                }
+            }
+            requestAnimationFrame(renderBeam);
+        }
+
+        function handleMove(clientX, clientY) {
+            const rightPanel = document.getElementById('right-panel');
+            if (rightPanel) {
+                const rect = rightPanel.getBoundingClientRect();
+                targetPos.x = clientX - rect.left;
+                targetPos.y = clientY - rect.top;
+            }
+        }
+        document.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        function resetCelestialState() {
+            const moonElem = document.getElementById('moon-element');
+            const sunElem = document.getElementById('sun-element');
+            if (!moonElem || !sunElem) return;
+            moonElem.classList.remove('celestial-sink', 'celestial-rise');
+            sunElem.classList.remove('celestial-sink', 'celestial-rise');
+            if (isDarkMode) { moonElem.classList.remove('hidden'); sunElem.classList.add('hidden'); }
+            else { sunElem.classList.remove('hidden'); moonElem.classList.add('hidden'); }
+        }
+
+        function applyThemeStyles(isDark) {
+            const $ = (id) => document.getElementById(id);
+            const pageBody = $('page-body'), bgGlow1 = $('bg-glow-1'), bgGlow2 = $('bg-glow-2'), bgGradientOverlay = $('bg-gradient-overlay');
+            const loginModal = $('login-modal'), leftPanel = $('left-panel'), skyBg = $('sky-bg'), starsContainer = $('stars-container');
+            const mountainBack = $('mountain-back'), mountainFront = $('mountain-front'), mountainGradOverlay = $('mountain-gradient-overlay');
+            const themeIconContainer = $('theme-icon-container'), themeTextLabel = $('theme-text-label');
+            const brandText = $('brand-text'), bannerTitle = $('banner-title'), bannerSubtext = $('banner-subtext');
+            const formTitle = $('form-title'), formSubtitle = $('form-subtitle'), emailLabel = $('email-label'), passwordLabel = $('password-label');
+            const emailInput = $('email'), passwordWrapper = $('password-wrapper'), forgotLink = $('forgot-link');
+            const footerBorder = $('footer-border'), footerText = $('footer-text'), themeBtn = $('theme-toggle-btn'), closeBtn = $('close-modal-btn');
+            const set = (el, cls) => { if (el) el.className = cls; };
+
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                set(pageBody, 'body-dark min-h-screen flex items-center justify-center p-4 md:p-8 overflow-x-hidden selection:bg-teal-500 selection:text-white relative');
+                set(bgGlow1, 'absolute -top-40 -left-40 w-[650px] h-[650px] bg-teal-600/20 rounded-full blur-[140px] transition-all duration-700');
+                set(bgGlow2, 'absolute -bottom-40 -right-40 w-[650px] h-[650px] bg-indigo-600/20 rounded-full blur-[140px] transition-all duration-700');
+                set(bgGradientOverlay, 'absolute inset-0 bg-gradient-to-b from-[#0a0d14]/80 via-[#111726]/60 to-[#07090e]/90 transition-all duration-700');
+                set(loginModal, 'relative z-30 w-full max-w-4xl rounded-3xl transition-all duration-700 glass-modal-dark overflow-hidden scale-100 opacity-100 my-auto animate-floatElevate');
+                set(leftPanel, 'lg:col-span-5 relative p-8 flex flex-col justify-between overflow-hidden border-b lg:border-b-0 lg:border-r border-slate-700/40 min-h-[280px] lg:min-h-full transition-colors duration-700');
+                set(skyBg, 'absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 transition-all duration-700');
+                starsContainer.style.opacity = '1';
+                mountainBack.className.baseVal = 'absolute bottom-0 inset-x-0 w-full h-48 text-slate-900/90 transition-colors duration-700 z-20 pointer-events-none';
+                mountainFront.className.baseVal = 'absolute bottom-0 inset-x-0 w-full h-36 text-slate-950 transition-colors duration-700 z-25 pointer-events-none';
+                set(mountainGradOverlay, 'absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-slate-950/90 to-transparent pointer-events-none z-28 transition-colors duration-700');
+                set(brandText, 'font-bold tracking-widest text-white uppercase text-xs opacity-90 transition-colors duration-700');
+                set(bannerTitle, 'text-2xl lg:text-3xl font-bold text-white mb-3 tracking-tight leading-snug drop-shadow-md transition-colors duration-700');
+                set(bannerSubtext, 'text-slate-300 text-xs lg:text-sm leading-relaxed font-normal opacity-90 max-w-sm transition-colors duration-700');
+                set(formTitle, 'text-2xl sm:text-3xl font-bold text-white mb-1.5 tracking-tight drop-shadow-sm transition-colors duration-700');
+                set(formSubtitle, 'text-slate-400 text-xs sm:text-sm transition-colors duration-700');
+                set(emailLabel, 'block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700');
+                set(passwordLabel, 'block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700');
+                set(emailInput, 'w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 custom-input-dark font-medium placeholder-slate-500');
+                set(passwordWrapper, 'relative rounded-xl overflow-hidden custom-input-dark flex items-center transition-all duration-300');
+                set(forgotLink, 'text-xs font-medium text-slate-400 hover:text-teal-400 transition-colors');
+                set(footerBorder, 'mt-8 pt-4 border-t border-slate-700/40 text-center z-30 relative transition-colors duration-700');
+                set(footerText, 'text-xs text-slate-400 transition-colors duration-700');
+                set(themeBtn, 'flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/70 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-medium transition-all duration-300 shadow-md hover:scale-105 active:scale-95');
+                set(closeBtn, 'w-9 h-9 rounded-full bg-slate-800/50 hover:bg-slate-700/80 border border-slate-700/50 text-slate-400 hover:text-white flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-md');
+                if (themeIconContainer) themeIconContainer.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                if (themeTextLabel) themeTextLabel.textContent = 'Chế độ tối';
+            } else {
+                document.documentElement.classList.remove('dark');
+                set(pageBody, 'body-light min-h-screen flex items-center justify-center p-4 md:p-8 overflow-x-hidden selection:bg-teal-500 selection:text-white relative');
+                set(bgGlow1, 'absolute -top-40 -left-40 w-[650px] h-[650px] bg-amber-300/30 rounded-full blur-[140px] transition-all duration-700');
+                set(bgGlow2, 'absolute -bottom-40 -right-40 w-[650px] h-[650px] bg-sky-300/30 rounded-full blur-[140px] transition-all duration-700');
+                set(bgGradientOverlay, 'absolute inset-0 bg-gradient-to-b from-[#e0f2fe]/80 via-[#f0f9ff]/60 to-[#e2e8f0]/90 transition-all duration-700');
+                set(loginModal, 'relative z-30 w-full max-w-4xl rounded-3xl transition-all duration-700 glass-modal-light overflow-hidden scale-100 opacity-100 my-auto animate-floatElevate');
+                set(leftPanel, 'lg:col-span-5 relative p-8 flex flex-col justify-between overflow-hidden border-b lg:border-b-0 lg:border-r border-slate-200/80 min-h-[280px] lg:min-h-full transition-colors duration-700');
+                set(skyBg, 'absolute inset-0 bg-gradient-to-b from-sky-400 via-amber-200 to-sky-200 transition-all duration-700');
+                starsContainer.style.opacity = '0';
+                mountainBack.className.baseVal = 'absolute bottom-0 inset-x-0 w-full h-48 text-emerald-800/60 transition-colors duration-700 z-20 pointer-events-none';
+                mountainFront.className.baseVal = 'absolute bottom-0 inset-x-0 w-full h-36 text-emerald-900/80 transition-colors duration-700 z-25 pointer-events-none';
+                set(mountainGradOverlay, 'absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-emerald-950/40 to-transparent pointer-events-none z-28 transition-colors duration-700');
+                set(brandText, 'font-bold tracking-widest text-slate-800 uppercase text-xs opacity-90 transition-colors duration-700');
+                set(bannerTitle, 'text-2xl lg:text-3xl font-bold text-slate-900 mb-3 tracking-tight leading-snug drop-shadow-sm transition-colors duration-700');
+                set(bannerSubtext, 'text-slate-700 text-xs lg:text-sm leading-relaxed font-normal opacity-90 max-w-sm transition-colors duration-700');
+                set(formTitle, 'text-2xl sm:text-3xl font-bold text-slate-900 mb-1.5 tracking-tight drop-shadow-sm transition-colors duration-700');
+                set(formSubtitle, 'text-slate-600 text-xs sm:text-sm transition-colors duration-700');
+                set(emailLabel, 'block text-xs font-semibold tracking-wide text-slate-700 transition-colors duration-700');
+                set(passwordLabel, 'block text-xs font-semibold tracking-wide text-slate-700 transition-colors duration-700');
+                set(emailInput, 'w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 custom-input-light font-medium placeholder-slate-400');
+                set(passwordWrapper, 'relative rounded-xl overflow-hidden custom-input-light flex items-center transition-all duration-300');
+                set(forgotLink, 'text-xs font-medium text-slate-600 hover:text-teal-600 transition-colors');
+                set(footerBorder, 'mt-8 pt-4 border-t border-slate-200/80 text-center z-30 relative transition-colors duration-700');
+                set(footerText, 'text-xs text-slate-600 transition-colors duration-700');
+                set(themeBtn, 'flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-200/80 hover:bg-slate-300/80 border border-slate-300/80 text-slate-700 hover:text-slate-900 text-xs font-medium transition-all duration-300 shadow-md hover:scale-105 active:scale-95');
+                set(closeBtn, 'w-9 h-9 rounded-full bg-slate-200/70 hover:bg-slate-300/80 border border-slate-300/70 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-md');
+                if (themeIconContainer) themeIconContainer.innerHTML = '<i class="fa-solid fa-sun text-amber-500"></i>';
+                if (themeTextLabel) themeTextLabel.textContent = 'Chế độ sáng';
+            }
+        }
+
+        function toggleTheme() {
+            if (isAnimatingTheme) return;
+            isAnimatingTheme = true;
+            isDarkMode = !isDarkMode;
+            storeTheme(isDarkMode);
+            playSound('toggle');
+            if (themeTimer1) clearTimeout(themeTimer1);
+            if (themeTimer2) clearTimeout(themeTimer2);
+            if (safetyResetTimer) clearTimeout(safetyResetTimer);
+            safetyResetTimer = setTimeout(() => { isAnimatingTheme = false; resetCelestialState(); }, 750);
+
+            const moonElem = document.getElementById('moon-element');
+            const sunElem = document.getElementById('sun-element');
+            const outgoing = isDarkMode ? sunElem : moonElem;
+            const incoming = isDarkMode ? moonElem : sunElem;
+
+            if (outgoing) { outgoing.classList.remove('celestial-rise'); outgoing.classList.add('celestial-sink'); }
+
+            themeTimer1 = setTimeout(() => {
+                applyThemeStyles(isDarkMode);
+                if (outgoing) { outgoing.classList.add('hidden'); outgoing.classList.remove('celestial-sink'); }
+                if (incoming) {
+                    incoming.classList.remove('hidden');
+                    incoming.classList.add('celestial-sink');
+                    themeTimer2 = setTimeout(() => {
+                        incoming.classList.remove('celestial-sink');
+                        incoming.classList.add('celestial-rise');
+                        setTimeout(() => { incoming.classList.remove('celestial-rise'); isAnimatingTheme = false; }, 300);
+                    }, 40);
+                } else {
+                    isAnimatingTheme = false;
+                }
+            }, 280);
+        }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('login-modal');
+            const reopenBtn = document.getElementById('reopen-btn');
+            playSound('toggle');
+            if (modal) {
+                if (show) {
+                    modal.classList.remove('scale-90', 'opacity-0', 'pointer-events-none');
+                    modal.classList.add('scale-100', 'opacity-100');
+                    if (reopenBtn) reopenBtn.classList.add('hidden');
+                } else {
+                    modal.classList.remove('scale-100', 'opacity-100');
+                    modal.classList.add('scale-90', 'opacity-0', 'pointer-events-none');
+                    if (reopenBtn) reopenBtn.classList.remove('hidden');
+                }
+            }
+        }
+
+        let toastTimer = null;
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+            if (toast && toastMessage && toastIcon) {
+                toastMessage.textContent = message;
+                if (type === 'success') {
+                    toastIcon.className = 'w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs';
+                    toastIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+                } else if (type === 'error') {
+                    toastIcon.className = 'w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-xs';
+                    toastIcon.innerHTML = '<i class="fa-solid fa-exclamation"></i>';
+                } else {
+                    toastIcon.className = 'w-6 h-6 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center text-xs';
+                    toastIcon.innerHTML = '<i class="fa-solid fa-info"></i>';
+                }
+                toast.classList.remove('translate-x-full', 'opacity-0');
+                toast.classList.add('translate-x-0', 'opacity-100');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('translate-x-0', 'opacity-100');
+                    toast.classList.add('translate-x-full', 'opacity-0');
+                }, 3200);
+            }
+        }
+
+        // Gửi form THẬT tới máy chủ (không preventDefault): chỉ thêm hiệu ứng "đang xác thực"
+        function handleFormSubmit(e) {
+            const submitBtn = document.getElementById('submit-btn');
+            playSound('success');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin text-sm"></i> Đang xác thực...';
+                setTimeout(() => { submitBtn.disabled = true; }, 0);
+            }
+            showToast('Đang xác thực tài khoản...', 'info');
+        }
+
+        // Quay lại bằng nút Back: khôi phục nút đăng nhập
+        window.addEventListener('pageshow', () => {
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Đăng nhập</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
+            }
+        });
+
+        // Người dùng đã chọn nền sáng ở lần trước: áp dụng ngay, không chạy hiệu ứng chuyển 0,7 giây lúc mới vào.
+        if (!isDarkMode) {
+            const noAnim = document.createElement('style');
+            noAnim.textContent = '*,*::before,*::after{transition:none!important}';
+            document.head.appendChild(noAnim);
+            applyThemeStyles(false);
+            resetCelestialState();
+            requestAnimationFrame(() => requestAnimationFrame(() => noAnim.remove()));
+        }
+
+        window.onload = function() {
+            syncPasswordText();
+            resetCelestialState();
+            requestAnimationFrame(renderBeam);
+            const err = document.getElementById('server-error');
+            const ok = document.getElementById('server-ok');
+            if (err) { playSound('error'); showToast(err.textContent.trim(), 'error'); }
+            else if (ok) { showToast(ok.textContent.trim(), 'success'); }
+        };
+    </script>
+</body>
+</html>

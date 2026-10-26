@@ -14,7 +14,7 @@
 
 <form class="the" method="post" action="/ai/hoi-dap" data-mot-lan>
   <label>Câu hỏi <span class="bat-buoc">*</span>
-    <textarea name="cau_hoi" rows="3" required
+    <textarea name="cau_hoi" rows="3" required maxlength="1000"
               placeholder="Ví dụ: Bao lâu nên tắm cho chó một lần?">{{ cau_hoi }}</textarea>
   </label>
   <button type="submit" class="chinh">Hỏi AI</button>

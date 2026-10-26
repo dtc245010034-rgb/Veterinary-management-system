@@ -32,9 +32,9 @@
           <td>{{ v.given_at.strftime("%d/%m/%Y") }}{% if v.dose_no %} · mũi {{ v.dose_no }}{% endif %}</td>
           {% if user.role in ('manager', 'receptionist') %}
           <td class="thao-tac">
-            <form method="post" action="/ai/nhac-lich/tiem/{{ v.id }}">
+            <form class="form-ai-nhac" method="post" action="/ai/nhac-lich/tiem/{{ v.id }}">
               <input type="hidden" name="tu" value="/vaccinations">
-              <button type="submit">Soạn tin nhắc (AI)</button>
+              <button type="submit" class="nut-ai">Soạn tin nhắc (AI)</button>
             </form>
           </td>
           {% endif %}
