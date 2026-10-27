@@ -9,7 +9,7 @@ câu hỏi chăm sóc thường ngày ở mức tham khảo.
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P0→P7 xong; P8 (hoàn thiện và nộp) đang làm; P9 (cổng khách hàng) đã code xong, 1386 test xanh ngày 28/10, còn chờ người dùng tự tick checklist bấm tay và duyệt phase** — xem [`docs/roadmap.md`](docs/roadmap.md) và [báo cáo P9](docs/testing/reports/2026-10-03-P9.md).
+Đề bài gốc: [`docs/de-bai.md`](docs/de-bai.md) · Trạng thái: **P0→P7 xong; P8 (hoàn thiện và nộp) đang làm; P9 (cổng khách hàng) đã code xong, 1386 test xanh ngày 28/10, còn chờ người dùng tự tick checklist bấm tay và duyệt phase** — xem [`docs/roadmap.md`](docs/roadmap.md) và [báo cáo P9](docs/testing/reports/2026-10-03-P9.md).
 
 ## Mục lục
 

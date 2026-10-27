@@ -1,9 +1,11 @@
 # Python
 .venv/
+.venv312/
 venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+test-results.txt
 
 # Cơ sở dữ liệu và bí mật
 *.db
@@ -18,8 +20,3 @@ __pycache__/
 .idea/
 .vscode/
 Thumbs.db
-
-.venv/
-.venv312/
-__pycache__/
-test-results.txt

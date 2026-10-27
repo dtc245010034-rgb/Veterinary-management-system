@@ -3,7 +3,7 @@
 Tài liệu này viết cho **chủ cửa hàng, lễ tân, nhân viên chăm sóc và khách hàng**. Bạn không cần biết lập trình.
 Chỗ nào cần gõ lệnh, tài liệu ghi rõ **gõ chính xác từng chữ** và cho biết kết quả đúng trông như thế nào.
 
-> Phần kỹ thuật (cho người lập trình) nằm ở [`README.md`](README.md). Tài liệu này chỉ nói về **cách dùng**.
+> Phần kỹ thuật (cho người lập trình) nằm ở [`README.md`](../README.md). Tài liệu này chỉ nói về **cách dùng**.
 
 ---
 

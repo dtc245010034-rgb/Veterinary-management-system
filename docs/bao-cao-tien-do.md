@@ -105,7 +105,7 @@ Chấp nhận có chủ ý (**không phải bug**, người dùng quyết 03/10)
 
 ## 7. Giới hạn của sản phẩm (không phải bug)
 
-Có trong [`HUONG-DAN-SU-DUNG.md`](../HUONG-DAN-SU-DUNG.md) mục 9: không hoàn tiền, khách không tự hủy/đổi lịch và không
+Có trong [`huong-dan-su-dung.md`](huong-dan-su-dung.md) mục 9: không hoàn tiền, khách không tự hủy/đổi lịch và không
 thanh toán trực tuyến, AI chỉ soạn nháp (không tự gửi tin), không chẩn đoán/kê thuốc, một cửa hàng một CSDL, giờ mở cửa cố định
 08:00–18:00, một trình duyệt một danh tính, dữ liệu nằm trên máy chạy phần mềm (phải tự sao lưu).
 
@@ -118,4 +118,4 @@ DATABASE_URL=sqlite:///demo.db AI_PROVIDER=fake python run.py
 
 Script từ chối ghi đè `petcare.db`; dữ liệu cố định theo hạt giống nên dựng lại ra đúng bản cũ. Số liệu của bản demo:
 15 chủ nuôi, 22 thú cưng, hơn 130 lịch, 80+ hóa đơn, 7 khách ở đủ trạng thái, 6 yêu cầu liên kết, 3 lịch chờ duyệt, 15 lượt AI.
-Danh sách tài khoản in ở cuối lượt chạy và nằm trong [`HUONG-DAN-SU-DUNG.md`](../HUONG-DAN-SU-DUNG.md) mục 4.
+Danh sách tài khoản in ở cuối lượt chạy và nằm trong [`huong-dan-su-dung.md`](huong-dan-su-dung.md) mục 4.

@@ -59,8 +59,8 @@ Khớp bảng vai trò trong README.
 ## 5. Điểm tồn đọng (chưa sửa — theo luật mục 10 chờ người dùng chọn)
 
 > **Cập nhật cuối ngày 02/10:** cả năm mục R-1…R-5 **đã sửa** trong chặng 0.5 của
-> [kế hoạch 02/10](docs/plans/2026-10-02-run-py-va-bao-mat-truoc-p9.md), mỗi mục có test đỏ-trước và
-> một lượt đột biến (chi tiết ở [log phiên](docs/sessions/2026-10-02-01.md), Phần 3–4). Bảng dưới
+> [kế hoạch 02/10](../../plans/2026-10-02-run-py-va-bao-mat-truoc-p9.md), mỗi mục có test đỏ-trước và
+> một lượt đột biến (chi tiết ở [log phiên](../../sessions/2026-10-02-01.md), Phần 3–4). Bảng dưới
 > giữ nguyên làm bằng chứng lúc phát hiện. Giới hạn còn lại: cờ `Secure` chưa kiểm được trên HTTPS
 > thật; bộ đếm đăng nhập sai nằm trong bộ nhớ nên mất khi khởi động lại.
 

@@ -33,6 +33,6 @@ Người dùng yêu cầu làm nốt hai việc lượt đầu chưa làm: kiể
 - [x] 10. B-1: test ĐỎ trước (phép canh hình dạng trong `test_architecture.py`), rồi quy tắc `input[type="radio"|"checkbox"]` +
       `label.lua-chon` ở cuối `style.css`, thêm class vào `lien_ket_khach.html`.
       → verify: đo Chrome thật trước/sau (855×44px → 13×13px, cùng hàng với chữ); kiểm đột biến; `pytest` toàn bộ xanh.
-- [ ] 11. Commit đợt 2 — **chưa làm**: người dùng chưa bảo commit/push cho đợt này.
+- [x] 11. Commit đợt 2 (`da370e3`, B-1 riêng) — người dùng cho phép khi chọn thứ tự commit trước khi dọn thư mục; **chưa push**.
 
-Không tick ô nào trong `docs/testing/smoke-checklist.md`: đó là việc người dùng tự bấm tay (còn 29 ô: 6 của P8, 23 của P9).
+Không tick ô nào trong `docs/testing/smoke-checklist.md`: đó là việc người dùng tự bấm tay (tại `HEAD` còn 29 ô: 6 của P8, 23 của P9; sau đó người dùng đã tick đủ 29 ô trong cây làm việc, chưa commit).

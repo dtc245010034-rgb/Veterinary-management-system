@@ -1,6 +1,6 @@
 # Đặc tả User Story
 
-Nguồn: [`đề-bài.md`](../../đề-bài.md) · Mô hình dữ liệu: [`erd.md`](../erd.md) · Ma trận test: [`testing/test-cases.md`](../testing/test-cases.md)
+Nguồn: [`de-bai.md`](../de-bai.md) · Mô hình dữ liệu: [`erd.md`](../erd.md) · Ma trận test: [`testing/test-cases.md`](../testing/test-cases.md)
 
 Đặc tả được tách thành **mười file theo mười nhóm A–J** (trước 02/10 nằm chung một file; nhóm J — cổng khách hàng — thêm ngày 03/10). Mỗi story
 có mã `US-xx` và đúng ba mục:

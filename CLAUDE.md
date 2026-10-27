@@ -72,7 +72,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 chủ nuôi, thú cưng, lịch spa/tắm/grooming, lịch tiêm nhắc lại, hóa đơn; AI hỗ trợ sinh tin nhắn
 nhắc lịch, tóm tắt hồ sơ chăm sóc và trả lời câu hỏi chăm sóc cơ bản ở mức tham khảo.
 
-Đề bài đầy đủ: [`đề-bài.md`](đề-bài.md). Lộ trình: [`docs/roadmap.md`](docs/roadmap.md).
+Đề bài đầy đủ: [`docs/de-bai.md`](docs/de-bai.md). Lộ trình: [`docs/roadmap.md`](docs/roadmap.md).
 
 Dự án được làm bằng **vibe code** — phần lớn code do AI agent sinh qua nhiều phiên chat. Vì vậy
 tài liệu, test và code phải luôn đi song song; xem mục 6.
