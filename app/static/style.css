@@ -1777,3 +1777,11 @@ a.chinh:active,
 .pet-menu-caret { display: inline-block; }
 .pet-menu-list { position: absolute; top: 100%; left: 0; }
 .pet-menu-user { font-size: 12px; }
+
+/* Ô chọn tròn / vuông: không ăn theo quy tắc `input` toàn cục (width 100%, min-height 44px, padding) — lỗi B-1,
+   radio ở /lien-ket-khach bị phóng ~855px. `!important` vì quy tắc toàn cục đặt padding/border bằng !important. */
+input[type="radio"], input[type="checkbox"] {
+  display: inline-block; width: auto; min-height: 0; margin: 0; padding: 0 !important; flex: none;
+  accent-color: var(--pet-accent);
+}
+label.lua-chon { display: flex; align-items: baseline; gap: 10px; font-weight: 400; }

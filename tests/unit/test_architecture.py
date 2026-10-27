@@ -213,6 +213,35 @@ def test_moi_loai_o_nhap_deu_dung_chung_quy_tac_khung_voi_input():
     )
 
 
+def test_moi_o_chon_radio_checkbox_co_quy_tac_rieng_khong_an_theo_input_toan_cuc():
+    """Lỗi thật (B-1): `/lien-ket-khach` có radio đầu tiên của dự án, và nó bị phóng thành ~855×44px.
+
+    Quy tắc `input, select, textarea` (`width: 100%`, `min-height: 44px`) áp luôn cho radio, mà `label`
+    lại là `display: grid` nên radio chiếm cả một hàng riêng. Vẫn bấm chọn được nên không test chức năng
+    nào đỏ; chỉ nhìn bằng mắt (hoặc đo trong trình duyệt) mới thấy.
+
+    Phép kiểm HÌNH DẠNG: template nào dùng `type="radio"`/`"checkbox"` thì `style.css` phải có quy tắc riêng
+    `input[type="..."]` đặt `width: auto`, và ô đó phải nằm trong `<label class="lua-chon">` (hàng ngang).
+
+    NẾU TEST NÀY ĐỎ: thêm quy tắc `input[type="..."]` vào cuối `style.css` và bọc ô trong `label.lua-chon`.
+    """
+    css = _doc(GOC / "app" / "static" / "style.css")
+    html = "".join(_doc(p) for p in (GOC / "app" / "templates").glob("*.html"))
+    khoi_css = re.findall(r"([^{}]*)\{([^{}]*)\}", css)
+
+    loi = []
+    for loai in ("radio", "checkbox"):
+        if f'type="{loai}"' not in html:
+            continue
+        if not any(f'input[type="{loai}"]' in bo_chon and "width: auto" in noi_dung for bo_chon, noi_dung in khoi_css):
+            loi.append(f'style.css thiếu quy tắc input[type="{loai}"] có "width: auto"')
+        trong_label = len(re.findall(rf'<label class="lua-chon">\s*<input type="{loai}"', html))
+        tong = html.count(f'type="{loai}"')
+        if trong_label != tong:
+            loi.append(f'{tong - trong_label}/{tong} ô {loai} chưa nằm trong <label class="lua-chon">')
+    assert not loi, "; ".join(loi)
+
+
 # --- Bao phủ tầng nghiệp vụ ------------------------------------------------------
 
 

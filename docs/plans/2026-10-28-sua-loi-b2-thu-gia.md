@@ -23,4 +23,16 @@ cấu hình logger của nó, nên bản ghi INFO rơi về handler mặc địn
 - [x] 7. Kiểm tay trên server uvicorn thật, CSDL tạm: đăng ký và quên mật khẩu đều in thư, mở liên kết được; `petcare.db` không đổi.
 - [x] 8. Commit một lần và `git push origin main` (hash và trạng thái CI ghi ở báo cáo cuối phiên, không chép vào đây để khỏi tự tham chiếu).
 
+## Đợt 2 (cùng ngày) — phần còn thiếu sau lượt đầu
+
+Người dùng yêu cầu làm nốt hai việc lượt đầu chưa làm: kiểm Docker thật, và sửa B-1.
+
+- [x] 9. Kiểm thư giả trong container thật: `docker compose up -d --build` bằng project riêng `petcare-b2check` (cổng 8791, không
+      đụng volume của project `petcare`), đăng ký và quên mật khẩu, đọc `docker compose logs`, rồi `down -v --rmi local`.
+      → verify: cả hai thư hiện trong log container; không còn container/volume/image của project kiểm.
+- [x] 10. B-1: test ĐỎ trước (phép canh hình dạng trong `test_architecture.py`), rồi quy tắc `input[type="radio"|"checkbox"]` +
+      `label.lua-chon` ở cuối `style.css`, thêm class vào `lien_ket_khach.html`.
+      → verify: đo Chrome thật trước/sau (855×44px → 13×13px, cùng hàng với chữ); kiểm đột biến; `pytest` toàn bộ xanh.
+- [ ] 11. Commit đợt 2 — **chưa làm**: người dùng chưa bảo commit/push cho đợt này.
+
 Không tick ô nào trong `docs/testing/smoke-checklist.md`: đó là việc người dùng tự bấm tay (còn 29 ô: 6 của P8, 23 của P9).

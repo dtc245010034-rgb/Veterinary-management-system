@@ -9,7 +9,7 @@ câu hỏi chăm sóc thường ngày ở mức tham khảo.
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P0→P7 xong; P8 (hoàn thiện và nộp) đang làm; P9 (cổng khách hàng) đã code xong, 1385 test xanh ngày 28/10, còn chờ người dùng tự tick checklist bấm tay và duyệt phase** — xem [`docs/roadmap.md`](docs/roadmap.md) và [báo cáo P9](docs/testing/reports/2026-10-03-P9.md).
+Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P0→P7 xong; P8 (hoàn thiện và nộp) đang làm; P9 (cổng khách hàng) đã code xong, 1386 test xanh ngày 28/10, còn chờ người dùng tự tick checklist bấm tay và duyệt phase** — xem [`docs/roadmap.md`](docs/roadmap.md) và [báo cáo P9](docs/testing/reports/2026-10-03-P9.md).
 
 ## Mục lục
 
@@ -301,10 +301,10 @@ Sao chép từ [`.env.example`](.env.example); `python run.py` tự tạo `.env`
 ## 10. Kiểm thử
 
 ```bash
-pytest tests/unit            # 927 ca — chạy mỗi lần sửa code
+pytest tests/unit            # 928 ca — chạy mỗi lần sửa code
 pytest tests/integration     # 458 ca — chạy cuối mỗi phiên làm việc
 pytest tests/e2e             #   1 ca — kịch bản xuyên suốt, chạy cuối mỗi phase
-pytest                       # 1386 ca — chạy trước mỗi commit
+pytest                       # 1387 ca — chạy trước mỗi commit
 ```
 
 Dùng `python run.py test` nếu chưa kích hoạt `.venv`. Số ca đếm bằng `pytest --co` ngày 28/10; một lượt
