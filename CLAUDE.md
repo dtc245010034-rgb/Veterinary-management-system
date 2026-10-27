@@ -72,7 +72,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 chủ nuôi, thú cưng, lịch spa/tắm/grooming, lịch tiêm nhắc lại, hóa đơn; AI hỗ trợ sinh tin nhắn
 nhắc lịch, tóm tắt hồ sơ chăm sóc và trả lời câu hỏi chăm sóc cơ bản ở mức tham khảo.
 
-Đề bài đầy đủ: [`đề-bài.md`](đề-bài.md). Lộ trình: [`docs/roadmap.md`](docs/roadmap.md).
+Đề bài đầy đủ: [`docs/de-bai.md`](docs/de-bai.md). Lộ trình: [`docs/roadmap.md`](docs/roadmap.md).
 
 Dự án được làm bằng **vibe code** — phần lớn code do AI agent sinh qua nhiều phiên chat. Vì vậy
 tài liệu, test và code phải luôn đi song song; xem mục 6.
@@ -86,6 +86,7 @@ tài liệu, test và code phải luôn đi song song; xem mục 6.
 | Frontend | Jinja2 server-rendered + HTML/JS thuần, không build tool |
 | AI Engine | Gemini API sau adapter `AIProvider`; `FakeProvider` dùng khi test |
 | Kiểm thử | pytest, 4 tầng — xem [`docs/testing/test-strategy.md`](docs/testing/test-strategy.md) |
+| Lệnh | Chạy: `python run.py` · Test: `python run.py test` hoặc `.venv/bin/python -m pytest -rs` · Demo: [`docs/demo.md`](docs/demo.md) |
 
 ## Quy ước ngôn ngữ
 
@@ -104,8 +105,8 @@ tài liệu, test và code phải luôn đi song song; xem mục 6.
 
 ## Mở phiên — làm đủ 4 việc này trước khi làm bất cứ gì khác
 
-1. **Làm việc tại `C:\hethongquanlythucung`.** Nếu thư mục hiện tại không phải đây thì chuyển vào
-   trước. Mọi đường dẫn trong tài liệu đều tương đối so với thư mục này.
+1. **Làm việc tại thư mục gốc của repo** (nơi có file này; trên máy Windows của người dùng từng là
+   `C:\hethongquanlythucung`). Mọi đường dẫn trong tài liệu đều tương đối so với thư mục này.
 2. Đọc [`docs/codebase-map.md`](docs/codebase-map.md) để biết hiện có những file nào, làm gì.
 3. Đọc **mục 10 — Làm việc với người dùng** ở cuối file này. Quy ước làm việc nằm trong repo chứ
    không nằm trong bộ nhớ agent; bộ nhớ agent ngoài repo và mất theo máy.
@@ -116,8 +117,8 @@ tài liệu, test và code phải luôn đi song song; xem mục 6.
 
 1. Chạy test tầng unit + integration, ghi lại kết quả thật.
 2. Cập nhật `docs/codebase-map.md` nếu có thêm/xóa/đổi vai trò file.
-3. Điền đầy đủ file log phiên `docs/sessions/YYYY-MM-DD-NN.md` (hook đã tạo sẵn khung), gồm cả
-   mục **Kết quả test**.
+3. Điền đầy đủ file log phiên `docs/sessions/YYYY-MM-DD-NN.md`, gồm cả mục **Kết quả test**. Khung do
+   hook PowerShell tạo; máy không có PowerShell thì tạo tay theo khung ở `docs/sessions/README.md`.
 
 Không được để việc cập nhật tài liệu trôi sang phiên sau. Báo cáo cuối kỳ được dựng từ chính các
 file này, nên tài liệu lệch code đồng nghĩa với báo cáo sai.
@@ -190,37 +191,30 @@ phiên này sẽ khuất tầm nhìn ngay khi có hai phiên nữa.
 
 ## Danh sách (5/5 dòng — ĐẦY)
 
-1. **Test đỏ thì nghi test trước khi nghi code.** Ba lần lỗi nằm ở test hoặc script kiểm chứng chứ
-   không ở code; **20/09 thêm năm lần nữa trong một phiên** — sai tên tham số (`tu_khoa` thay vì `q`),
-   curl mã hóa hỏng tiếng có dấu, regex bắt nhầm ô chọn khác, chọn bản ghi nằm ngoài kỳ đang xét, và
-   viết cứng tên có dấu trong khi fixture dùng tên không dấu. Gốc chung: **viết cứng giả định về dữ
-   liệu thay vì đọc từ fixture**, và không đối chiếu công cụ đo trước khi kết luận. — *không tự động
-   hóa được*
+1. **Test đỏ thì nghi test trước khi nghi code.** Nhiều lần lỗi nằm ở test hoặc script kiểm chứng (sai tên
+   tham số, curl hỏng tiếng có dấu, regex bắt nhầm ô, viết cứng tên có dấu trong khi fixture không dấu).
+   Gốc chung: **viết cứng giả định về dữ liệu thay vì đọc từ fixture**, và không đối chiếu công cụ đo
+   trước khi kết luận. — *không tự động hóa được*
 2. **Chỉ khẳng định thứ kiểm được thật.** Bốn lần tài liệu mô tả chức năng chưa tồn tại. Khi chia một
    phase thành nhiều chặng, tách khối checklist theo chặng **trước khi** đưa người dùng tick —
    trách nhiệm của agent, không phải người tick. — *canh một phần bởi
-   `test_moi_link_tuong_doi_trong_tai_lieu_deu_ton_tai` và `test_moi_file_app_va_tests_deu_co_trong_codebase_map`*
+   `test_moi_link_tuong_doi_trong_tai_lieu_deu_ton_tai`, `test_moi_file_app_va_tests_deu_co_trong_codebase_map`
+   và `test_demo_md_khop_…` (tài khoản, giờ lịch, lệnh trong `docs/demo.md`)*
 3. **Test viết sau code xanh ngay không chứng minh gì.** Phải làm hỏng code có chủ đích và xác nhận
-   đúng test tương ứng đỏ, rồi hoàn nguyên — và **khẳng định đột biến đã thật sự vào file**: repo
-   trộn LF với CRLF, chuỗi tìm-thay viết theo kiểu xuống dòng LF sẽ không khớp, và kết quả đọc ra
-   là "test không bắt được lỗi" trong khi code còn nguyên vẹn. **Đột biến sống sót thì nghi chính nó
-   trước**: 18/09 hai lần — một lần đổi tên lớp CSS trong khi test assert câu chữ (đột biến vô hại),
-   một lần chỉ vô hiệu một nhánh trong ba nhánh cùng bắt (đột biến quá nhẹ). Ca thứ hai hóa ra là kẽ
-   hở thật và đáng thêm test; ca thứ nhất chỉ là đột biến viết sai. — *không tự động hóa được*
-4. **Sửa một lỗi thì soát cả lớp lỗi, không chỉ ca vừa thấy.** Hai lần: thiếu link menu — sửa "Dịch
-   vụ" xong bỏ sót "Chủ nuôi"; chặn xóa thú cưng — chặn `appointments` xong bỏ sót `vaccinations`,
-   lỗi 500 quay lại nguyên vẹn. Hỏi "còn chỗ nào cùng dạng?" trước khi đóng. — *không tự động hóa
-   được*
-5. **Đừng viết code qua heredoc của shell, và coi chừng công cụ ghi làm đổi cả file.** 20/09 ba lần:
-   `\t`, `\n`, `\\` bị nuốt — file test nhận ký tự vertical-tab thật và một chuỗi vỡ đôi dòng; lần
-   thứ ba heredoc làm vỡ cả lệnh. **24/09 thêm một đường mới:** `Add-Content` của PowerShell ghi
-   CRLF còn `io.open(p,'w')` của Python chuẩn hóa **toàn bộ** file sang CRLF, nên ba file vốn dùng
-   LF bị lật sạch — diff phình 791/397 trong khi thay đổi thật chỉ 427/33, và một file test thành
-   trộn CRLF với LF. Repo này **không có quy ước chung**: mỗi file giữ kiểu của chính nó, nên phải
-   **đối chiếu `git diff --stat` với lượng mình thực sự sửa** trước khi commit; lệch nhiều thì ghi
-   lại bằng chế độ nhị phân. Cùng họ với dòng 3 ("thứ mình viết không phải thứ vào file"). Viết bằng
-   công cụ ghi file, hoặc ghi khối ra file riêng rồi ghép bằng Python; **đọc lại file sau mỗi lần
-   ghi khối nhiều dòng**. — *không tự động hóa được ở repo trộn sẵn kiểu xuống dòng*
+   đúng test tương ứng đỏ, rồi hoàn nguyên — và **khẳng định đột biến đã thật sự vào file** (`grep -c`):
+   chuỗi tìm-thay sai kiểu xuống dòng không khớp, và kết quả đọc ra là "test không bắt được lỗi" trong
+   khi code còn nguyên vẹn. **Đột biến sống sót thì nghi chính nó trước** (vô hại? quá nhẹ?); nếu hóa ra
+   là kẽ hở thật thì thêm test. — *không tự động hóa được*
+4. **Sửa một lỗi thì soát cả lớp lỗi, không chỉ ca vừa thấy.** Hai lần: thiếu link menu (sửa "Dịch vụ",
+   bỏ sót "Chủ nuôi"); chặn xóa thú cưng (chặn `appointments`, bỏ sót `vaccinations`, lỗi 500 quay lại).
+   Hỏi "còn chỗ nào cùng dạng?" trước khi đóng. — *không tự động hóa được*
+5. **Đừng viết code qua heredoc của shell, và coi chừng công cụ ghi làm đổi cả file.** Heredoc nuốt `\t`,
+   `\n`, `\\`; `Add-Content` của PowerShell và `io.open(p,'w')` của Python có thể đổi kiểu xuống dòng của
+   **toàn bộ** file (từng làm diff phình 791/397 trong khi thay đổi thật chỉ 427/33). `.gitattributes`
+   nay chuẩn hóa xuống dòng khi commit, nhưng vẫn phải **đối chiếu `git diff --stat` với lượng mình thực
+   sự sửa** trước khi commit. Viết bằng công cụ ghi file, hoặc ghi khối ra file riêng rồi ghép bằng
+   Python; **đọc lại file sau mỗi lần ghi khối nhiều dòng**. Cùng họ với dòng 3 ("thứ mình viết không
+   phải thứ vào file"). — *không tự động hóa được*
 
 Ranh giới kiến trúc và bao phủ hàm public **đã rời khỏi danh sách này** vì tự động hóa được — xem
 `test_architecture.py`. Đó là kết quả mong muốn: danh sách càng ngắn nghĩa là càng nhiều bài học đã
@@ -230,12 +224,9 @@ thành máy canh.
 
 # 10. Làm việc với người dùng
 
-Mục này từng chỉ nằm trong bộ nhớ agent ở `~/.claude/` — **ngoài repo, mất theo máy**. Ngày 25/09
-chuyển hẳn vào đây sau khi phát hiện luật "hỏi trước rồi mới sửa" đã biến mất khỏi repo: nó vốn
-sống nhờ ăn theo danh sách lỗi trong `codebase-map.md`, và khi danh sách lỗi hết thì nó bị xóa cùng.
-
-Đặt ở `CLAUDE.md` chứ không phải `docs/` vì đây là **mệnh lệnh**, không phải tài liệu tham khảo —
-và vì nội dung `CLAUDE.md` có hiệu lực cao hơn bộ nhớ agent.
+Đặt ở `CLAUDE.md` chứ không phải `docs/` hay bộ nhớ agent: đây là **mệnh lệnh**, không phải tài liệu tham
+khảo; bộ nhớ agent ở `~/.claude/` nằm ngoài repo nên mất theo máy, và `CLAUDE.md` có hiệu lực cao hơn nó.
+(25/09: luật "hỏi trước rồi mới sửa" từng biến mất vì ăn theo một danh sách lỗi tạm.)
 
 ## Hỏi trước khi làm
 
@@ -251,8 +242,8 @@ và vì nội dung `CLAUDE.md` có hiệu lực cao hơn bộ nhớ agent.
 - Khi người dùng đề xuất một hướng đi hoặc một công nghệ, **nói thẳng chỗ nó không hợp, kèm số
   liệu**, đưa 3–4 phương án có đánh đổi rõ ràng, rồi mới làm. Gật và làm theo là cách tệ nhất.
 - **Xác minh ràng buộc từ chính code trước khi lấy nó làm cơ sở thiết kế**, nhất là khi ràng buộc đó
-  làm phương án hẹp lại. Ngày 25/09 agent đọc `GEMINI_RPD_UOC_TINH=20` thành trần toàn cục rồi thiết
-  kế quanh nó; người dùng vặn lại và đúng — đó là 20 lượt cho **mỗi** model, bốn model.
+  làm phương án hẹp lại. Ví dụ: `GEMINI_RPD_UOC_TINH=20` từng bị đọc thành trần toàn cục, thực ra là 20
+  lượt cho **mỗi** model, bốn model.
 - Người dùng có kiểm lại lời agent. Khẳng định sai tốn thời gian của cả hai.
 
 ## Ranh giới của agent
@@ -262,12 +253,12 @@ và vì nội dung `CLAUDE.md` có hiệu lực cao hơn bộ nhớ agent.
   "chưa tick"**.
 - **Chỉ commit khi được bảo**, và push cũng vậy. Repo dùng thẳng nhánh `main`.
 - **Rà lỗi phải chạy trên BẢN SAO cơ sở dữ liệu** trong thư mục scratchpad, không đụng `petcare.db`
-  thật. Lượt rà 19/09 chạy thẳng trên CSDL thật và chính nó đẻ ra đống dữ liệu rác phải xóa ở 20/09.
-  Nếu buộc phải đụng CSDL thật thì sao lưu trước và hỏi.
+  thật (lượt rà 19/09 chạy thẳng trên CSDL thật và để lại dữ liệu rác). Buộc phải đụng CSDL thật thì
+  sao lưu trước và hỏi.
 - Trả lời, báo cáo và tài liệu bằng tiếng Việt — xem mục 5.
 
 ## Trước khi kết luận về trạng thái dự án
 
-Đếm lại từ hệ thống tập tin và từ bộ test, **đừng chép số từ tài liệu**. Con số lỗi còn lại đã bị
-chép sai qua ba file suốt năm ngày (ghi "11" trong khi liệt kê 12 mã, rồi thành "10") cho tới khi có
-người đếm tay lại. Phép canh trong `test_architecture.py` chỉ giữ được vài con số, không giữ hết.
+Đếm lại từ hệ thống tập tin và từ bộ test, **đừng chép số từ tài liệu**: số lỗi còn lại từng bị chép sai
+qua ba file suốt năm ngày (ghi "11" trong khi liệt kê 12 mã). Phép canh trong `test_architecture.py`
+chỉ giữ được vài con số, không giữ hết.

@@ -1,6 +1,6 @@
 # Lộ trình dự án
 
-Đề bài: [`../đề-bài.md`](../đề-bài.md) · Yêu cầu: [`user-stories/README.md`](user-stories/README.md) · Kiểm thử: [`testing/test-strategy.md`](testing/test-strategy.md)
+Đề bài: [`de-bai.md`](de-bai.md) · Yêu cầu: [`user-stories/README.md`](user-stories/README.md) · Kiểm thử: [`testing/test-strategy.md`](testing/test-strategy.md)
 
 Mười phase, gắn với bốn mốc nộp của môn học. Mỗi phase sinh ra một kế hoạch riêng trong
 [`plans/`](plans/) và kết thúc bằng một báo cáo kiểm thử trong [`testing/reports/`](testing/reports/).

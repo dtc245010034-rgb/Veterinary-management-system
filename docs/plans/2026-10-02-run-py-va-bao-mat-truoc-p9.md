@@ -2,7 +2,7 @@
 
 **Trạng thái: ĐÃ DUYỆT 02/10/2026** (người dùng chọn "Duyệt, bắt đầu Phiên 1"). Phiên 1–4 xong (chặng 0.5 hoàn tất về code); còn ô 1.4 chờ CI và Docker ở mục 5.
 
-Sinh ra từ [báo cáo rà soát 02/10](../../bao-cao-ra-soat-2026-10-02.md) (R-1 → R-5) và từ yêu cầu của người dùng:
+Sinh ra từ [báo cáo rà soát 02/10](../testing/reports/2026-10-02-ra-soat-doc-lap.md) (R-1 → R-5) và từ yêu cầu của người dùng:
 làm hai file `run.py` + `test.py` mẫu CSMS để chạy dự án một lệnh trên máy sạch. Kế hoạch này **không
 thay thế** [P9](2026-09-25-p9-cong-khach-hang.md) — nó chèn việc vào trước và bên trong P9.
 

@@ -1,6 +1,6 @@
 # Kế hoạch — Kiểm thử P9, CSDL demo, báo cáo tiến độ, hướng dẫn sử dụng
 
-**Trạng thái: XONG phần việc của agent (03/10/2026); B-1, B-2 chờ người dùng quyết có sửa không (B-2 đã sửa 28/10 — xem [`2026-10-28-sua-loi-b2-thu-gia.md`](2026-10-28-sua-loi-b2-thu-gia.md)).** Yêu cầu của người dùng 03/10: quyền đọc
+**Trạng thái: XONG phần việc của agent (03/10/2026); B-1, B-2 chờ người dùng quyết có sửa không (cả hai đã sửa 28/10 — xem [`2026-10-28-sua-loi-b2-thu-gia.md`](2026-10-28-sua-loi-b2-thu-gia.md)).** Yêu cầu của người dùng 03/10: quyền đọc
 log AI của khách không cần sửa; test hết chức năng và thao tác P9 bằng Chrome, rà bug tồn đọng; chuẩn bị CSDL demo đầy đủ bằng
 file `.py` riêng, không ảnh hưởng CSDL chính; commit và đẩy lên nhánh `demo-cac-chuc-nang` (người dùng tự merge vào `main`);
 viết báo cáo tiến độ (còn sót gì, bug còn lại) và một file hướng dẫn sử dụng cho người không biết IT.

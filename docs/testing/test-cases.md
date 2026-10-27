@@ -260,7 +260,7 @@ bị bắt đúng nhóm ca.
 
 ## P. Bảo mật trước khi mở cổng khách — chặng 0.5, 02/10
 
-Sinh ra từ [báo cáo rà soát 02/10](../../bao-cao-ra-soat-2026-10-02.md) (R-1 → R-5) và
+Sinh ra từ [báo cáo rà soát 02/10](reports/2026-10-02-ra-soat-doc-lap.md) (R-1 → R-5) và
 [kế hoạch](../plans/2026-10-02-run-py-va-bao-mat-truoc-p9.md). Mỗi mục đỏ trước khi sửa, có lượt đột biến sau khi xanh.
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |

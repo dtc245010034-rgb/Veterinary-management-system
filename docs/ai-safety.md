@@ -58,7 +58,7 @@ lại lịch tiêm cụ thể với bác sĩ thú y". Màn hình vẫn luôn có
 
 ## 3. System prompt cho từng tính năng
 
-Ba prompt dưới đây phát triển từ prompt mẫu ở mục 5 của [`đề-bài.md`](../đề-bài.md).
+Ba prompt dưới đây phát triển từ prompt mẫu ở mục 5 của [`de-bai.md`](de-bai.md).
 
 ### 3.1 Nhắc lịch — `feature = "reminder"`
 
