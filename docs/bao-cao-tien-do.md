@@ -9,8 +9,9 @@ Mọi con số bên dưới **đếm lại ngày 03/10 từ hệ thống tập t
 
 Mười phase P0 → P9. **P0 → P7 xong** (người dùng đã tick smoke). **P8** (hoàn thiện và nộp) còn 6 ô smoke chờ người dùng.
 **P9** (cổng khách hàng, Docker, email) **đã xong về code, test và tài liệu**; còn 23 ô smoke P9 và ô 2.2 (CI Docker) chờ
-người dùng. Toàn bộ test xanh: **1381 passed, 1 skipped**. Lượt kiểm thử Chrome 03/10 trên CSDL demo **không phát hiện lỗi
-chức năng**, chỉ có **hai lỗi nhỏ** (B-1 giao diện, B-2 thư giả không hiện ở terminal) và **một lỗi tài liệu đã sửa**.
+người dùng. Toàn bộ test xanh: **1381 passed, 1 skipped** (số đo 03/10; ngày 28/10 sau khi sửa B-2: **1385 passed, 1 skipped**).
+Lượt kiểm thử Chrome 03/10 trên CSDL demo **không phát hiện lỗi chức năng**, chỉ có **hai lỗi nhỏ** (B-1 giao diện, B-2 thư
+giả không hiện ở terminal — **B-2 đã sửa 28/10**, xem mục 5) và **một lỗi tài liệu đã sửa**.
 
 ## 2. Tiến độ theo phase
 
@@ -75,7 +76,7 @@ Theo luật làm việc của dự án: **chỉ ghi lại và xếp mức độ,
 
 | Mã | Mức | Hiện tượng | Gốc | Cách sửa gợi ý |
 |---|---|---|---|---|
-| **B-2** | **Trung bình** | Chạy thử trên máy mình (`MAIL_PROVIDER=console`, mặc định), khách đăng ký xong **không có thư nào hiện ra**. README, docstring và hướng dẫn lẽ ra bảo "liên kết hiện trong terminal". Hệ quả: không thử được luồng đăng ký khách bằng tay nếu không có SMTP | `ConsoleMailer` chỉ gọi `logging.getLogger("app.mail").info(...)`, nhưng không nơi nào cấu hình logging; mức mặc định là WARNING nên dòng INFO bị bỏ. Đã kiểm lại bằng cấu hình log của uvicorn: mức hiệu lực = 30 (WARNING), không in gì. Không test nào canh dòng log này | Một dòng: đặt mức INFO cho `app.mail` khi khởi động, hoặc cho `ConsoleMailer` in thẳng ra `stderr`; kèm test dùng `caplog`/`capsys` |
+| **B-2** — ✅ **đã sửa 28/10** (`cau_hinh_log_thu()` trong `app/mail/console.py`, gọi từ `app/main.py`; test ở `tests/unit/test_mail.py`) | **Trung bình** | Chạy thử trên máy mình (`MAIL_PROVIDER=console`, mặc định), khách đăng ký xong **không có thư nào hiện ra**. README, docstring và hướng dẫn lẽ ra bảo "liên kết hiện trong terminal". Hệ quả: không thử được luồng đăng ký khách bằng tay nếu không có SMTP | `ConsoleMailer` chỉ gọi `logging.getLogger("app.mail").info(...)`, nhưng không nơi nào cấu hình logging; mức mặc định là WARNING nên dòng INFO bị bỏ. Đã kiểm lại bằng cấu hình log của uvicorn: mức hiệu lực = 30 (WARNING), không in gì. Không test nào canh dòng log này | Một dòng: đặt mức INFO cho `app.mail` khi khởi động, hoặc cho `ConsoleMailer` in thẳng ra `stderr`; kèm test dùng `caplog`/`capsys` |
 | **B-1** | **Thấp** (giao diện) | Trang `/lien-ket-khach`: ô chọn tròn (radio) khi có nhiều ứng viên bị phóng to ~942px | CSS `input` toàn cục áp luôn cho radio (`app/templates/lien_ket_khach.html` dòng 22, `app/static/style.css`) | Thêm quy tắc CSS cho `input[type=radio]`; vẫn bấm chọn được nên không chặn thao tác |
 
 Đã xử lý trong đợt này (không còn là bug):

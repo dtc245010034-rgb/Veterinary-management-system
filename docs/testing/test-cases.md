@@ -293,7 +293,7 @@ Gồm các bộ gửi thư và token xác minh/đặt lại mật khẩu; màn h
 
 | TC | US | Tình huống | Mức | File test | Trạng thái |
 |---|---|---|---|---|---|
-| TC-146 | — | `FakeMailer` ghi đúng thư và nhả lỗi đã cài; `ConsoleMailer` in ra log; `lay_mailer()` chọn theo `MAIL_PROVIDER`, tên lạ hoặc thiếu `SMTP_HOST` là lỗi chứ không rơi về console | U | `test_mail.py` (8 test) | ✅ |
+| TC-146 | — | `FakeMailer` ghi đúng thư và nhả lỗi đã cài; `ConsoleMailer` in ra log **và ra stderr của tiến trình mới đúng một lần (B-2)**, cấu hình logger gọi nhiều lần không thêm handler; `lay_mailer()` chọn theo `MAIL_PROVIDER`, tên lạ hoặc thiếu `SMTP_HOST` là lỗi chứ không rơi về console | U | `test_mail.py` (12 ca) | ✅ |
 | TC-147 | — | `SmtpMailer` nói SMTP thật với máy chủ cục bộ trong tiến trình: đúng người nhận/tiêu đề/nội dung tiếng Việt; chặn chèn `Bcc:` qua tiêu đề/người nhận; lỗi kết nối và 5xx thành `LoiGuiMail` không lộ mật khẩu hay nội dung; fixture `chan_gui_mail_that` ném lỗi khi host không phải cục bộ | U | `test_smtp_mailer.py` (5 test) | ✅ |
 | TC-148 | — | Token: hết hạn đúng ranh giới (24h xác minh, 1h đặt lại), dùng một lần kể cả khi đối tượng trong bộ nhớ lạc hậu, sai mục đích và chuỗi bịa cùng một thông báo, cấp mới vô hiệu cũ, CSDL không chứa token thô | U | `test_email_tokens_service.py` (20 test, gồm `con_hieu_luc` chỉ đọc không đốt token) | ✅ |
 

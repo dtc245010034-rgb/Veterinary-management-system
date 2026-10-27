@@ -9,7 +9,7 @@ câu hỏi chăm sóc thường ngày ở mức tham khảo.
 
 > **AI trong hệ thống này chỉ đưa thông tin tham khảo, không thay thế chẩn đoán của bác sĩ thú y.**
 
-Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P0→P7 xong; P8 (hoàn thiện và nộp) đang làm; P9 (cổng khách hàng) đã code xong, 1381 test xanh ngày 03/10, còn chờ người dùng tự tick checklist bấm tay và duyệt phase** — xem [`docs/roadmap.md`](docs/roadmap.md) và [báo cáo P9](docs/testing/reports/2026-10-03-P9.md).
+Đề bài gốc: [`đề-bài.md`](đề-bài.md) · Trạng thái: **P0→P7 xong; P8 (hoàn thiện và nộp) đang làm; P9 (cổng khách hàng) đã code xong, 1385 test xanh ngày 28/10, còn chờ người dùng tự tick checklist bấm tay và duyệt phase** — xem [`docs/roadmap.md`](docs/roadmap.md) và [báo cáo P9](docs/testing/reports/2026-10-03-P9.md).
 
 ## Mục lục
 
@@ -220,9 +220,10 @@ trang thú cưng (tên vắc-xin, ngày tiêm, ngày nhắc lại).
 
 1. **Đăng ký** (`/khach/dang-ky`): nhập họ tên, email, mật khẩu (tối thiểu 8 ký tự).
 2. **Xác minh email:** hệ thống gửi thư chứa liên kết có hiệu lực **24 giờ**, dùng **một lần**.
-   **Lỗi đã biết (B-2, chưa sửa):** với `MAIL_PROVIDER=console` (mặc định) lẽ ra thư giả hiện trong terminal,
-   nhưng thực tế **không hiện gì** vì mức log của `app.mail` chưa được cấu hình. Trên máy mình, muốn thử luồng
-   đăng ký đầy đủ hãy dựng CSDL demo (mục 10, có sẵn 7 tài khoản khách) hoặc đặt `MAIL_PROVIDER=smtp`.
+   Với `MAIL_PROVIDER=console` (mặc định) thư không gửi đi mà **hiện trong terminal đang chạy server** (dòng
+   `[THƯ GIẢ — không gửi đi]`, kèm liên kết) — copy liên kết đó vào trình duyệt. Chạy bằng `python run.py`,
+   `uvicorn app.main:app` hay Docker (`python run.py docker logs`) đều thấy. Muốn có sẵn tài khoản khách để thử
+   thì dựng CSDL demo (mục 10, có sẵn 7 tài khoản khách).
 3. **Đăng nhập** (`/khach/dang-nhap`). Quên mật khẩu: `/khach/quen-mat-khau` → liên kết đặt lại hiệu
    lực **1 giờ**, một lần. Đổi mật khẩu ở `/khach/doi-mat-khau`.
 4. **Liên kết hồ sơ** (`/khach/lien-ket`): nhập số điện thoại đã đăng ký với cửa hàng (thử `0912345678`)
@@ -267,8 +268,8 @@ Chi tiết: [`docs/ai-safety.md`](docs/ai-safety.md).
 
 Dùng cho xác minh email và đặt lại mật khẩu của khách.
 
-- **`MAIL_PROVIDER=console` (mặc định):** không gửi thật. Thiết kế là in thư ra log, nhưng hiện chưa hiện được
-  (lỗi B-2, xem mục 6). **Không dùng cho bản công khai** (liên kết nằm trong log).
+- **`MAIL_PROVIDER=console` (mặc định):** không gửi thật, in thư ra terminal của server (stderr). **Không dùng cho bản
+  công khai** (liên kết nằm trong log); chế độ công khai (`--public-url`) từ chối khởi động với giá trị này.
 - **`MAIL_PROVIDER=smtp`:** gửi thật. Điền `SMTP_HOST`, `SMTP_PORT` (587), `SMTP_USER`, `SMTP_PASSWORD`,
   `MAIL_FROM`. Gmail cần **mật khẩu ứng dụng** (bật xác minh hai bước). `SMTP_PASSWORD` là bí mật, chỉ điền
   trong `.env` thật.
@@ -300,13 +301,13 @@ Sao chép từ [`.env.example`](.env.example); `python run.py` tự tạo `.env`
 ## 10. Kiểm thử
 
 ```bash
-pytest tests/unit            # 923 ca — chạy mỗi lần sửa code
+pytest tests/unit            # 927 ca — chạy mỗi lần sửa code
 pytest tests/integration     # 458 ca — chạy cuối mỗi phiên làm việc
 pytest tests/e2e             #   1 ca — kịch bản xuyên suốt, chạy cuối mỗi phase
-pytest                       # 1382 ca — chạy trước mỗi commit
+pytest                       # 1386 ca — chạy trước mỗi commit
 ```
 
-Dùng `python run.py test` nếu chưa kích hoạt `.venv`. Số ca đếm bằng `pytest --co` ngày 03/10; một lượt
+Dùng `python run.py test` nếu chưa kích hoạt `.venv`. Số ca đếm bằng `pytest --co` ngày 28/10; một lượt
 chạy toàn bộ mất khoảng **một phút** (dao động theo tải máy). Trên Linux có **một ca bị bỏ qua** (kiểm hook PowerShell, máy không có PowerShell) — xem kết quả
 thật trong [báo cáo P9](docs/testing/reports/2026-10-03-P9.md).
 Phép canh kiến trúc (`tests/unit/test_architecture.py`) giữ cho code, tài liệu và số liệu không lệch nhau.
@@ -376,7 +377,7 @@ Bản đồ từng file → trách nhiệm: [`docs/codebase-map.md`](docs/codeba
 | Cổng 8000 bận | `python run.py --port 9000` |
 | Đăng nhập xong nhưng bị đẩy ra lại | Đang bật `SESSION_HTTPS_ONLY=true` mà truy cập bằng `http://`; đặt lại `false` khi chạy cục bộ |
 | POST bị chặn (403) khi chạy sau tunnel/proxy | Đặt `APP_ORIGIN=https://địa-chỉ-công-khai` |
-| Không thấy thư xác minh của khách | Với `MAIL_PROVIDER=console` thư **không** hiện ở terminal (lỗi B-2, chưa sửa); dùng tài khoản khách mẫu hoặc `MAIL_PROVIDER=smtp` |
+| Không thấy thư xác minh của khách | Với `MAIL_PROVIDER=console` thư hiện ở **terminal đang chạy server** (tìm dòng `[THƯ GIẢ — không gửi đi]`); với Docker dùng `python run.py docker logs`. Dùng `MAIL_PROVIDER=smtp` thì thư đi thật |
 | Đăng nhập báo bị làm chậm (429) | Sai mật khẩu nhiều lần; đợi hết thời gian khóa (tối đa 15 phút) |
 | Lịch mẫu bị lệch ngày | Dữ liệu mẫu tính từ lúc seed; `python run.py reset` rồi chạy lại |
 | AI báo lỗi hoặc trả lời cố định | `AI_PROVIDER=fake` trả lời cố định; với `gemini` kiểm tra `GEMINI_API_KEY` và `python -m app.ai.quota` |

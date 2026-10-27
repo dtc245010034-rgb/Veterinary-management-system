@@ -344,10 +344,8 @@ Quy tắc an toàn **nằm sẵn trong phần mềm** (không phụ thuộc AI c
 | **Dữ liệu nằm trên máy chạy phần mềm** | Cần tự **sao lưu** file `petcare.db`; mất máy là mất dữ liệu |
 | **Nhân viên không tự lấy lại mật khẩu bằng email** | Nhân viên quên mật khẩu thì quản lý đặt lại ở `/users` |
 
-Hai lỗi nhỏ đã biết, **chưa sửa** (không làm mất dữ liệu):
+Một lỗi nhỏ đã biết, **chưa sửa** (không làm mất dữ liệu):
 
-- **Thư giả khi chạy thử trên máy mình:** ở chế độ thử, thư xác minh email của khách lẽ ra hiện trong cửa sổ gõ lệnh
-  nhưng hiện chưa hiện. Cửa hàng thật cần cấu hình gửi email thật (nhờ người lập trình).
 - **Ô chọn tròn ở trang "Liên kết khách" của nhân viên có thể hiện rất to** khi có nhiều chủ nuôi nghi trùng. Vẫn bấm chọn
   được, chỉ xấu giao diện.
 

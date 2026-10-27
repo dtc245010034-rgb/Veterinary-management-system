@@ -4,6 +4,7 @@
 """
 
 import logging
+import os
 
 import pytest
 
@@ -90,3 +91,70 @@ def test_lay_mailer_ten_la_bao_loi_thay_vi_im_lang_roi_ve_console(monkeypatch):
 
     with pytest.raises(LoiGuiMail, match="MAIL_PROVIDER"):
         lay_mailer()
+
+
+# --- B-2: thư giả phải hiện ra terminal khi chạy thật ----------------------------------
+
+
+@pytest.mark.parametrize(
+    "truoc",
+    [
+        pytest.param("", id="logging-mac-dinh"),
+        pytest.param("import logging; logging.basicConfig(level=logging.INFO)\n", id="root-da-co-handler"),
+    ],
+)
+def test_thu_gia_hien_ra_stderr_dung_mot_lan_khi_nap_app_main_trong_tien_trinh_moi(tmp_path, truoc):
+    """Tiến trình mới: đúng như `uvicorn app.main:app` chưa cấu hình gì thêm (hoặc có thư viện khác đã gắn handler root).
+
+    Không dùng `caplog`: nó tự gắn handler nên xanh giả ngay cả khi ngoài đời thư bị nuốt (lỗi B-2).
+    """
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    ma = (
+        truoc
+        + "import app.main\n"
+        "from app.mail.console import ConsoleMailer\n"
+        "ConsoleMailer().gui('khach@example.com', 'Xác minh email', 'Liên kết: http://127.0.0.1:8000/xac-minh/abc')\n"
+    )
+    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "DATABASE_URL": f"sqlite:///{tmp_path / 'tam.db'}"}
+
+    kq = subprocess.run(
+        [sys.executable, "-c", ma],
+        cwd=Path(__file__).resolve().parents[2],
+        env=env,
+        capture_output=True,
+        timeout=120,
+    )
+
+    stderr = kq.stderr.decode("utf-8")
+    assert kq.returncode == 0, stderr
+    assert "Xác minh email" in stderr
+    assert "http://127.0.0.1:8000/xac-minh/abc" in stderr
+    assert stderr.count("Xác minh email") == 1, "thư bị in hai lần"
+
+
+def test_cau_hinh_log_thu_goi_nhieu_lan_khong_them_handler_trung():
+    from app.mail.console import _InRaStderrHienTai, cau_hinh_log_thu
+
+    def dem_handler_cua_app():
+        # pytest 9 gắn thêm LogCaptureHandler tạm vào logger không lan truyền; đó không phải handler của app.
+        return sum(isinstance(h, _InRaStderrHienTai) for h in logging.getLogger("app.mail").handlers)
+
+    cau_hinh_log_thu()
+    cau_hinh_log_thu()
+    cau_hinh_log_thu()
+
+    assert dem_handler_cua_app() == 1
+
+
+def test_thu_gia_in_dung_mot_lan_ra_stderr_hien_tai_sau_khi_cau_hinh(capsys):
+    from app.mail.console import cau_hinh_log_thu
+
+    cau_hinh_log_thu()
+    ConsoleMailer().gui("khach@example.com", "Đặt lại mật khẩu", "Liên kết: http://127.0.0.1:8000/dat-lai/xyz")
+
+    loi = capsys.readouterr().err
+    assert loi.count("Đặt lại mật khẩu") == 1
+    assert "http://127.0.0.1:8000/dat-lai/xyz" in loi

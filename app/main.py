@@ -18,6 +18,7 @@ from app.auth import ChuaDangNhap, ChuaDangNhapKhach
 from app.config import SECRET_KEY_MAC_DINH, settings
 import app.models  # noqa: F401 — đăng ký mọi bảng trước create_all
 from app.db import Base, engine
+from app.mail.console import cau_hinh_log_thu
 from app.routers import ai as ai_router
 from app.routers import appointments as appointments_router
 from app.routers import auth as auth_router
@@ -84,6 +85,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
+cau_hinh_log_thu()  # thư giả của MAIL_PROVIDER=console phải hiện ra terminal dù chạy bằng run.py, uvicorn hay Docker
 app = FastAPI(title="Quản lý thú cưng và lịch chăm sóc", lifespan=lifespan)
 
 app.add_middleware(SessionMiddleware, secret_key=settings.secret_key, https_only=settings.session_https_only)
