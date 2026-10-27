@@ -242,6 +242,58 @@ def test_moi_o_chon_radio_checkbox_co_quy_tac_rieng_khong_an_theo_input_toan_cuc
     assert not loi, "; ".join(loi)
 
 
+def test_demo_md_khop_tai_khoan_so_dien_thoai_gio_lich_va_lenh_trong_ma_nguon():
+    """`docs/demo.md` là thứ người trình bày làm theo từng chữ trước thầy cô — nó lệch là hỏng giữa buổi demo.
+
+    Dự án đã bốn lần có tài liệu nói thứ không đúng với code (CLAUDE.md mục 9 dòng 2). Tài khoản, số điện thoại,
+    giờ lịch hôm nay, mật khẩu và đường dẫn lệnh đều có nguồn thật trong `app/seed.py`, `tools/tao_du_lieu_demo.py`,
+    `app/config.py`, `run.py`; phép canh này so từng thứ với nguồn thay vì tin lời tài liệu.
+
+    NẾU TEST NÀY ĐỎ: sửa `docs/demo.md` cho khớp mã nguồn (hoặc ngược lại nếu chính mã nguồn mới là bên đổi có chủ ý).
+    """
+    demo = _doc(GOC / "docs" / "demo.md")
+    cong_cu = _doc(GOC / "tools" / "tao_du_lieu_demo.py")
+    seed = _doc(GOC / "app" / "seed.py")
+    lech = []
+
+    # 1. Nhân viên: mọi tài khoản của seed có trong demo.md, và demo.md không bịa tài khoản.
+    nhan_vien = set(re.findall(r'\("([a-z0-9]+)", "[^"]+", "(?:manager|receptionist|caretaker)"\)', seed))
+    trong_demo = set(re.findall(r"`(quanly|letan|chamsoc\d+)`", demo))
+    assert nhan_vien, "Không đọc được tài khoản nhân viên từ seed.py — phép canh hỏng"
+    lech += [f"seed có `{u}` mà demo.md không nhắc" for u in sorted(nhan_vien - trong_demo)]
+    lech += [f"demo.md nhắc `{u}` mà seed không có" for u in sorted(trong_demo - nhan_vien)]
+
+    # 2. Khách: đúng bộ email của KHACH_MAU.
+    khach_tool = set(re.findall(r'"(khach\d+@demo\.test)"', cong_cu))
+    khach_demo = set(re.findall(r"khach\d+@demo\.test", demo))
+    assert khach_tool, "Không đọc được KHACH_MAU — phép canh hỏng"
+    lech += [f"khách {e}: tool có / demo.md {'có' if e in khach_demo else 'thiếu'}" for e in sorted(khach_tool ^ khach_demo)]
+
+    # 3. Chủ nuôi + số điện thoại demo.md nêu phải có trong dữ liệu dựng.
+    chu_nuoi = set(re.findall(r'\("([^"]+)", "(09\d{8})"', cong_cu + seed))
+    cap_trong_demo = set(re.findall(r"\*\*([^*()]+?) \((09\d{8})\)", demo)) | set(
+        re.findall(r"\(([^,)`]+), số điện thoại `(09\d{8})`\)", demo)
+    )
+    assert cap_trong_demo, "demo.md không còn cặp chủ nuôi + số điện thoại nào để so — phép canh hỏng"
+    lech += [f"demo.md ghi {t} ({sdt}) mà dữ liệu dựng không có" for t, sdt in sorted(cap_trong_demo - chu_nuoi)]
+
+    # 4. Giờ lịch hôm nay demo.md nêu phải đúng GIO_LICH_HOM_NAY của script.
+    gio = re.search(r"GIO_LICH_HOM_NAY = \[(.*?)\]\n", cong_cu, re.S)
+    assert gio, "Không đọc được GIO_LICH_HOM_NAY — phép canh hỏng"
+    for h, m in re.findall(r"\((\d+), (\d+)\)", gio.group(1)):
+        if f"{int(h):02d}:{int(m):02d}" not in demo:
+            lech.append(f"giờ lịch hôm nay {int(h):02d}:{int(m):02d} có trong script mà demo.md không nêu")
+
+    # 5. Mật khẩu chung, đường dẫn công cụ và cờ lệnh.
+    mat_khau = re.search(r'MAT_KHAU_MAC_DINH = "([^"]+)"', _doc(GOC / "app" / "config.py")).group(1)
+    if f"`{mat_khau}`" not in demo:
+        lech.append(f"mật khẩu mặc định `{mat_khau}` không có trong demo.md")
+    lech += [f"demo.md nhắc {d} mà file không tồn tại" for d in sorted(set(re.findall(r"\btools/\w+\.py", demo))) if not (GOC / d).is_file()]
+    lech += [f"demo.md dùng cờ {c} mà run.py không có" for c in sorted(set(re.findall(r"--[a-z-]+", demo.split("## 3.")[0]))) if c not in _doc(GOC / "run.py")]
+
+    assert not lech, "docs/demo.md lệch mã nguồn:" + "".join(f"\n  - {x}" for x in lech)
+
+
 # --- Bao phủ tầng nghiệp vụ ------------------------------------------------------
 
 

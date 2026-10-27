@@ -214,6 +214,55 @@ def _them_mui_tiem(db, rng: random.Random) -> int:
     return n
 
 
+# Mũi tiêm nhắc lại sắp đến hạn: trang /vaccinations nhắc trong cửa sổ 30 ngày, mà các mũi sinh ngẫu nhiên ở trên
+# hầu như không rơi vào 7 ngày tới (đề bài 3.1.6 cần ca để trình diễn). Số ngày cố định, không dùng `rng` để
+# không làm lệch dữ liệu sinh sau nó; mỗi ca một thú cưng.
+SO_NGAY_TOI_HAN = [0, 1, 2, 4, 6, 7]
+
+
+def _them_mui_sap_den_han(db) -> int:
+    hom_nay = clock.now().date()
+    n = 0
+    for thu, so_ngay in zip(db.scalars(select(Pet).order_by(Pet.id)), SO_NGAY_TOI_HAN):
+        da_co = set(db.scalars(select(Vaccination.vaccine_name).where(Vaccination.pet_id == thu.id)))
+        # Loại thú cưng này chưa tiêm, để mũi mới là mũi mới nhất của loại đó (den_han() bỏ mũi đã có mũi sau).
+        ten = next((x for x in VAC_XIN if x not in da_co), None)
+        if ten is None:
+            continue
+        han = hom_nay + timedelta(days=so_ngay)
+        db.add(Vaccination(pet_id=thu.id, vaccine_name=ten, dose_no=2, given_at=han - timedelta(days=365), next_due_at=han))
+        n += 1
+    db.commit()
+    return n
+
+
+# Lịch HÔM NAY: /appointments mở mặc định ở hôm nay, mà `_them_lich_tuong_lai` chỉ sinh từ ngày mai. Giờ cố định, xoay
+# vòng thú cưng và dịch vụ, không dùng `rng`. Giờ đã qua so với lúc chạy bị `dat_lich` từ chối nên bị bỏ — dựng demo
+# vào SÁNG ngày trình diễn: các ca buổi sáng sẽ "đã qua giờ, chưa ghi hồ sơ" đúng lúc cần demo ghi hồ sơ.
+GIO_LICH_HOM_NAY = [(9, 0), (10, 30), (13, 0), (14, 30), (16, 0)]
+
+
+def _them_lich_hom_nay(db) -> int:
+    thu_cung = list(db.scalars(select(Pet).order_by(Pet.id)))
+    dich_vu = list(db.scalars(select(Service).order_by(Service.id)))
+    cham_soc = list(db.scalars(select(User).where(User.role == "caretaker").order_by(User.id)))
+    le_tan = db.scalar(select(User).where(User.username == "letan"))
+    hom_nay = clock.now().date()
+    n = 0
+    for i_nv, nv in enumerate(cham_soc):
+        for i_gio, (gio, phut) in enumerate(GIO_LICH_HOM_NAY):
+            k = i_nv * len(GIO_LICH_HOM_NAY) + i_gio
+            try:
+                scheduling.dat_lich(
+                    db, thu_cung[(k * 3) % len(thu_cung)].id, dich_vu[k % len(dich_vu)].id, nv.id,
+                    _gio(hom_nay, gio, phut), le_tan.id, "Lịch demo hôm nay",
+                )
+                n += 1
+            except Exception:
+                db.rollback()  # giờ đã qua, hoặc trùng lịch mẫu: bỏ qua, không phải lỗi
+    return n
+
+
 def _them_lich_tuong_lai(db, rng: random.Random) -> int:
     """Lịch sắp tới đặt qua đúng scheduling.dat_lich (có kiểm trùng lịch, giờ làm việc)."""
     thu_cung = list(db.scalars(select(Pet).order_by(Pet.id)))
@@ -328,8 +377,8 @@ def main() -> None:
     with SessionLocal() as db:
         _them_chu_nuoi_va_thu_cung(db)
         so_lich, so_ho_so, so_hoa_don = _them_lich_su(db, rng)
-        so_mui = _them_mui_tiem(db, rng)
-        so_tuong_lai = _them_lich_tuong_lai(db, rng)
+        so_mui = _them_mui_tiem(db, rng) + _them_mui_sap_den_han(db)
+        so_tuong_lai = _them_lich_tuong_lai(db, rng) + _them_lich_hom_nay(db)
         khach = _them_khach(db, mat_khau, rng)
 
         tong = {b.__tablename__: db.query(b).count() for b in Base.__subclasses__()}
