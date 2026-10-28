@@ -75,6 +75,17 @@ def _doc_ngay_gio(ngay: str, gio: str) -> datetime:
         raise LoiNghiepVu("Ngày hoặc giờ không đúng định dạng.")
 
 
+def _doc_id_tuy_chon(chuoi: str) -> int | None:
+    """Ô chọn "chưa chọn" của form gửi giá trị rỗng: rỗng nghĩa là chưa chọn, không phải lỗi."""
+    chuoi = (chuoi or "").strip()
+    if not chuoi:
+        return None
+    try:
+        return int(chuoi)
+    except ValueError:
+        raise LoiNghiepVu("Lựa chọn không hợp lệ.")
+
+
 def _doc_ngay(ngay: str) -> date:
     try:
         return date.fromisoformat(ngay.strip())
@@ -85,28 +96,36 @@ def _doc_ngay(ngay: str) -> date:
 @router.get("/dat-lich", response_class=HTMLResponse)
 def form_dat_lich(
     request: Request,
-    thu_cung_id: int | None = None,
-    dich_vu_id: int | None = None,
-    nhan_vien_id: int | None = None,
+    thu_cung_id: str = "",
+    dich_vu_id: str = "",
+    nhan_vien_id: str = "",
     ngay: str = "",
     gio: str = "",
     khach=Depends(khach_hien_tai),
     db: Session = Depends(get_db),
 ):
     """Tham số truy vấn chỉ để điền sẵn ô (link từ trang khung trống); mọi phép kiểm vẫn chạy lúc POST."""
-    cu = {"thu_cung_id": thu_cung_id, "dich_vu_id": dich_vu_id, "nhan_vien_id": nhan_vien_id, "ngay": ngay, "gio": gio}
+    cu = {
+        "thu_cung_id": _doc_id_tuy_chon(thu_cung_id),
+        "dich_vu_id": _doc_id_tuy_chon(dich_vu_id),
+        "nhan_vien_id": _doc_id_tuy_chon(nhan_vien_id),
+        "ngay": ngay,
+        "gio": gio,
+    }
     return _trang_dat_lich(request, db, khach, cu=cu)
 
 
 @router.get("/khung-trong", response_class=HTMLResponse)
 def xem_khung_trong(
     request: Request,
-    thu_cung_id: int | None = None,
-    dich_vu_id: int | None = None,
+    thu_cung_id: str = "",
+    dich_vu_id: str = "",
     ngay: str = "",
     khach=Depends(khach_hien_tai),
     db: Session = Depends(get_db),
 ):
+    thu_cung_id = _doc_id_tuy_chon(thu_cung_id)
+    dich_vu_id = _doc_id_tuy_chon(dich_vu_id)
     cu = {"thu_cung_id": thu_cung_id, "dich_vu_id": dich_vu_id, "ngay": ngay}
     nhom, loi = None, None
     if thu_cung_id is not None and dich_vu_id is not None and ngay.strip():

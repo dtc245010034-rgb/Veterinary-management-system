@@ -81,11 +81,12 @@ def _danh_sach_nhan_vien(db: Session) -> list[User]:
 def trang_lich(
     request: Request,
     ngay: str = "",
-    nhan_vien_id: int | None = None,
+    nhan_vien_id: str = "",
     user: User = Depends(nguoi_dung_hien_tai),
     db: Session = Depends(get_db),
 ):
     ngay_chon = _doc_ngay(ngay)
+    nhan_vien_loc = _doc_nhan_vien_id(nhan_vien_id)
 
     # Chặn đường vòng chứ không chỉ ẩn link trong menu: gõ thẳng /appointments cũng
     # chỉ thấy lịch của chính mình (TC-009, TC-050).
@@ -95,7 +96,7 @@ def trang_lich(
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
-    return _render(request, db, user, ngay_chon, nhan_vien_id)
+    return _render(request, db, user, ngay_chon, nhan_vien_loc)
 
 
 @router.get("/cua-toi", response_class=HTMLResponse)
@@ -233,6 +234,17 @@ def _doc_ngay(chuoi: str) -> date:
         return date.fromisoformat(chuoi)
     except ValueError:
         return clock.now().date()
+
+
+def _doc_nhan_vien_id(chuoi: str) -> int | None:
+    """Ô lọc "Tất cả" của form gửi `nhan_vien_id=`: rỗng nghĩa là không lọc, không phải lỗi."""
+    chuoi = (chuoi or "").strip()
+    if not chuoi:
+        return None
+    try:
+        return int(chuoi)
+    except ValueError:
+        raise LoiNghiepVu("Nhân viên không hợp lệ.")
 
 
 def _doc_ngay_bat_buoc(chuoi: str) -> date:

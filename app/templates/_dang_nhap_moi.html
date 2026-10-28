@@ -174,13 +174,13 @@
                 </div>
 
                 <div class="relative z-30 my-auto">
-                    <div class="mb-6">
+                    <div class="mb-6 pr-32 min-h-[8.5rem]">
                         <h1 id="form-title" class="text-2xl sm:text-3xl font-bold text-white mb-1.5 tracking-tight drop-shadow-sm transition-colors duration-700">Đăng nhập</h1>
                         <p id="form-subtitle" class="text-slate-400 text-xs sm:text-sm transition-colors duration-700">Vui lòng nhập thông tin tài khoản của bạn</p>
                     </div>
 
-                    <div id="owl-wrapper" class="owl-avatar absolute -top-16 left-4 sm:left-8 z-30 pointer-events-none flex flex-col items-center">
-                        <div id="owl-speech" class="bg-amber-100 text-amber-950 font-bold text-[11px] px-3 py-1 rounded-xl mb-1 shadow-xl border border-amber-300 animate-bounceSlow whitespace-nowrap">Soi sáng tui rồi! 🔑🦉</div>
+                    <div id="owl-wrapper" class="owl-avatar absolute top-0 right-0 z-30 pointer-events-none flex flex-col items-center">
+                        <div id="owl-speech" class="bg-amber-100 text-amber-950 font-bold text-[11px] px-3 py-1 rounded-xl mb-1 shadow-xl border border-amber-300 animate-bounceSlow w-28 text-center leading-snug">Soi sáng tui rồi! 🔑🦉</div>
                         <svg class="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-2xl" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M10 88 C30 85, 70 85, 90 88" stroke="#78350f" stroke-width="6" stroke-linecap="round"/>
                             <circle cx="38" cy="82" r="3" fill="#f59e0b"/><circle cx="44" cy="82" r="3" fill="#f59e0b"/>
@@ -258,6 +258,15 @@
                     <p id="footer-text" class="text-xs text-slate-400 transition-colors duration-700">
                         Bạn chưa có tài khoản?
                         <a href="{{ dang_ky }}" class="font-semibold text-teal-400 hover:underline ml-1">Đăng ký</a>
+                    </p>
+                </div>
+                {% endif %}
+
+                {% if lien_ket_phu %}
+                <div class="{{ 'mt-3' if dang_ky else 'mt-8 pt-4 border-t border-slate-700/40' }} text-center z-30 relative">
+                    <p class="text-xs text-slate-400">
+                        {{ lien_ket_phu.chu }}
+                        <a href="{{ lien_ket_phu.url }}" class="font-semibold text-teal-400 hover:underline ml-1">{{ lien_ket_phu.nhan }}</a>
                     </p>
                 </div>
                 {% endif %}
