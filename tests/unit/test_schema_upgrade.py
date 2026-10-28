@@ -394,3 +394,27 @@ def test_dung_lai_bang_nhat_ky_ai_bo_qua_csdl_moi_va_csdl_chua_co_bang(db):
     trong = create_engine("sqlite://")
     assert dung_lai_bang_nhat_ky_ai(trong, Base.metadata) is False
     trong.dispose()
+
+
+def test_dung_lai_bang_khach_chay_hai_lan_an_toan():
+    import app.models
+    from app.db import Base
+    from app.services.schema import dung_lai_bang_khach
+    from sqlalchemy import create_engine, text
+
+    e = create_engine('sqlite://')
+    with e.begin() as c:
+        c.execute(text('CREATE TABLE customers (id INTEGER PRIMARY KEY, email VARCHAR(255) NOT NULL UNIQUE, full_name VARCHAR(100) NOT NULL, password_hash VARCHAR(255) NOT NULL, is_active BOOLEAN NOT NULL DEFAULT 1, session_version INTEGER NOT NULL DEFAULT 0, owner_id INTEGER UNIQUE, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)'))
+        c.execute(text("INSERT INTO customers (id, email, full_name, password_hash) VALUES (1, 'old@example.com', 'Old User', 'hash123')"))
+
+    assert dung_lai_bang_khach(e, Base.metadata) is True
+
+    with e.connect() as c:
+        row = c.execute(text('SELECT id, email, ten_dang_nhap, full_name FROM customers WHERE id = 1')).fetchone()
+        assert row[0] == 1
+        assert row[1] == 'old@example.com'
+        assert row[2] is None
+        assert row[3] == 'Old User'
+
+    assert dung_lai_bang_khach(e, Base.metadata) is False
+    e.dispose()

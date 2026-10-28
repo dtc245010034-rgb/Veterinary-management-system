@@ -39,7 +39,7 @@ from app.routers import vaccinations as vaccinations_router
 from app.security import la_post_cheo_nguon
 from app.services import users as users_service
 from app.services.errors import LoiKhongTimThay, LoiNghiepVu
-from app.services.schema import dung_lai_bang_lich_hen, dung_lai_bang_nhat_ky_ai, nang_cap_schema
+from app.services.schema import dung_lai_bang_khach, dung_lai_bang_lich_hen, dung_lai_bang_nhat_ky_ai, nang_cap_schema
 from app.templates import templates
 
 
@@ -72,6 +72,7 @@ async def lifespan(app: FastAPI):
     nang_cap_schema(engine, Base.metadata)
     dung_lai_bang_lich_hen(engine, Base.metadata)
     dung_lai_bang_nhat_ky_ai(engine, Base.metadata)
+    dung_lai_bang_khach(engine, Base.metadata)
     if settings.session_https_only:
         with Session(engine) as db:
             con_mac_dinh = users_service.tai_khoan_con_mat_khau_mac_dinh(db)

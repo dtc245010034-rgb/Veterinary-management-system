@@ -42,153 +42,105 @@ def _duong_dan_trong_thu(thu) -> str:
     return khop.group(1)
 
 
-def _dang_ky(client, mailer, email="khach@example.com", ten="Nguyen Khach", mat_khau=MAT_KHAU):
-    """Chạy trọn luồng đăng ký; client được đăng nhập khi xong. Trả về khách."""
-    r = client.post("/khach/dang-ky", data={"email": email})
-    assert r.status_code == 200
-    duong_dan = _duong_dan_trong_thu(mailer.da_gui[-1])
-    r = client.post(duong_dan, data={"full_name": ten, "mat_khau": mat_khau, "nhap_lai": mat_khau}, follow_redirects=False)
+def _dang_ky(client, mailer=None, email="khach@example.com", ten_dang_nhap="nguyenkhach", mat_khau=MAT_KHAU):
+    """Đăng ký trực tiếp 3 trường; client được chuyển hướng và đăng nhập khi xong."""
+    r = client.post(
+        "/khach/dang-ky",
+        data={"email": email, "ten_dang_nhap": ten_dang_nhap, "mat_khau": mat_khau},
+        follow_redirects=False,
+    )
     assert r.status_code == 303, r.text
-    return duong_dan
+    return r
 
 
 def _dang_nhap(client, email="khach@example.com", mat_khau=MAT_KHAU):
     return client.post("/khach/dang-nhap", data={"email": email, "mat_khau": mat_khau}, follow_redirects=False)
 
 
-# --- Đăng ký ----------------------------------------------------------------------
+# --- Đăng ký (trực tiếp 3 trường) --------------------------------------------------
 
 
-def test_luong_dang_ky_tron_ven_mail_roi_dat_mat_khau_roi_vao_cong_khach(client, mailer, goc, db):
-    r = client.post("/khach/dang-ky", data={"email": "khach@example.com"})
-    assert r.status_code == 200
-    assert len(mailer.da_gui) == 1
-    assert db.scalars(select(Customer)).all() == []  # chưa bấm link thì chưa có tài khoản
-
-    duong_dan = _duong_dan_trong_thu(mailer.da_gui[0])
-    trang = client.get(duong_dan)
-    assert trang.status_code == 200
-    assert 'name="mat_khau"' in trang.text
-
+def test_dang_ky_thanh_cong_vao_thang_cong_khach(client, db):
     r = client.post(
-        duong_dan, data={"full_name": "Nguyen Khach", "mat_khau": MAT_KHAU, "nhap_lai": MAT_KHAU}, follow_redirects=False
+        "/khach/dang-ky",
+        data={"email": "  KhachMoi@Example.Com ", "ten_dang_nhap": "  khach_moi.1 ", "mat_khau": MAT_KHAU},
+        follow_redirects=False,
     )
     assert r.status_code == 303
     assert r.headers["location"] == "/khach"
 
+    # Lưu db dưới dạng lower() + strip()
+    khach = db.scalars(select(Customer).where(Customer.email == "khachmoi@example.com")).first()
+    assert khach is not None
+    assert khach.ten_dang_nhap == "khach_moi.1"
+
+    # Phiên đăng nhập hoạt động
     cong = client.get("/khach")
     assert cong.status_code == 200
-    assert "Nguyen Khach" in cong.text
 
 
-def test_email_co_roi_va_email_moi_nhan_cung_mot_phan_hoi(client, mailer, goc):
-    _dang_ky(client, mailer)
+def test_dang_ky_trung_email_khac_hoa_thuong_bi_tu_choi(client):
+    _dang_ky(client, email="trung@example.com", ten_dang_nhap="user1")
     client.post("/khach/dang-xuat")
-
-    moi = client.post("/khach/dang-ky", data={"email": "chua-co@example.com"})
-    da_co = client.post("/khach/dang-ky", data={"email": "khach@example.com"})
-
-    assert (moi.status_code, moi.text) == (da_co.status_code, da_co.text)
-
-
-def test_email_da_co_tai_khoan_thi_thu_bao_chu_khong_cap_lien_ket_dang_ky(client, mailer, goc):
-    _dang_ky(client, mailer)
-    client.post("/khach/dang-xuat")
-    mailer.da_gui.clear()
-
-    client.post("/khach/dang-ky", data={"email": "khach@example.com"})
-
-    assert len(mailer.da_gui) == 1
-    assert "/khach/dang-ky/" not in mailer.da_gui[0].noi_dung
-
-
-def test_lien_ket_trong_thu_dung_app_origin_ke_ca_khi_header_host_bi_gia(client, mailer, goc):
-    client.post("/khach/dang-ky", data={"email": "nan-nhan@example.com"}, headers={"host": "ke-xau.example.net"})
-
-    noi_dung = mailer.da_gui[0].noi_dung
-    assert GOC in noi_dung
-    assert "ke-xau" not in noi_dung
-
-
-def test_may_phat_trien_khong_dat_app_origin_thi_lien_ket_theo_dia_chi_request(client, mailer, monkeypatch):
-    monkeypatch.setattr(settings, "app_origin", "")
-
-    client.post("/khach/dang-ky", data={"email": "khach@example.com"})
-
-    assert "http://testserver/khach/dang-ky/" in mailer.da_gui[0].noi_dung
-
-
-def test_email_khong_hop_le_bi_tu_choi_va_khong_gui_thu(client, mailer, goc):
-    r = client.post("/khach/dang-ky", data={"email": "khong-phai-email"})
-
-    assert r.status_code == 400
-    assert "Email" in r.text
-    assert mailer.da_gui == []
-
-
-def test_loi_gui_thu_khong_lo_ra_cho_nguoi_dung(client, mailer, goc):
-    mailer.loi = LoiGuiMail("SMTP sập")
-
-    r = client.post("/khach/dang-ky", data={"email": "khach@example.com"})
-
-    assert r.status_code == 200
-    assert "SMTP" not in r.text
-
-
-def test_mo_trang_dat_mat_khau_bang_GET_khong_dot_token(client, mailer, goc):
-    client.post("/khach/dang-ky", data={"email": "khach@example.com"})
-    duong_dan = _duong_dan_trong_thu(mailer.da_gui[0])
-
-    # Trình quét liên kết của hộp thư GET mọi link trước người nhận.
-    assert client.get(duong_dan).status_code == 200
-    assert client.get(duong_dan).status_code == 200
 
     r = client.post(
-        duong_dan, data={"full_name": "Khach", "mat_khau": MAT_KHAU, "nhap_lai": MAT_KHAU}, follow_redirects=False
-    )
-    assert r.status_code == 303
-
-
-def test_lien_ket_bia_hoac_da_dung_hien_trang_loi_ro_rang(client, mailer, goc):
-    duong_dan = _dang_ky(client, mailer)
-    client.post("/khach/dang-xuat")
-
-    for url in ("/khach/dang-ky/chuoi-bia", duong_dan):
-        r = client.get(url)
-        assert r.status_code == 400
-        assert "không hợp lệ hoặc đã hết hạn" in r.text
-
-    r = client.post(
-        duong_dan, data={"full_name": "Khac", "mat_khau": MAT_KHAU, "nhap_lai": MAT_KHAU}, follow_redirects=False
+        "/khach/dang-ky",
+        data={"email": "  TRUNG@EXAMPLE.COM  ", "ten_dang_nhap": "user2", "mat_khau": MAT_KHAU},
     )
     assert r.status_code == 400
-    assert "không hợp lệ hoặc đã hết hạn" in r.text
+    assert "Email này đã được sử dụng" in r.text
+    assert 'value="  TRUNG@EXAMPLE.COM  "' in r.text or 'value="TRUNG@EXAMPLE.COM"' in r.text or "TRUNG" in r.text
+    assert MAT_KHAU not in r.text  # Không giữ mật khẩu
 
 
-def test_mat_khau_yeu_hoac_nhap_lai_lech_bi_tu_choi_ma_token_van_dung_duoc(client, mailer, goc):
-    client.post("/khach/dang-ky", data={"email": "khach@example.com"})
-    duong_dan = _duong_dan_trong_thu(mailer.da_gui[0])
+def test_dang_ky_trung_ten_dang_nhap_khac_hoa_thuong_bi_tu_choi(client):
+    _dang_ky(client, email="user1@example.com", ten_dang_nhap="ten_trung")
+    client.post("/khach/dang-xuat")
 
-    ngan = client.post(duong_dan, data={"full_name": "Khach", "mat_khau": "ngan", "nhap_lai": "ngan"})
-    lech = client.post(duong_dan, data={"full_name": "Khach", "mat_khau": MAT_KHAU, "nhap_lai": MAT_KHAU + "x"})
-    assert ngan.status_code == 400 and "ít nhất 8 ký tự" in ngan.text
-    assert lech.status_code == 400 and "không khớp" in lech.text
-
-    ok = client.post(
-        duong_dan, data={"full_name": "Khach", "mat_khau": MAT_KHAU, "nhap_lai": MAT_KHAU}, follow_redirects=False
+    r = client.post(
+        "/khach/dang-ky",
+        data={"email": "user2@example.com", "ten_dang_nhap": "  TEN_TRUNG  ", "mat_khau": MAT_KHAU},
     )
-    assert ok.status_code == 303
+    assert r.status_code == 400
+    assert "Tên đăng nhập này đã được sử dụng" in r.text
 
 
-def test_dang_ky_lien_tuc_qua_nguong_bi_429(client, mailer, goc):
+def test_dang_ky_du_lieu_khong_hop_le_bi_tu_choi(client):
+    # Email không hợp lệ
+    r1 = client.post("/khach/dang-ky", data={"email": "khong-phai-email", "ten_dang_nhap": "validuser", "mat_khau": MAT_KHAU})
+    assert r1.status_code == 400
+    assert "Email không hợp lệ" in r1.text
+
+    # Tên đăng nhập quá ngắn (<3)
+    r2 = client.post("/khach/dang-ky", data={"email": "ok@example.com", "ten_dang_nhap": "ab", "mat_khau": MAT_KHAU})
+    assert r2.status_code == 400
+    assert "Tên đăng nhập" in r2.text
+
+    # Tên đăng nhập ký tự đặc biệt không hợp lệ
+    r3 = client.post("/khach/dang-ky", data={"email": "ok@example.com", "ten_dang_nhap": "user@name!", "mat_khau": MAT_KHAU})
+    assert r3.status_code == 400
+
+    # Mật khẩu < 8 ký tự
+    r4 = client.post("/khach/dang-ky", data={"email": "ok@example.com", "ten_dang_nhap": "validuser", "mat_khau": "short"})
+    assert r4.status_code == 400
+    assert "Mật khẩu" in r4.text
+
+
+def test_dang_ky_lien_tuc_qua_nguong_bi_429(client):
     for i in range(MIEN_PHI):
-        assert client.post("/khach/dang-ky", data={"email": f"k{i}@example.com"}).status_code == 200
+        assert client.post(
+            "/khach/dang-ky",
+            data={"email": f"k{i}@example.com", "ten_dang_nhap": f"user_{i}", "mat_khau": MAT_KHAU},
+            follow_redirects=False,
+        ).status_code == 303
+        client.post("/khach/dang-xuat")
 
-    r = client.post("/khach/dang-ky", data={"email": "k-ke-tiep@example.com"})
-
+    r = client.post(
+        "/khach/dang-ky",
+        data={"email": "k-ke-tiep@example.com", "ten_dang_nhap": "user_next", "mat_khau": MAT_KHAU},
+    )
     assert r.status_code == 429
     assert "retry-after" in r.headers
-    assert len(mailer.da_gui) == MIEN_PHI
 
 
 def test_quen_mat_khau_lien_tuc_qua_nguong_bi_429(client, mailer, goc):
@@ -203,7 +155,12 @@ def test_quen_mat_khau_lien_tuc_qua_nguong_bi_429(client, mailer, goc):
 
 def test_dang_ky_va_quen_mat_khau_dem_rieng_khong_khoa_lan_nhau(client, mailer, goc):
     for i in range(MIEN_PHI):
-        client.post("/khach/dang-ky", data={"email": f"k{i}@example.com"})
+        client.post(
+            "/khach/dang-ky",
+            data={"email": f"k{i}@example.com", "ten_dang_nhap": f"user_{i}", "mat_khau": MAT_KHAU},
+            follow_redirects=False,
+        )
+        client.post("/khach/dang-xuat")
 
     assert client.post("/khach/quen-mat-khau", data={"email": "k@example.com"}).status_code == 200
 
