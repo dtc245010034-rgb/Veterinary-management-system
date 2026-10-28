@@ -2,12 +2,10 @@
 
 Ba quyết định thiết kế, đều có test:
 
-1. **Khách đặt mật khẩu SAU khi bấm liên kết trong thư**, không phải lúc đăng ký. Cho đặt mật khẩu
-   trước rồi mới xác minh thì kẻ lạ đăng ký trước bằng email của nạn nhân, đợi nạn nhân bấm "xác minh",
-   là kẻ đó giữ tài khoản mang email của nạn nhân. Cách này cũng không để lại tài khoản "chưa xác minh".
-2. **Đăng ký và quên mật khẩu không bao giờ cho biết email có tồn tại hay không**: cùng không ném lỗi,
-   cùng nuốt lỗi gửi thư. Người gọi không đoán được ai là khách từ phản hồi.
-3. **Mật khẩu đi qua `users.kiem_mat_khau`** như ba đường đặt mật khẩu của nhân viên (M-04).
+1. Đăng ký khách gồm 3 trường: Email, Tên đăng nhập, Mật khẩu. Tạo tài khoản dùng được ngay, không gửi mã/token.
+2. Đăng ký và quên mật khẩu không bao giờ cho biết email có tồn tại hay không trong luồng quên mật khẩu.
+   Đăng ký báo lỗi rõ ràng nếu email hoặc tên đăng nhập đã được sử dụng.
+3. Mật khẩu đi qua `users.kiem_mat_khau` (tối thiểu 8 ký tự).
 
 Service nhận `mailer` và `goc_duong_dan` từ ngoài; không import `app.mail` hay `app.config`.
 Không import fastapi.
@@ -16,7 +14,7 @@ Không import fastapi.
 import logging
 import re
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -34,6 +32,7 @@ LOI_TAI_KHOAN_KHOA = "Tài khoản đã ngưng hoạt động. Vui lòng liên h
 
 # Đủ để chặn xuống dòng và khoảng trắng (đường chèn `Bcc:` vào tiêu đề thư); không cố đoán địa chỉ hợp lệ.
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+_TEN_DANG_NHAP = re.compile(r"^[a-z0-9_.]+$")
 
 
 def _chuan_hoa_email(email: str) -> str:
@@ -41,6 +40,13 @@ def _chuan_hoa_email(email: str) -> str:
     if len(email) > 255 or not _EMAIL.match(email):
         raise LoiNghiepVu("Email không hợp lệ.")
     return email
+
+
+def _chuan_hoa_ten_dang_nhap(ten_dang_nhap: str) -> str:
+    tdn = (ten_dang_nhap or "").strip().lower()
+    if not (3 <= len(tdn) <= 30) or not _TEN_DANG_NHAP.match(tdn):
+        raise LoiNghiepVu("Tên đăng nhập phải từ 3–30 ký tự, chỉ gồm chữ thường, số, dấu gạch dưới hoặc dấu chấm.")
+    return tdn
 
 
 def _gui(mailer: GuiMail, den: str, tieu_de: str, noi_dung: str) -> None:
@@ -55,11 +61,53 @@ def _tim(db: Session, email: str) -> Customer | None:
     return db.scalar(select(Customer).where(Customer.email == email))
 
 
+def _tim_theo_ten_dang_nhap(db: Session, ten_dang_nhap: str) -> Customer | None:
+    return db.scalar(select(Customer).where(Customer.ten_dang_nhap == ten_dang_nhap))
+
+
+def _tim_theo_dinh_danh(db: Session, dinh_danh: str) -> Customer | None:
+    dinh_danh = (dinh_danh or "").strip().lower()
+    if not dinh_danh:
+        return None
+    if "@" in dinh_danh:
+        return _tim(db, dinh_danh)
+    return _tim_theo_ten_dang_nhap(db, dinh_danh)
+
+
 # --- Đăng ký ---------------------------------------------------------------------
 
 
+def dang_ky_truc_tiep(db: Session, email: str, ten_dang_nhap: str, mat_khau: str) -> Customer:
+    """Tạo tài khoản khách trực tiếp (3 trường: email, tên đăng nhập, mật khẩu)."""
+    email_chuan = _chuan_hoa_email(email)
+    tdn_chuan = _chuan_hoa_ten_dang_nhap(ten_dang_nhap)
+    kiem_mat_khau(mat_khau)
+
+    if _tim(db, email_chuan) is not None:
+        raise LoiNghiepVu("Email này đã được sử dụng.")
+    if _tim_theo_ten_dang_nhap(db, tdn_chuan) is not None:
+        raise LoiNghiepVu("Tên đăng nhập này đã được sử dụng.")
+
+    # Lấy họ tên mặc định từ phần trước @ nếu không có
+    ho_ten = tdn_chuan
+    khach = Customer(
+        email=email_chuan,
+        ten_dang_nhap=tdn_chuan,
+        full_name=ho_ten,
+        password_hash=hash_password(mat_khau),
+    )
+    db.add(khach)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise LoiNghiepVu("Email hoặc tên đăng nhập đã được sử dụng.") from None
+    db.refresh(khach)
+    return khach
+
+
 def yeu_cau_dang_ky(db: Session, mailer: GuiMail, email: str, goc_duong_dan: str) -> None:
-    """Gửi thư đăng ký. Email đã có tài khoản thì gửi thư báo (không kèm liên kết đăng ký)."""
+    """Gửi thư đăng ký (giữ tương thích route cũ nếu còn dùng)."""
     email = _chuan_hoa_email(email)
     if _tim(db, email) is not None:
         _gui(
@@ -85,7 +133,7 @@ def yeu_cau_dang_ky(db: Session, mailer: GuiMail, email: str, goc_duong_dan: str
 
 
 def hoan_tat_dang_ky(db: Session, token: str, full_name: str, mat_khau: str) -> Customer:
-    """Dùng liên kết trong thư để tạo tài khoản. Kiểm họ tên và mật khẩu TRƯỚC khi tiêu thụ token."""
+    """Dùng liên kết trong thư để tạo tài khoản cũ. Kiểm họ tên và mật khẩu TRƯỚC khi tiêu thụ token."""
     ten = (full_name or "").strip()
     if not ten:
         raise LoiNghiepVu("Họ tên không được để trống.")
@@ -108,9 +156,9 @@ def hoan_tat_dang_ky(db: Session, token: str, full_name: str, mat_khau: str) -> 
 # --- Đăng nhập -------------------------------------------------------------------
 
 
-def xac_thuc(db: Session, email: str, mat_khau: str) -> Customer:
-    """Trả khách nếu đúng email và mật khẩu. Sai cái nào cũng cùng một thông báo."""
-    khach = _tim(db, (email or "").strip().lower())
+def xac_thuc(db: Session, email_hoac_ten: str, mat_khau: str) -> Customer:
+    """Trả khách nếu đúng email/tên đăng nhập và mật khẩu. Sai cái nào cũng cùng một thông báo."""
+    khach = _tim_theo_dinh_danh(db, email_hoac_ten)
     if khach is None or not verify_password(mat_khau, khach.password_hash):
         raise LoiNghiepVu(LOI_DANG_NHAP)
     if not khach.is_active:
@@ -123,7 +171,10 @@ def xac_thuc(db: Session, email: str, mat_khau: str) -> Customer:
 
 def yeu_cau_dat_lai(db: Session, mailer: GuiMail, email: str, goc_duong_dan: str) -> None:
     """Gửi liên kết đặt lại nếu có khách đang hoạt động với email này; nếu không thì im lặng."""
-    email = _chuan_hoa_email(email)
+    try:
+        email = _chuan_hoa_email(email)
+    except LoiNghiepVu:
+        return
     khach = _tim(db, email)
     if khach is None or not khach.is_active:
         return

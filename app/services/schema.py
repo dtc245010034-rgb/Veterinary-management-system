@@ -99,6 +99,24 @@ def dung_lai_bang_nhat_ky_ai(engine: Engine, metadata: MetaData) -> bool:
     return True
 
 
+def dung_lai_bang_khach(engine: Engine, metadata: MetaData) -> bool:
+    """Dựng lại bảng `customers` nếu chưa có cột `ten_dang_nhap`.
+
+    Bảng customers có ràng buộc UNIQUE trên email và ten_dang_nhap mà SQLite không cho `ADD COLUMN UNIQUE`.
+    Chạy lặp lại an toàn, giữ nguyên mọi dữ liệu cũ (tài khoản cũ để ten_dang_nhap là NULL).
+    """
+    with engine.connect() as ket_noi:
+        cot_cu = ket_noi.execute(text("PRAGMA table_info(customers)")).fetchall()
+    if not cot_cu:  # bảng chưa có: để create_all làm
+        return False
+    da_co = {hang[1] for hang in cot_cu}
+    if "ten_dang_nhap" in da_co:
+        return False
+
+    _dung_lai_bang(engine, metadata.tables["customers"])
+    return True
+
+
 def _dung_lai_bang(engine: Engine, bang) -> None:
     """Dựng bảng mới theo model, chép các cột chung, bỏ bảng cũ — trong một giao dịch."""
     ten = bang.name

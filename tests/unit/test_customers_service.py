@@ -271,3 +271,32 @@ def test_thu_hoi_phien_khach_khong_ton_tai_bao_loi_khong_tim_thay(db):
 
     with pytest.raises(LoiKhongTimThay):
         kh.thu_hoi_phien(db, 999)
+
+
+# --- Đăng ký trực tiếp (3 trường) ---------------------------------------------------
+
+
+def test_dang_ky_truc_tiep_tao_khach_va_chuan_hoa_email_ten_dang_nhap(db):
+    khach = kh.dang_ky_truc_tiep(db, '  KHACH_TRUC_TIEP@Example.COM  ', '  user_moi.1  ', MAT_KHAU)
+    assert khach.email == 'khach_truc_tiep@example.com'
+    assert khach.ten_dang_nhap == 'user_moi.1'
+    assert khach.full_name == 'user_moi.1'
+    assert verify_password(MAT_KHAU, khach.password_hash)
+
+
+def test_dang_ky_truc_tiep_kiem_tra_ten_dang_nhap_hop_le_va_trung_lap(db):
+    kh.dang_ky_truc_tiep(db, 'u1@example.com', 'user_valid', MAT_KHAU)
+
+    # Trùng email (không phân biệt hoa thường)
+    with pytest.raises(LoiNghiepVu, match='Email này đã được sử dụng'):
+        kh.dang_ky_truc_tiep(db, 'U1@EXAMPLE.COM', 'user_other', MAT_KHAU)
+
+    # Trùng tên đăng nhập (không phân biệt hoa thường)
+    with pytest.raises(LoiNghiepVu, match='Tên đăng nhập này đã được sử dụng'):
+        kh.dang_ky_truc_tiep(db, 'u2@example.com', 'USER_VALID', MAT_KHAU)
+
+    # Tên đăng nhập không hợp lệ (quá ngắn, ký tự cấm)
+    with pytest.raises(LoiNghiepVu, match='Tên đăng nhập phải từ 3–30 ký tự'):
+        kh.dang_ky_truc_tiep(db, 'u3@example.com', 'ab', MAT_KHAU)
+    with pytest.raises(LoiNghiepVu, match='Tên đăng nhập phải từ 3–30 ký tự'):
+        kh.dang_ky_truc_tiep(db, 'u3@example.com', 'user@name!', MAT_KHAU)

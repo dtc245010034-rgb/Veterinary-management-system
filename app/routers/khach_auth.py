@@ -81,22 +81,30 @@ def trang_dang_ky(request: Request):
 def xu_ly_dang_ky(
     request: Request,
     email: str = Form(""),
+    ten_dang_nhap: str = Form(""),
+    mat_khau: str = Form(""),
     db: Session = Depends(get_db),
-    mailer: GuiMail = Depends(lay_mailer),
 ):
     khoa = tao_khoa(_ip(request), "khach:dang-ky")
     giay_cho = gioi_han_dang_nhap.con_phai_cho(khoa)
     if giay_cho > 0:
-        return _qua_nhieu(request, "khach_dang_ky.html", giay_cho, email=email)
-    # Mỗi lượt đều tính: lượt đúng cũng tốn một thư gửi đi, và bộ đếm là thứ chặn kẻ dùng form này để làm
-    # loa phát thư rác tới địa chỉ người khác.
-    gioi_han_dang_nhap.ghi_that_bai(khoa)
+        return _qua_nhieu(request, "khach_dang_ky.html", giay_cho, email=email, ten_dang_nhap=ten_dang_nhap)
 
     try:
-        nv.yeu_cau_dang_ky(db, mailer, email, _goc_duong_dan(request))
+        khach = nv.dang_ky_truc_tiep(db, email, ten_dang_nhap, mat_khau)
     except LoiNghiepVu as loi:
-        return _trang(request, "khach_dang_ky.html", status.HTTP_400_BAD_REQUEST, loi=str(loi), email=email)
-    return _trang(request, "khach_da_gui_thu.html", hanh_dong="đăng ký")
+        return _trang(
+            request,
+            "khach_dang_ky.html",
+            status.HTTP_400_BAD_REQUEST,
+            loi=str(loi),
+            email=email,
+            ten_dang_nhap=ten_dang_nhap,
+        )
+
+    gioi_han_dang_nhap.ghi_that_bai(khoa)
+    dang_nhap_khach_session(request, khach)
+    return RedirectResponse("/khach", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/dang-ky/{token}", response_class=HTMLResponse)

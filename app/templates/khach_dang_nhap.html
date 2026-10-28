@@ -3,14 +3,16 @@
 {% set tieu_de_banner = 'Cổng khách hàng' %}
 {% set mo_ta_banner = 'Đăng nhập để xem hồ sơ thú cưng, lịch hẹn và hóa đơn của bạn.' %}
 {% set hanh_dong = '/khach/dang-nhap' %}
-{% set nhan_tai_khoan = 'Email' %}
+{% set nhan_tai_khoan = 'Email hoặc tên đăng nhập' %}
 {% set ten_truong_tk = 'email' %}
-{% set kieu_tk = 'email' %}
+{% set kieu_tk = 'text' %}
 {% set gia_tri_tk = email %}
-{% set goi_y_tk = 'nhap@email.com' %}
-{% set autocomplete_tk = 'email' %}
+{% set goi_y_tk = 'Email hoặc tên đăng nhập' %}
+{% set autocomplete_tk = 'username' %}
 {% set ten_truong_mk = 'mat_khau' %}
 {% set quen_mat_khau = '/khach/quen-mat-khau' %}
 {% set dang_ky = '/khach/dang-ky' %}
+{% set dang_ky_tai_cho = true %}
+{% set dang_nhap_url = '/khach/dang-nhap' %}
 {% set lien_ket_phu = {'chu': 'Bạn là nhân viên cửa hàng?', 'nhan': 'Đăng nhập nhân viên', 'url': '/login'} %}
 {% include '_dang_nhap_moi.html' %}

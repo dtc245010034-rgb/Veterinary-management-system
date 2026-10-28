@@ -174,9 +174,15 @@
                 </div>
 
                 <div class="relative z-30 my-auto">
+
+                    <div class="mb-6">
+                        <h1 id="form-title" class="text-2xl sm:text-3xl font-bold text-white mb-1.5 tracking-tight drop-shadow-sm transition-colors duration-700">{{ 'Đăng ký tài khoản' if che_do_dang_ky else 'Đăng nhập' }}</h1>
+                        <p id="form-subtitle" class="text-slate-400 text-xs sm:text-sm transition-colors duration-700">{{ 'Nhập email, tên đăng nhập và mật khẩu để tạo tài khoản.' if che_do_dang_ky else 'Vui lòng nhập thông tin tài khoản của bạn' }}</p>
+
                     <div class="mb-6 pr-32 min-h-[8.5rem]">
                         <h1 id="form-title" class="text-2xl sm:text-3xl font-bold text-white mb-1.5 tracking-tight drop-shadow-sm transition-colors duration-700">Đăng nhập</h1>
                         <p id="form-subtitle" class="text-slate-400 text-xs sm:text-sm transition-colors duration-700">Vui lòng nhập thông tin tài khoản của bạn</p>
+
                     </div>
 
                     <div id="owl-wrapper" class="owl-avatar absolute top-0 right-0 z-30 pointer-events-none flex flex-col items-center">
@@ -204,6 +210,9 @@
                     <!-- FORM: gửi thật tới máy chủ Flask -->
                     <form id="login-form" method="post" action="{{ hanh_dong }}" onsubmit="handleFormSubmit(event)" class="space-y-4">
 
+                        {% if da_dang_ky %}
+                        <p id="server-ok" role="status" class="px-3 py-2.5 rounded-xl text-xs font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-500">Đăng ký thành công. Hãy đăng nhập bằng tài khoản vừa tạo.</p>
+                        {% endif %}
                         {% if da_dat_lai %}
                         <p id="server-ok" role="status" class="px-3 py-2.5 rounded-xl text-xs font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-500">Đã đặt lại mật khẩu. Hãy đăng nhập bằng mật khẩu mới.</p>
                         {% endif %}
@@ -212,20 +221,33 @@
                         {% endif %}
 
                         <div class="space-y-1.5 relative">
-                            <label id="email-label" for="email" class="block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700">{{ nhan_tai_khoan }}</label>
+                            <label id="email-label" for="email" class="block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700">{{ 'Email' if che_do_dang_ky else nhan_tai_khoan }}</label>
                             <div class="relative rounded-xl overflow-hidden">
-                                <input type="{{ kieu_tk }}" id="email" name="{{ ten_truong_tk }}" value="{{ gia_tri_tk or '' }}" required autofocus autocomplete="{{ autocomplete_tk }}"
+                                <input type="{{ 'email' if che_do_dang_ky else kieu_tk }}" id="email" name="{{ ten_truong_tk }}" value="{{ gia_tri_tk or '' }}" required autofocus autocomplete="{{ 'email' if che_do_dang_ky else autocomplete_tk }}"
                                     class="w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 custom-input-dark font-medium placeholder-slate-500"
-                                    placeholder="{{ goi_y_tk }}">
+                                    placeholder="{{ 'nhap@email.com' if che_do_dang_ky else goi_y_tk }}">
                             </div>
                         </div>
 
-                        <div class="space-y-1.5 relative">
+                        {% if dang_ky_tai_cho %}
+                        <!-- Tên đăng nhập: chỉ dùng ở chế độ đăng ký (đăng nhập thì ẩn + vô hiệu nên không bị bắt buộc/không gửi đi) -->
+                        <div id="username-field-block" class="space-y-1.5 relative"{% if not che_do_dang_ky %} style="display:none"{% endif %}>
+                            <label id="username-label" for="ten_dang_nhap" class="block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700">Tên đăng nhập</label>
+                            <div class="relative rounded-xl overflow-hidden">
+                                <input type="text" id="ten_dang_nhap" name="ten_dang_nhap" value="{{ gia_tri_ten_dn or '' }}" {% if che_do_dang_ky %}required{% else %}disabled{% endif %} autocomplete="username"
+                                    minlength="3" maxlength="30" pattern="[a-z0-9_.]{3,30}" title="3–30 ký tự: chữ cái không dấu, số, dấu chấm, gạch dưới hoặc gạch ngang"
+                                    class="w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 custom-input-dark font-medium placeholder-slate-500"
+                                    placeholder="vd: nguyenvana">
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div id="password-field-block" class="space-y-1.5 relative">
                             <div class="flex items-center justify-between">
                                 <label id="password-label" for="password" class="block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700">Mật khẩu</label>
                             </div>
                             <div id="password-wrapper" class="relative rounded-xl overflow-hidden custom-input-dark flex items-center transition-all duration-300">
-                                <input type="password" id="password" name="{{ ten_truong_mk }}" oninput="syncPasswordText()" required autocomplete="current-password"
+                                <input type="password" id="password" name="{{ ten_truong_mk }}" oninput="syncPasswordText()" required {% if che_do_dang_ky %}minlength="8" autocomplete="new-password"{% else %}autocomplete="current-password"{% endif %}
                                     class="w-full pl-4 pr-12 py-3.5 bg-transparent text-sm outline-none font-mono tracking-widest text-slate-400 placeholder-slate-500"
                                     placeholder="••••••••••••">
                                 <div id="password-reveal-layer" class="password-overlay absolute inset-0 pl-4 pr-12 py-3.5 font-mono text-sm tracking-widest text-amber-300 font-bold flex items-center pointer-events-none select-none bg-transparent" style="clip-path: circle(0px at 0px 0px);">
@@ -240,14 +262,18 @@
                             </div>
                         </div>
 
+                        {% if dang_ky_tai_cho %}
+                        <p id="password-hint" class="text-[11px] text-slate-500 -mt-2"{% if not che_do_dang_ky %} style="display:none"{% endif %}>Mật khẩu tối thiểu 8 ký tự.</p>
+                        {% endif %}
+
                         {% if quen_mat_khau %}
-                        <div class="flex items-center justify-end pt-1">
+                        <div id="forgot-row" class="flex items-center justify-end pt-1"{% if che_do_dang_ky %} style="display:none"{% endif %}>
                             <a id="forgot-link" href="{{ quen_mat_khau }}" class="text-xs font-medium text-slate-400 hover:text-teal-400 transition-colors">Quên mật khẩu?</a>
                         </div>
                         {% endif %}
 
                         <button type="submit" id="submit-btn" class="w-full py-3.5 px-6 mt-2 rounded-xl bg-gradient-to-r from-teal-600 via-teal-500 to-teal-600 hover:from-teal-500 hover:to-teal-400 text-white font-semibold text-sm shadow-xl shadow-teal-950/60 hover:shadow-teal-500/30 transition-all duration-300 flex items-center justify-center gap-2 transform active:scale-[0.99] border border-teal-400/20">
-                            <span>Đăng nhập</span>
+                            <span id="submit-label">{{ 'Đăng ký' if che_do_dang_ky else 'Đăng nhập' }}</span>
                             <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
                     </form>
@@ -256,8 +282,8 @@
                 {% if dang_ky %}
                 <div id="footer-border" class="mt-8 pt-4 border-t border-slate-700/40 text-center z-30 relative transition-colors duration-700">
                     <p id="footer-text" class="text-xs text-slate-400 transition-colors duration-700">
-                        Bạn chưa có tài khoản?
-                        <a href="{{ dang_ky }}" class="font-semibold text-teal-400 hover:underline ml-1">Đăng ký</a>
+                        <span id="footer-question">{% if che_do_dang_ky %}Đã có tài khoản?{% else %}{{ dang_ky_cau_hoi or 'Bạn chưa có tài khoản?' }}{% endif %}</span>
+                        <a id="register-link" href="{% if che_do_dang_ky %}{{ dang_nhap_url or '/login' }}{% else %}{{ dang_ky }}{% endif %}" class="font-semibold text-teal-400 hover:underline ml-1">{% if che_do_dang_ky %}Đăng nhập{% else %}{{ dang_ky_nhan or 'Đăng ký' }}{% endif %}</a>
                     </p>
                 </div>
                 {% endif %}
@@ -398,6 +424,25 @@
             const { rightPanel, sourceNode, owlWrapper, outerPolygon, corePolygon, spotlight, flare,
                     btnIcon, ambientGlow, passwordWrapper, passwordRevealLayer } = E;
 
+            if (sourceNode && !sourceNode.offsetParent && outerPolygon && corePolygon && spotlight && flare) {
+                // Ô mật khẩu đang ẩn (chế độ đăng ký): không có đèn pin → tắt tia sáng, giữ ánh sáng đuổi theo chuột
+                outerPolygon.setAttribute('points', '0,0 0,0 0,0');
+                corePolygon.setAttribute('points', '0,0 0,0 0,0');
+                spotlight.setAttribute('r', 0);
+                flare.setAttribute('cx', -200);
+                flare.setAttribute('cy', -200);
+                if (owlWrapper) owlWrapper.classList.remove('revealed');
+                if (ambientGlow) {
+                    const gx = mousePos.x, gy = mousePos.y;
+                    const gkey = gx.toFixed(1) + ',' + gy.toFixed(1);
+                    if (gkey !== lastAmbientKey) {
+                        lastAmbientKey = gkey;
+                        ambientGlow.style.background = `radial-gradient(circle 280px at ${gx}px ${gy}px, rgba(251, 191, 36, 0.12) 0%, rgba(20, 184, 166, 0.05) 55%, transparent 100%)`;
+                    }
+                }
+                requestAnimationFrame(renderBeam);
+                return;
+            }
             if (rightPanel && sourceNode && outerPolygon && corePolygon && spotlight && flare) {
                 // ---- ĐỌC layout một lượt (tránh đọc xen kẽ với ghi gây reflow nhiều lần mỗi khung hình) ----
                 const panelRect = rightPanel.getBoundingClientRect();
@@ -501,8 +546,8 @@
             const mountainBack = $('mountain-back'), mountainFront = $('mountain-front'), mountainGradOverlay = $('mountain-gradient-overlay');
             const themeIconContainer = $('theme-icon-container'), themeTextLabel = $('theme-text-label');
             const brandText = $('brand-text'), bannerTitle = $('banner-title'), bannerSubtext = $('banner-subtext');
-            const formTitle = $('form-title'), formSubtitle = $('form-subtitle'), emailLabel = $('email-label'), passwordLabel = $('password-label');
-            const emailInput = $('email'), passwordWrapper = $('password-wrapper'), forgotLink = $('forgot-link');
+            const formTitle = $('form-title'), formSubtitle = $('form-subtitle'), emailLabel = $('email-label'), passwordLabel = $('password-label'), usernameLabel = $('username-label');
+            const emailInput = $('email'), usernameInput = $('ten_dang_nhap'), passwordWrapper = $('password-wrapper'), forgotLink = $('forgot-link'), registerLink = $('register-link');
             const footerBorder = $('footer-border'), footerText = $('footer-text'), themeBtn = $('theme-toggle-btn'), closeBtn = $('close-modal-btn');
             const set = (el, cls) => { if (el) el.className = cls; };
 
@@ -525,10 +570,13 @@
                 set(formTitle, 'text-2xl sm:text-3xl font-bold text-white mb-1.5 tracking-tight drop-shadow-sm transition-colors duration-700');
                 set(formSubtitle, 'text-slate-400 text-xs sm:text-sm transition-colors duration-700');
                 set(emailLabel, 'block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700');
+                set(usernameLabel, 'block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700');
                 set(passwordLabel, 'block text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-700');
                 set(emailInput, 'w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 custom-input-dark font-medium placeholder-slate-500');
+                set(usernameInput, 'w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 custom-input-dark font-medium placeholder-slate-500');
                 set(passwordWrapper, 'relative rounded-xl overflow-hidden custom-input-dark flex items-center transition-all duration-300');
                 set(forgotLink, 'text-xs font-medium text-slate-400 hover:text-teal-400 transition-colors');
+                set(registerLink, 'font-semibold text-teal-400 hover:underline ml-1');
                 set(footerBorder, 'mt-8 pt-4 border-t border-slate-700/40 text-center z-30 relative transition-colors duration-700');
                 set(footerText, 'text-xs text-slate-400 transition-colors duration-700');
                 set(themeBtn, 'flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/70 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-medium transition-all duration-300 shadow-md hover:scale-105 active:scale-95');
@@ -554,10 +602,13 @@
                 set(formTitle, 'text-2xl sm:text-3xl font-bold text-slate-900 mb-1.5 tracking-tight drop-shadow-sm transition-colors duration-700');
                 set(formSubtitle, 'text-slate-600 text-xs sm:text-sm transition-colors duration-700');
                 set(emailLabel, 'block text-xs font-semibold tracking-wide text-slate-700 transition-colors duration-700');
+                set(usernameLabel, 'block text-xs font-semibold tracking-wide text-slate-700 transition-colors duration-700');
                 set(passwordLabel, 'block text-xs font-semibold tracking-wide text-slate-700 transition-colors duration-700');
                 set(emailInput, 'w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 custom-input-light font-medium placeholder-slate-400');
+                set(usernameInput, 'w-full px-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 custom-input-light font-medium placeholder-slate-400');
                 set(passwordWrapper, 'relative rounded-xl overflow-hidden custom-input-light flex items-center transition-all duration-300');
                 set(forgotLink, 'text-xs font-medium text-slate-600 hover:text-teal-600 transition-colors');
+                set(registerLink, 'font-semibold text-teal-700 hover:underline ml-1');
                 set(footerBorder, 'mt-8 pt-4 border-t border-slate-200/80 text-center z-30 relative transition-colors duration-700');
                 set(footerText, 'text-xs text-slate-600 transition-colors duration-700');
                 set(themeBtn, 'flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-200/80 hover:bg-slate-300/80 border border-slate-300/80 text-slate-700 hover:text-slate-900 text-xs font-medium transition-all duration-300 shadow-md hover:scale-105 active:scale-95');
@@ -646,23 +697,114 @@
             }
         }
 
-        // Gửi form THẬT tới máy chủ (không preventDefault): chỉ thêm hiệu ứng "đang xác thực"
-        function handleFormSubmit(e) {
-            const submitBtn = document.getElementById('submit-btn');
-            playSound('success');
-            if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin text-sm"></i> Đang xác thực...';
-                setTimeout(() => { submitBtn.disabled = true; }, 0);
+        // ===== Chế độ Đăng nhập / Đăng ký trên cùng một form =====
+        // Chỉ bật chuyển tại chỗ khi trang có khai báo (cổng khách hàng). Không có JS thì liên kết vẫn đi tới trang đăng ký.
+        const AUTH = {
+            initial: {{ ('dang_ky' if che_do_dang_ky else 'dang_nhap')|tojson }},
+            inPlace: {{ (true if dang_ky_tai_cho else false)|tojson }},
+            loginAction: {{ (dang_nhap_url or hanh_dong)|tojson }},
+            registerAction: {{ (dang_ky or '')|tojson }},
+            loginHref: {{ (dang_nhap_url or hanh_dong)|tojson }},
+            registerHref: {{ (dang_ky or '')|tojson }}
+        };
+        const AUTH_TEXT = {
+            dang_nhap: { title: 'Đăng nhập', subtitle: 'Vui lòng nhập thông tin tài khoản của bạn', btn: 'Đăng nhập',
+                         question: {{ (dang_ky_cau_hoi or 'Bạn chưa có tài khoản?')|tojson }}, link: {{ (dang_ky_nhan or 'Đăng ký')|tojson }},
+                         doc: {{ (tieu_de_dang_nhap or tieu_de_trang)|tojson }} },
+            dang_ky:  { title: 'Đăng ký tài khoản', subtitle: 'Nhập email, tên đăng nhập và mật khẩu để tạo tài khoản.', btn: 'Đăng ký',
+                         question: 'Đã có tài khoản?', link: 'Đăng nhập', doc: 'Đăng ký tài khoản' }
+        };
+        // Ô đầu tiên: đăng nhập nhận email HOẶC tên đăng nhập; đăng ký thì bắt buộc là email hợp lệ
+        const AUTH_FIELD = {
+            dang_nhap: { label: {{ nhan_tai_khoan|tojson }}, type: {{ kieu_tk|tojson }}, placeholder: {{ goi_y_tk|tojson }}, autocomplete: {{ autocomplete_tk|tojson }} },
+            dang_ky:   { label: 'Email', type: 'email', placeholder: 'nhap@email.com', autocomplete: 'email' }
+        };
+        let authMode = AUTH.initial;
+
+        function applyAuthMode(mode, keepMessages) {
+            authMode = mode;
+            const reg = mode === 'dang_ky', T = AUTH_TEXT[mode], $id = (i) => document.getElementById(i);
+            const form = $id('login-form'), pw = $id('password'), pwBlock = $id('password-field-block'), forgot = $id('forgot-row');
+            const link = $id('register-link'), label = $id('submit-label'), err = $id('server-error'), ok = $id('server-ok');
+            if ($id('form-title')) $id('form-title').textContent = T.title;
+            if ($id('form-subtitle')) $id('form-subtitle').textContent = T.subtitle;
+            if (label) label.textContent = T.btn;
+            if ($id('footer-question')) $id('footer-question').textContent = T.question;
+            if (link) { link.textContent = T.link; link.setAttribute('href', reg ? AUTH.loginHref : AUTH.registerHref); }
+            if (form) form.setAttribute('action', reg ? AUTH.registerAction : AUTH.loginAction);
+            // Ô đầu tiên (email / email-hoặc-tên-đăng-nhập)
+            const F = AUTH_FIELD[mode], em = $id('email'), emLabel = $id('email-label');
+            if (em) { em.setAttribute('type', F.type); em.setAttribute('placeholder', F.placeholder); em.setAttribute('autocomplete', F.autocomplete); }
+            if (emLabel) emLabel.textContent = F.label;
+            // Tên đăng nhập: chỉ có khi đăng ký (ẩn + vô hiệu khi đăng nhập để không bị bắt buộc và không gửi đi)
+            const un = $id('ten_dang_nhap'), unBlock = $id('username-field-block'), hint = $id('password-hint');
+            if (un) { un.disabled = !reg; un.required = reg; }
+            if (unBlock) unBlock.style.display = reg ? '' : 'none';
+            // Mật khẩu: đăng ký thì tối thiểu 8 ký tự + gợi ý trình duyệt đặt mật khẩu mới
+            if (pw) {
+                pw.setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
+                if (reg) pw.setAttribute('minlength', '8'); else pw.removeAttribute('minlength');
             }
-            showToast('Đang xác thực tài khoản...', 'info');
+            if (hint) hint.style.display = reg ? '' : 'none';
+            if (forgot) forgot.style.display = reg ? 'none' : '';
+            if (!keepMessages) [err, ok].forEach((n) => { if (n) n.style.display = 'none'; });
+            document.title = T.doc;
         }
 
-        // Quay lại bằng nút Back: khôi phục nút đăng nhập
+        function switchAuthMode(mode) {
+            if (mode === authMode) return;
+            const ids = ['form-title', 'form-subtitle', 'login-form', 'footer-border'];
+            const els = ids.map((i) => document.getElementById(i)).filter(Boolean);
+            const finish = () => {
+                try { history.replaceState(null, '', mode === 'dang_ky' ? AUTH.registerHref : AUTH.loginHref); } catch (e) {}
+                const em = document.getElementById('email'); if (em) em.focus({ preventScroll: true });
+            };
+            playSound('toggle');
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { applyAuthMode(mode); finish(); return; }
+            els.forEach((e) => { e.style.transition = 'opacity .18s ease, transform .18s ease'; e.style.opacity = '0'; e.style.transform = 'translateY(8px)'; });
+            setTimeout(() => {
+                applyAuthMode(mode);
+                requestAnimationFrame(() => {
+                    els.forEach((e) => { e.style.opacity = '1'; e.style.transform = 'translateY(0)'; });
+                    setTimeout(() => els.forEach((e) => { e.style.transition = ''; e.style.opacity = ''; e.style.transform = ''; }), 230);
+                    finish();
+                });
+            }, 180);
+        }
+
+        (function initAuthMode() {
+            if (AUTH.initial === 'dang_ky') applyAuthMode('dang_ky', true);   // giữ thông báo lỗi từ máy chủ
+            const link = document.getElementById('register-link');
+            if (link && AUTH.inPlace) {
+                link.addEventListener('click', (e) => {
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; // mở tab mới vẫn đi tới trang riêng
+                    e.preventDefault();
+                    switchAuthMode(authMode === 'dang_ky' ? 'dang_nhap' : 'dang_ky');
+                });
+            }
+        })();
+
+        // Gửi form THẬT tới máy chủ (không preventDefault): chỉ thêm hiệu ứng "đang xử lý"
+        function submitLabelHTML() {
+            return '<span id="submit-label">' + AUTH_TEXT[authMode].btn + '</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
+        }
+        function handleFormSubmit(e) {
+            const submitBtn = document.getElementById('submit-btn');
+            const reg = authMode === 'dang_ky';
+            playSound('success');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin text-sm"></i> ' + (reg ? 'Đang tạo tài khoản...' : 'Đang xác thực...');
+                setTimeout(() => { submitBtn.disabled = true; }, 0);
+            }
+            showToast(reg ? 'Đang tạo tài khoản...' : 'Đang xác thực tài khoản...', 'info');
+        }
+
+        // Quay lại bằng nút Back: khôi phục nút gửi
         window.addEventListener('pageshow', () => {
             const submitBtn = document.getElementById('submit-btn');
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span>Đăng nhập</span> <i class="fa-solid fa-arrow-right text-xs"></i>';
+                submitBtn.innerHTML = submitLabelHTML();
             }
         });
 

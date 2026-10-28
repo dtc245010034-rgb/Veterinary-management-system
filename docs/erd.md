@@ -185,6 +185,7 @@ erDiagram
     customers {
         int id PK
         string email UK
+        string ten_dang_nhap UK
         string full_name
         string password_hash
         bool is_active
@@ -464,6 +465,7 @@ Cổng khách (P9 chặng 4). Xem `app/services/customers.py`. **Bảng riêng, 
 |---|---|---|---|
 | `id` | int | PK | |
 | `email` | varchar(255) | NOT NULL, UNIQUE | Đã chuẩn hóa chữ thường. Một dòng chỉ có **sau khi** khách bấm link xác minh và đặt mật khẩu, nên không có cột "đã xác minh" và không có tài khoản chưa xác minh để kẻ khác đăng ký trước |
+| `ten_dang_nhap` | varchar(30) | UNIQUE, NULL | Tên đăng nhập của khách (3–30 ký tự: chữ thường, số, _, .). Tài khoản cũ để NULL |
 | `full_name` | varchar(100) | NOT NULL | |
 | `password_hash` | varchar(255) | NOT NULL | bcrypt, cùng cơ chế với `users` |
 | `is_active` | bool | NOT NULL | Khóa tài khoản: phiên đang mở chết ngay |
