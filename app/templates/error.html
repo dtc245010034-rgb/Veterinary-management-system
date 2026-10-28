@@ -5,7 +5,7 @@
 {% block noi_dung %}
 <div class="the the-loi">
   <p class="ma-loi">{{ ma_loi }}</p>
-  <h1>{% if ma_loi == 403 %}Không có quyền truy cập{% else %}Không tìm thấy trang{% endif %}</h1>
+  <h1>{% if ma_loi == 403 %}Không có quyền truy cập{% elif ma_loi == 400 %}Dữ liệu không hợp lệ{% else %}Không tìm thấy trang{% endif %}</h1>
   <p class="phu">{{ thong_diep }}</p>
   <a class="chinh" href="{{ '/khach' if request.url.path.startswith('/khach') else '/' }}">Về trang chủ</a>
 </div>

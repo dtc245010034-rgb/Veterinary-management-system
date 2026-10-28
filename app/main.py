@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from http import HTTPStatus
 
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as LoiHTTPStarlette
@@ -160,6 +161,22 @@ app.include_router(lien_ket_khach_router.router)
 app.include_router(lich_cho_duyet_router.router)
 
 
+# Các URL người dùng hay gõ nhầm khi tìm cổng khách; chỉ thêm đúng những URL này.
+CHUYEN_HUONG_CONG_KHACH = {
+    "/login/khach": "/khach/dang-nhap",
+    "/login/khach/dang-nhap": "/khach/dang-nhap",
+    "/dang-ky": "/khach/dang-ky",
+    "/register": "/khach/dang-ky",
+}
+for _nguon, _dich in CHUYEN_HUONG_CONG_KHACH.items():
+    app.add_api_route(
+        _nguon,
+        lambda _dich=_dich: RedirectResponse(_dich, status_code=status.HTTP_303_SEE_OTHER),
+        methods=["GET"],
+        include_in_schema=False,
+    )
+
+
 @app.exception_handler(ChuaDangNhap)
 async def xu_ly_chua_dang_nhap(request: Request, exc: ChuaDangNhap):
     """TC-004: chưa đăng nhập thì đưa về trang đăng nhập, không trả lỗi thô."""
@@ -204,6 +221,20 @@ async def xu_ly_loi_http(request: Request, exc: LoiHTTPStarlette):
         )
 
     return HTMLResponse(str(exc.detail), status_code=exc.status_code)
+
+
+@app.exception_handler(RequestValidationError)
+async def xu_ly_tham_so_sai_kieu(request: Request, exc: RequestValidationError):
+    """Lưới an toàn: tham số sai kiểu ra trang có bố cục, không lộ JSON 422 hay tên trường tiếng Anh.
+
+    Path param sai kiểu (`/pets/abc`) coi như đường dẫn không tồn tại (404); query/form sai kiểu là 400.
+    """
+    la_duong_dan = any(loi["loc"][0] == "path" for loi in exc.errors() if loi["loc"])
+    ma = status.HTTP_404_NOT_FOUND if la_duong_dan else status.HTTP_400_BAD_REQUEST
+    thong_diep = MO_TA_LOI_MAC_DINH[ma] if la_duong_dan else "Dữ liệu gửi lên không hợp lệ."
+    return templates.TemplateResponse(
+        request, "error.html", {"ma_loi": ma, "thong_diep": thong_diep}, status_code=ma
+    )
 
 
 @app.exception_handler(LoiNghiepVu)
