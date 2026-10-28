@@ -76,7 +76,9 @@ Mật khẩu chung `matkhau123`.
 | `chamsoc1` | Nhân viên chăm sóc (tên hiển thị **Lê Văn Chăm**) | A, E |
 | `chamsoc2` | Nhân viên chăm sóc (**Phạm Thị Sóc**) | — |
 
-**Khách** — đăng nhập tại `/khach/dang-nhap`:
+**Khách** — đăng nhập tại `/khach/dang-nhap`. Từ trang `/login` của nhân viên có dòng "Bạn là khách hàng? Đăng nhập / Đăng ký tại Cổng khách hàng" dẫn sang đó,
+và trang khách có dòng ngược lại "Bạn là nhân viên cửa hàng? Đăng nhập nhân viên". Gõ nhầm `/dang-ky`, `/register`, `/login/khach` cũng tự chuyển về đúng trang khách.
+Nhân viên **không** tự đăng ký: tài khoản do quản lý tạo.
 
 | Email | Tình trạng | Dùng cho phần |
 |---|---|---|

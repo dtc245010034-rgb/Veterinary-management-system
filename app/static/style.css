@@ -1785,3 +1785,7 @@ input[type="radio"], input[type="checkbox"] {
   accent-color: var(--pet-accent);
 }
 label.lua-chon { display: flex; align-items: baseline; gap: 10px; font-weight: 400; }
+
+/* Nút bật/tắt meme (pet-meme.js): nhỏ, góc dưới trái, mờ cho tới khi rê chuột */
+.meme-toggle{position:fixed;left:14px;bottom:14px;z-index:46;padding:6px 11px;border:1px solid var(--vien);border-radius:999px;background:var(--the);color:var(--chu-phu);font-size:11px;font-weight:700;opacity:.65;cursor:pointer;box-shadow:var(--shadow)}
+.meme-toggle:hover,.meme-toggle:focus-visible{opacity:1}
