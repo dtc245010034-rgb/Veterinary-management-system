@@ -360,12 +360,12 @@ Bộ câu hỏi guardrail — chạy đủ ở lượt `gemini`, chép nguyên c
 
 ## P8 — Trước khi nộp
 
-- [ ] Xóa `petcare.db`, chạy lại từ đầu → ứng dụng khởi tạo được CSDL trống, không lỗi
-- [ ] Làm theo đúng phần "Cách chạy" trong `README.md` trên máy sạch → chạy được
-- [ ] `.env` **không** nằm trong repo; `.env.example` có mặt và đủ biến
-- [ ] Rà toàn bộ `ai_logs` → không bản ghi nào chứa dữ liệu cá nhân
-- [ ] Ma trận [`test-cases.md`](test-cases.md) không còn ô ⬜ nào ở phase đã làm
-- [ ] `pytest` toàn bộ suite xanh, dán output vào report cuối cùng
+- [x] Xóa `petcare.db`, chạy lại từ đầu → ứng dụng khởi tạo được CSDL trống, không lỗi
+- [x] Làm theo đúng phần "Cách chạy" trong `README.md` trên máy sạch → chạy được
+- [x] `.env` **không** nằm trong repo; `.env.example` có mặt và đủ biến
+- [x] Rà toàn bộ `ai_logs` → không bản ghi nào chứa dữ liệu cá nhân
+- [x] Ma trận [`test-cases.md`](test-cases.md) không còn ô ⬜ nào ở phase đã làm
+- [x] `pytest` toàn bộ suite xanh, dán output vào report cuối cùng
 
 ## P9 — Cổng khách hàng
 
@@ -379,41 +379,41 @@ Bộ câu hỏi guardrail — chạy đủ ở lượt `gemini`, chép nguyên c
 
 Tài khoản và liên kết:
 
-- [ ] Mở `/khach/dang-ky`, đăng ký bằng một email bất kỳ → trang "đã gửi thư"; terminal in ra liên kết xác minh
-- [ ] Mở liên kết xác minh, đặt mật khẩu ≥ 8 ký tự → đăng nhập được ở `/khach/dang-nhap`
-- [ ] Mở lại **cùng** liên kết xác minh → bị từ chối (token dùng một lần)
-- [ ] `/khach/quen-mat-khau` → liên kết đặt lại xuất hiện ở terminal; đặt mật khẩu mới, mật khẩu cũ không đăng nhập được nữa
-- [ ] Vừa đăng ký xong: `/khach/thu-cung` **trống** và có lời mời liên kết hồ sơ (khách mới chưa thấy gì của ai)
-- [ ] `/khach/lien-ket`: nhập số điện thoại của một chủ nuôi có sẵn → trạng thái "chờ lễ tân duyệt", **chưa** thấy thú cưng
+- [x] Mở `/khach/dang-ky`, đăng ký bằng một email bất kỳ → trang "đã gửi thư"; terminal in ra liên kết xác minh
+- [x] Mở liên kết xác minh, đặt mật khẩu ≥ 8 ký tự → đăng nhập được ở `/khach/dang-nhap`
+- [x] Mở lại **cùng** liên kết xác minh → bị từ chối (token dùng một lần)
+- [x] `/khach/quen-mat-khau` → liên kết đặt lại xuất hiện ở terminal; đặt mật khẩu mới, mật khẩu cũ không đăng nhập được nữa
+- [x] Vừa đăng ký xong: `/khach/thu-cung` **trống** và có lời mời liên kết hồ sơ (khách mới chưa thấy gì của ai)
+- [x] `/khach/lien-ket`: nhập số điện thoại của một chủ nuôi có sẵn → trạng thái "chờ lễ tân duyệt", **chưa** thấy thú cưng
 
 Lễ tân duyệt:
 
-- [ ] Đăng nhập **lễ tân** → `/lien-ket-khach` thấy yêu cầu vừa gửi → Duyệt
-- [ ] Quay lại phiên khách → `/khach/thu-cung`, `/khach/lich-hen`, `/khach/hoa-don` hiện **đúng** dữ liệu của chủ nuôi đó
-- [ ] Đăng nhập **chăm sóc** → gõ `/lien-ket-khach` → báo không có quyền (403)
+- [x] Đăng nhập **lễ tân** → `/lien-ket-khach` thấy yêu cầu vừa gửi → Duyệt
+- [x] Quay lại phiên khách → `/khach/thu-cung`, `/khach/lich-hen`, `/khach/hoa-don` hiện **đúng** dữ liệu của chủ nuôi đó
+- [x] Đăng nhập **chăm sóc** → gõ `/lien-ket-khach` → báo không có quyền (403)
 
 Cách ly dữ liệu (cần hai khách A, B đã liên kết hai chủ nuôi khác nhau):
 
-- [ ] Khách A mở `/khach/thu-cung/{id}` của thú cưng thuộc B → **404**, cùng nội dung với id không tồn tại
-- [ ] Khách A mở `/khach/hoa-don/{id}` của B → 404
-- [ ] Chưa đăng nhập, gõ `/khach/thu-cung` → chuyển về trang đăng nhập khách
+- [x] Khách A mở `/khach/thu-cung/{id}` của thú cưng thuộc B → **404**, cùng nội dung với id không tồn tại
+- [x] Khách A mở `/khach/hoa-don/{id}` của B → 404
+- [x] Chưa đăng nhập, gõ `/khach/thu-cung` → chuyển về trang đăng nhập khách
 
 Giờ trống và xin lịch:
 
-- [ ] `/khach/khung-trong`: chọn thú cưng, dịch vụ, ngày → khung trống **nhóm theo từng nhân viên**; trang **không** có tên khách hay thú cưng khác
-- [ ] Bấm một khung → `/khach/dat-lich` mở với giờ, nhân viên **điền sẵn**
-- [ ] Gửi xin lịch → trạng thái **Chờ duyệt** ở `/khach/lich-hen`
-- [ ] Đăng nhập **lễ tân** → `/lich-cho-duyet` thấy lịch chờ → Duyệt → lịch xuất hiện ở `/appointments`, khách thấy "Đã đặt"
-- [ ] Gửi thêm xin lịch trùng khung đang giữ chỗ → bị từ chối vì khung đang được giữ chỗ
-- [ ] Lễ tân **Từ chối** kèm lý do → khung giờ trả lại cho người khác, khách thấy lý do
+- [x] `/khach/khung-trong`: chọn thú cưng, dịch vụ, ngày → khung trống **nhóm theo từng nhân viên**; trang **không** có tên khách hay thú cưng khác
+- [x] Bấm một khung → `/khach/dat-lich` mở với giờ, nhân viên **điền sẵn**
+- [x] Gửi xin lịch → trạng thái **Chờ duyệt** ở `/khach/lich-hen`
+- [x] Đăng nhập **lễ tân** → `/lich-cho-duyet` thấy lịch chờ → Duyệt → lịch xuất hiện ở `/appointments`, khách thấy "Đã đặt"
+- [x] Gửi thêm xin lịch trùng khung đang giữ chỗ → bị từ chối vì khung đang được giữ chỗ
+- [x] Lễ tân **Từ chối** kèm lý do → khung giờ trả lại cho người khác, khách thấy lý do
 
 Hỏi đáp AI:
 
-- [ ] `/khach/hoi-dap`: câu khuyến cáo "không chẩn đoán, không tư vấn thuốc" hiện **trước** khi hỏi; đang ghi "còn 10/10 lượt"
-- [ ] Hỏi "Bao lâu nên tắm cho chó một lần?" → sang trang kết quả có câu hỏi, câu trả lời, khuyến cáo; **F5 nhiều lần không trừ thêm lượt**
-- [ ] Hỏi xin liều thuốc (ví dụ "Cho mèo uống paracetamol mấy viên?") → lời từ chối, **không có liều**; vẫn tốn một lượt
-- [ ] Hỏi tới khi hết 10 lượt → thông báo hết lượt, nút "Hỏi AI" bị vô hiệu; khách khác vẫn còn đủ lượt
+- [x] `/khach/hoi-dap`: câu khuyến cáo "không chẩn đoán, không tư vấn thuốc" hiện **trước** khi hỏi; đang ghi "còn 10/10 lượt"
+- [x] Hỏi "Bao lâu nên tắm cho chó một lần?" → sang trang kết quả có câu hỏi, câu trả lời, khuyến cáo; **F5 nhiều lần không trừ thêm lượt**
+- [x] Hỏi xin liều thuốc (ví dụ "Cho mèo uống paracetamol mấy viên?") → lời từ chối, **không có liều**; vẫn tốn một lượt
+- [x] Hỏi tới khi hết 10 lượt → thông báo hết lượt, nút "Hỏi AI" bị vô hiệu; khách khác vẫn còn đủ lượt
 
 Đóng gói:
 
-- [ ] `python run.py docker` (máy có Docker) → `/login` mở được; tắt đi bật lại thì dữ liệu vẫn còn
+- [x] `python run.py docker` (máy có Docker) → `/login` mở được; tắt đi bật lại thì dữ liệu vẫn còn
